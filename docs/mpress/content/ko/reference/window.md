@@ -1,15 +1,15 @@
 ---
-title: "창 API"
-description: "창 API 전체 레퍼런스"
+title: "Window API"
+description: "Window API 전체 참조 문서"
 slug: "reference/window"
 sourcePath: "reference/window.md"
 ---
 
 ## 개요
 
-창 API는 창의 모양, 동작 및 수명 주기를 제어하는 메서드를 제공합니다. 창 인스턴스 또는 `app.Window` 관리자를 통해 접근합니다.
+Window API는 창의 모양, 동작 및 수명 주기를 제어하는 메서드를 제공합니다. 창 인스턴스나 `app.Window` 관리자를 통해 접근합니다.
 
-`Window`은 `*application.WebviewWindow`이 구현하는 인터페이스이며, 아래의 메서드 시그니처는 `*WebviewWindow`에 정의되어 있습니다. 많은 변경 메서드는 연속 호출이 가능하도록 `Window`을 반환합니다. 반환 값은 각 메서드에서 설명합니다.
+`Window`은 `*application.WebviewWindow`이 구현하는 인터페이스이며, 아래의 메서드 시그니처는 `*WebviewWindow`에 정의되어 있습니다. 여러 변경 메서드는 호출을 체이닝할 수 있도록 `Window`을 반환하며, 반환 값은 각 메서드에 설명되어 있습니다.
 
 **일반적인 작업:**
 
@@ -23,7 +23,7 @@ sourcePath: "reference/window.md"
 
 ### Show()
 
-창을 표시합니다. 창이 숨겨져 있었다면 다시 표시됩니다. 연속 호출이 가능하도록 리시버를 반환합니다.
+창을 표시합니다. 창이 숨겨져 있었다면 다시 표시됩니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) Show() Window
@@ -38,7 +38,7 @@ window.Show()
 
 ### Hide()
 
-창을 닫지 않고 숨깁니다. 창은 메모리에 유지되며 다시 표시할 수 있습니다. 연속 호출이 가능하도록 리시버를 반환합니다.
+창을 닫지 않고 숨깁니다. 창은 메모리에 남아 있으며 다시 표시할 수 있습니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) Hide() Window
@@ -56,9 +56,9 @@ window.Show()
 
 **사용 사례:**
 
-- 트레이로 숨기는 시스템 트레이 애플리케이션
+- 시스템 트레이로 숨기는 애플리케이션
 - 창을 재사용하는 마법사 흐름
-- 작업 중 일시적으로 숨기기
+- 작업 중 일시적으로 창 숨기기
 
 ### Close()
 
@@ -80,7 +80,7 @@ window.Close()
 
 ### SetTitle()
 
-창 제목 표시줄의 텍스트를 설정합니다. 연속 호출이 가능하도록 리시버를 반환합니다.
+창 제목 표시줄의 텍스트를 설정합니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetTitle(title string) Window
@@ -120,7 +120,7 @@ if w, ok := app.Window.GetByName(name); ok {
 
 ### SetSize()
 
-창 크기를 픽셀 단위로 설정합니다. 연속 호출이 가능하도록 리시버를 반환합니다.
+창의 크기를 픽셀 단위로 설정합니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetSize(width, height int) Window
@@ -154,7 +154,7 @@ fmt.Printf("Window is %dx%d\n", width, height)
 
 ### SetMinSize() / SetMaxSize()
 
-창의 최소 및 최대 크기를 설정합니다. 두 메서드 모두 연속 호출이 가능하도록 리시버를 반환합니다.
+창의 최소 및 최대 크기를 설정합니다. 두 메서드 모두 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetMinSize(width, height int) Window
@@ -225,7 +225,7 @@ window.Center()
 window.Show()
 ```
 
-**참고:** 기본 모니터의 중앙에 배치됩니다. 다중 모니터 구성에서는 화면 API를 참조하세요.
+**참고:** 주 모니터의 중앙에 배치합니다. 다중 모니터 구성은 화면 API를 참조하세요.
 
 ### Focus()
 
@@ -246,7 +246,7 @@ window.Focus()
 
 ### Minimise() / UnMinimise()
 
-창을 작업 표시줄/독으로 최소화하거나 복원합니다. `Minimise()`은 연속 호출이 가능하도록 리시버를 반환하고, `UnMinimise()`은 아무것도 반환하지 않습니다.
+창을 작업 표시줄/도크로 최소화하거나 복원합니다. `Minimise()`은 호출을 체이닝할 수 있도록 리시버를 반환하고, `UnMinimise()`은 아무것도 반환하지 않습니다.
 
 ```go
 func (w *WebviewWindow) Minimise() Window
@@ -265,7 +265,7 @@ window.UnMinimise()
 
 ### Maximise() / UnMaximise()
 
-창을 화면에 꽉 차도록 최대화하거나 이전 크기로 복원합니다. `Maximise()`은 연속 호출이 가능하도록 리시버를 반환하고, `UnMaximise()`은 아무것도 반환하지 않습니다.
+창을 화면에 가득 차도록 최대화하거나 이전 크기로 복원합니다. `Maximise()`은 호출을 체이닝할 수 있도록 리시버를 반환하고, `UnMaximise()`은 아무것도 반환하지 않습니다.
 
 ```go
 func (w *WebviewWindow) Maximise() Window
@@ -284,7 +284,7 @@ window.UnMaximise()
 
 ### Fullscreen() / UnFullscreen() / ToggleFullscreen()
 
-전체 화면 모드로 전환하거나 전체 화면 모드를 종료합니다. `Fullscreen()`은 연속 호출이 가능하도록 리시버를 반환합니다.
+전체 화면 모드로 전환하거나 전체 화면 모드에서 나옵니다. `Fullscreen()`은 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) Fullscreen() Window
@@ -337,7 +337,7 @@ if window.IsFullscreen() {
 
 ### SetURL()
 
-창에서 지정된 URL로 이동합니다. 메서드 체이닝을 위해 수신 객체를 반환합니다.
+창 안에서 지정된 URL로 이동합니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetURL(url string) Window
@@ -359,7 +359,7 @@ window.SetURL("https://wails.io")
 
 ### SetHTML()
 
-HTML 문자열로 창 콘텐츠를 직접 설정합니다. 메서드 체이닝을 위해 수신 객체를 반환합니다.
+HTML 문자열로 창 콘텐츠를 직접 설정합니다. 호출을 체이닝할 수 있도록 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetHTML(html string) Window
@@ -388,7 +388,7 @@ window.SetHTML(html)
 **사용 사례:**
 
 - 동적 콘텐츠 생성
-- 프런트엔드 빌드 과정이 없는 간단한 창
+- 프런트엔드 빌드 과정이 필요 없는 단순한 창
 - 오류 페이지 또는 시작 화면
 
 ### Reload()
@@ -453,15 +453,15 @@ window.OnWindowEvent(events.Common.WindowDidResize, func(e *application.WindowEv
 - `events.Common.WindowFocus` - 창이 포커스를 얻음
 - `events.Common.WindowLostFocus` - 창이 포커스를 잃음
 - `events.Common.WindowDidMove` - 창이 이동됨
-- `events.Common.WindowDidResize` - 창 크기가 변경됨
+- `events.Common.WindowDidResize` - 창 크기가 조정됨
 - `events.Common.WindowMinimise` - 창이 최소화됨
 - `events.Common.WindowMaximise` - 창이 최대화됨
-- `events.Common.WindowFullscreen` - 창이 전체 화면 모드로 전환됨
-- `events.Common.WindowRuntimeReady` - 창 내부 런타임이 초기화됨
+- `events.Common.WindowFullscreen` - 창이 전체 화면으로 전환됨
+- `events.Common.WindowRuntimeReady` - 창 내 런타임이 초기화됨
 
 ### RegisterHook()
 
-창 이벤트에 대한 훅을 등록합니다. 훅은 리스너보다 먼저 실행되며 `event.Cancel()`을 호출하여 이벤트를 막을 수 있습니다. 구독 해제 함수를 반환합니다.
+창 이벤트에 대한 훅을 등록합니다. 훅은 리스너보다 먼저 실행되며, `event.Cancel()`을 호출하여 이벤트를 막을 수 있습니다. 구독 해제 함수를 반환합니다.
 
 ```go
 func (w *WebviewWindow) RegisterHook(
@@ -521,7 +521,7 @@ window.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent
 
 ### EmitEvent()
 
-창의 프런트엔드로 사용자 지정 이벤트를 발생시킵니다. 훅에 의해 이벤트 발생이 취소되면 `true`을 반환합니다.
+창의 프런트엔드로 사용자 지정 이벤트를 발생시킵니다. 훅이 이벤트 발생을 취소한 경우 `true`을 반환합니다.
 
 ```go
 func (w *WebviewWindow) EmitEvent(name string, data ...any) bool
@@ -557,7 +557,7 @@ Events.On('data-updated', (data) => {
 
 ### SetEnabled()
 
-사용자가 창과 상호 작용할 수 있도록 설정하거나 상호 작용을 비활성화합니다.
+창과의 사용자 상호작용을 활성화하거나 비활성화합니다.
 
 ```go
 func (w *WebviewWindow) SetEnabled(enabled bool)
@@ -578,13 +578,13 @@ window.SetEnabled(true)
 
 ### SetBackgroundColour()
 
-창 배경색을 설정합니다. 이 색상은 콘텐츠가 로드되기 전에 표시됩니다. 메서드 체이닝을 위해 수신 객체를 반환합니다.
+창의 배경색을 설정합니다(콘텐츠가 로드되기 전에 표시됨). 메서드 체이닝을 위해 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) Window
 ```
 
-`RGBA`은 `application.RGBA{Red, Green, Blue, Alpha uint8}`입니다. `application.NewRGB(r, g, b)`(알파 255) 또는 `application.NewRGBA(r, g, b, a)` 헬퍼를 사용하세요.
+`RGBA`은 `application.RGBA{Red, Green, Blue, Alpha uint8}`입니다. `application.NewRGB(r, g, b)`(알파 255) 또는 `application.NewRGBA(r, g, b, a)` 헬퍼를 사용하십시오.
 
 **예:**
 
@@ -598,7 +598,7 @@ window.SetBackgroundColour(application.NewRGBA(30, 30, 30, 255))
 
 ### SetResizable()
 
-사용자가 창 크기를 조절할 수 있는지를 제어합니다. 메서드 체이닝을 위해 수신 객체를 반환합니다.
+사용자가 창 크기를 조정할 수 있는지를 제어합니다. 메서드 체이닝을 위해 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetResizable(resizable bool) Window
@@ -613,7 +613,7 @@ window.SetResizable(false)
 
 ### SetAlwaysOnTop()
 
-창을 다른 창보다 항상 위에 표시할지를 설정합니다. 메서드 체이닝을 위해 수신 객체를 반환합니다.
+창이 다른 창 위에 유지될지를 설정합니다. 메서드 체이닝을 위해 리시버를 반환합니다.
 
 ```go
 func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
@@ -624,6 +624,31 @@ func (w *WebviewWindow) SetAlwaysOnTop(alwaysOnTop bool) Window
 ```go
 // Keep window on top
 window.SetAlwaysOnTop(true)
+```
+
+### SetMenu()
+
+Windows와 Linux에서 창에 표시되는 메뉴 모음을 지정한 메뉴로 교체합니다.
+
+```go
+func (w *WebviewWindow) SetMenu(menu *Menu)
+```
+
+**매개변수:**
+- `menu` - 표시할 메뉴. 메뉴 모음을 제거하려면 `nil`
+
+`nil`을 전달하면 메뉴 모음이 제거됩니다. 창에는 애플리케이션 메뉴를 포함해 어떤 메뉴도 표시되지 않으며, 제거된 메뉴의 단축키도 해당 창에서 더 이상 작동하지 않습니다. 창이 시작되기 전에 호출하면 메뉴 모음 없이 창이 생성됩니다.
+
+**플랫폼 지원:**
+- **Windows**: 완전 지원
+- **Linux**: 완전 지원
+- **macOS**: 메뉴 모음이 애플리케이션에 속하므로 아무 효과가 없습니다. 대신 `app.Menu.Set`을 사용하십시오.
+
+**예:**
+
+```go
+window.SetMenu(menu) // show a menu bar
+window.SetMenu(nil)  // remove it
 ```
 
 ### Print()
@@ -658,7 +683,7 @@ func (w *WebviewWindow) AttachModal(modalWindow Window)
 
 **플랫폼 지원:**
 
-- **macOS**: 완전 지원(시트로 표시)
+- **macOS**: 완전 지원(시트로 표시됨)
 - **Windows**: 지원하지 않음
 - **Linux**: 지원하지 않음
 
@@ -673,11 +698,11 @@ window.AttachModal(modalWindow)
 
 ### Linux
 
-Linux 창에서는 `LinuxWindow`을(를) 통해 다음과 같은 플랫폼별 옵션을 사용할 수 있습니다.
+Linux 창은 `LinuxWindow`을 통해 다음 플랫폼별 옵션을 지원합니다.
 
 #### MenuStyle
 
-애플리케이션 메뉴의 표시 방식을 제어합니다. 이 옵션은 기본 GTK4 빌드에서 사용할 수 있으며, 레거시 `-tags gtk3` 빌드에서는 무시됩니다.
+애플리케이션 메뉴가 표시되는 방식을 제어합니다. 이 옵션은 기본 GTK4 빌드에서 사용할 수 있으며, 레거시 `-tags gtk3` 빌드에서는 무시됩니다.
 
 | 값 | 설명 |
 | --- | --- |

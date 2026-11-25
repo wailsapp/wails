@@ -7,7 +7,7 @@ sourcePath: "features/screens/info.md"
 
 ## 画面情報
 
-Wails は、すべてのプラットフォームで動作する<strong>統一画面 API</strong>を提供します。一貫したコードで、画面情報の取得、複数モニターの検出、画面プロパティ（サイズ、位置、DPI）の照会、プライマリディスプレイの特定、DPI スケーリングへの対応が可能です。
+Wails は、すべてのプラットフォームで動作する**統一画面 API** を提供します。一貫したコードで、画面情報の取得、複数モニターの検出、画面プロパティ（サイズ、位置、DPI）の照会、プライマリディスプレイの特定、DPI スケーリングへの対応が可能です。
 
 ## クイックスタート
 
@@ -25,7 +25,7 @@ primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
-<strong>これだけです！</strong>クロスプラットフォームで画面情報を取得できます。
+**これだけです！** クロスプラットフォームの画面情報を取得できます。
 
 ## 画面情報の取得
 
@@ -57,7 +57,7 @@ fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
 
 ### 現在の画面
 
-ウィンドウが表示されている画面を取得します：
+ウィンドウが表示されている画面を取得します。
 
 ```go
 screen, err := window.GetScreen()
@@ -100,7 +100,7 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-ピクセル単位のサイズは `screen.Size.Width` / `screen.Size.Height` から読み取ります。トップレベルに `Width`/`Height` フィールドはありません。
+ピクセルサイズは `screen.Size.Width` / `screen.Size.Height` から読み取ります。トップレベルの `Width`/`Height` フィールドはありません。
 
 ### 物理ピクセルと論理ピクセル
 
@@ -130,7 +130,7 @@ fmt.Printf("Scale: %.2f\n", screen.ScaleFactor)
 
 ## ウィンドウの配置
 
-### 画面中央への配置
+### 画面の中央に配置
 
 ```go
 func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
@@ -143,7 +143,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-### 特定の画面への配置
+### 特定の画面に配置
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
@@ -160,7 +160,7 @@ func moveToScreen(window *application.WebviewWindow, screenIndex int) {
 }
 ```
 
-### 画面を基準とした配置
+### 画面を基準に配置
 
 ```go
 // Top-left corner
@@ -198,7 +198,7 @@ func getMonitorCount() int {
 }
 ```
 
-### すべてのモニターの一覧表示
+### すべてのモニターを一覧表示
 
 ```go
 func listMonitors() {
@@ -302,7 +302,7 @@ func (m *MultiMonitorManager) CreateWindowOnEachScreen() {
 }
 ```
 
-### 画面変更の検出
+### 画面構成の変更検出
 
 ```go
 type ScreenMonitor struct {
@@ -371,7 +371,7 @@ func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
 }
 ```
 
-### 画面レイアウトビジュアライザー
+### 画面レイアウトの可視化
 
 ```go
 func visualiseScreenLayout() string {
@@ -406,28 +406,28 @@ func visualiseScreenLayout() string {
 
 - **画面数を確認する** - 単一モニターと複数モニターの両方に対応します
 - **論理ピクセルを使用する** - Wails が DPI を自動的に処理します
-- **ウィンドウを中央に配置する** - 固定位置よりも優れた UX を実現できます
-- **位置を検証する** - ウィンドウが画面内に表示されるようにします
-- **画面の変更に対応する** - モニターは追加または取り外される場合があります
-- **異なる DPI 設定でテストする** - 100%、125%、150%、200%
+- **ウィンドウを中央に配置する** - 固定位置より優れた UX を実現できます
+- **位置を検証する** - ウィンドウが見える位置にあることを確認します
+- **画面構成の変更に対応する** - モニターは追加または取り外されることがあります
+- **異なる DPI でテストする** - 100%、125%、150%、200%
 
 ### ❌ 非推奨事項
 
 - **位置をハードコードしない** - 画面の寸法を使用します
-- **プライマリ画面だと決めつけない** - ユーザーが複数のモニターを使用している可能性があります
+- **プライマリ画面が使われると決めつけない** - ユーザーが複数のモニターを使用している場合があります
 - **スケール係数を無視しない** - DPI 対応には重要です
 - **画面外に配置しない** - 座標を検証します
-- **画面の変更への対応を忘れない** - ノート PC はドッキングまたはドッキング解除されることがあります
+- **画面構成の変更を考慮し忘れない** - ノート PC はドッキングまたはドッキング解除されます
 - **物理ピクセルを使用しない** - 論理ピクセルを使用します
 
-## プラットフォームによる違い
+## プラットフォームごとの違い
 
 ### macOS
 
-- Retina ディスプレイ（スケール係数 2x）
+- Retina ディスプレイ（スケール係数 2 倍）
 - 複数ディスプレイの使用が一般的
 - 座標系：左下が（0,0）
-- Spaces（仮想デスクトップ）が配置に影響します
+- Spaces（仮想デスクトップ）が配置に影響
 
 ### Windows
 
@@ -438,10 +438,10 @@ func visualiseScreenLayout() string {
 
 ### Linux
 
-- デスクトップ環境によって異なります
-- X11 と Wayland で違いがあります
-- DPI スケーリングの対応状況は異なります
-- 複数ディスプレイに対応しています
+- デスクトップ環境によって異なる
+- X11 と Wayland で動作が異なる
+- DPI スケーリングの対応状況は環境によって異なる
+- 複数ディスプレイに対応
 
 ## 次のステップ
 
@@ -449,28 +449,28 @@ func visualiseScreenLayout() string {
 ▣ ウィンドウ
 ウィンドウ管理について学びます。
 
-[詳しく見る →](/features/windows/basics/)
+[詳細を見る →](/features/windows/basics/)
 
 ---
 ⚙ ウィンドウオプション
 ウィンドウの外観を設定します。
 
-[詳しく見る →](/features/windows/options/)
+[詳細を見る →](/features/windows/options/)
 
 ---
-◆ 複数のウィンドウ
-マルチウィンドウのパターンについて説明します。
+◆ 複数ウィンドウ
+マルチウィンドウのパターンについて学びます。
 
-[詳しく見る →](/features/windows/multiple/)
+[詳細を見る →](/features/windows/multiple/)
 
 ---
 🚀 バインディング
 JavaScript から Go 関数を呼び出します。
 
-[詳しく見る →](/features/bindings/methods/)
+[詳細を見る →](/features/bindings/methods/)
 
 @end
 
 ---
 
-**ご質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[画面の例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。
+**質問がありますか？** [Discord](https://discord.gg/JDdSxwjhGf) で質問するか、[画面のサンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を確認してください。

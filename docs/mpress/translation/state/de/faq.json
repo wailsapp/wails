@@ -779,7 +779,7 @@
       "targetHash": "37f0471856524b7c6295ff2fdc07c4a80e9dbeddeae2467a25c4c409af4cce8c",
       "machineHash": "37f0471856524b7c6295ff2fdc07c4a80e9dbeddeae2467a25c4c409af4cce8c",
       "machineText": "`go mod tidy`",
-      "status": "machine-translated",
+      "status": "protected",
       "sourcePreview": "`go mod tidy`",
       "provider": "codex",
       "model": "gpt-5.6-sol",
@@ -1051,16 +1051,16 @@
       "updatedAt": "2026-10-25T22:04:52Z"
     },
     "b0088-text-01": {
-      "sourceHash": "0adfe95f25e892a970034a17f2d2c492945b537465f6639af458698d4c5b7617",
-      "targetHash": "dd8efe56d790bebc6b95af30c188bb8a6fe0de36c399a773e8663f6cf1d55f8b",
-      "machineHash": "dd8efe56d790bebc6b95af30c188bb8a6fe0de36c399a773e8663f6cf1d55f8b",
-      "machineText": "Lesen Sie den [Leitfaden für Beiträge](/contributing/). Fehlerbehebungen sind jederzeit willkommen. Für neue Funktionen und Änderungen am öffentlichen Verhalten ist ein PR mit einem Entwurf für einen [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/releases/v3.0.0/v3/wep/README.md) erforderlich. Informelle Diskussionen auf Discord oder in GitHub Discussions sind optional.",
+      "sourceHash": "dbc91faa99559044beeb575090d964b499953fa5097f2583fe9938661cff9ca3",
+      "targetHash": "97cb5b265e35c920e28ba953738b3b7eadb887dfc60756ae3f155578b25aaa4e",
+      "machineHash": "97cb5b265e35c920e28ba953738b3b7eadb887dfc60756ae3f155578b25aaa4e",
+      "machineText": "Weitere Informationen finden Sie im [Leitfaden für Mitwirkende](/contributing/). Fehlerbehebungen sind jederzeit willkommen; für neue Funktionen und Änderungen am öffentlichen Verhalten wird ein PR mit dem Entwurf eines [WEP (Wails Enhancement Proposal)](https://github.com/wailsapp/wails/blob/v3.0.0/v3/wep/README.md) verwendet. Eine informelle Diskussion auf Discord oder in GitHub Discussions ist optional.",
       "status": "machine-translated",
       "sourcePreview": "See the [Contributing Guide](/contributing/). Bug fixes are welcome any time; new functionality and …",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:04:52Z"
+      "updatedAt": "2026-11-06T02:12:26Z"
     },
     "b0089-heading-01": {
       "sourceHash": "7e04a9455d286c2de3b3944df1d30d007e59e48825508a4bad741fc86269efe6",
@@ -1075,16 +1075,16 @@
       "updatedAt": "2026-10-25T22:04:52Z"
     },
     "b0090-text-01": {
-      "sourceHash": "9c100d1cc1faf3d456340abd86482a5bd369c340ce40ae89a471130f70055964",
-      "targetHash": "3b344a232a51d93b8b0cfea7f01eaf1a52bfd812081b3b68b68d595837be70c4",
-      "machineHash": "3b344a232a51d93b8b0cfea7f01eaf1a52bfd812081b3b68b68d595837be70c4",
-      "machineText": "Das Repository enthält mehr als 60 ausführbare Beispiele zu Fenstern, Dialogen, Events, der Taskleiste, Services und weiteren Themen: [v3/examples](https://github.com/wailsapp/wails/tree/releases/v3.0.0/v3/examples).",
+      "sourceHash": "e3ebf0a5b08193f5cab48344e4b0503e5c5ae6471811fac7ed978d559797914b",
+      "targetHash": "86d9adb492ce7f64cb7a48c72b604580747d2a5ddf5e74b045913be96c45a9b1",
+      "machineHash": "86d9adb492ce7f64cb7a48c72b604580747d2a5ddf5e74b045913be96c45a9b1",
+      "machineText": "Das Repository enthält über 60 ausführbare Beispiele zu Fenstern, Dialogen, Ereignissen, dem System-Tray, Diensten und weiteren Themen: [v3/examples](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples).",
       "status": "machine-translated",
       "sourcePreview": "The repository ships over 60 runnable examples covering windows, dialogs, events, the system tray, s…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-25T22:04:52Z"
+      "updatedAt": "2026-11-06T02:12:26Z"
     },
     "b0091-heading-01": {
       "sourceHash": "307af8007863f2e25ee83f46955f0654cecfcccef91413536486640af31e3282",

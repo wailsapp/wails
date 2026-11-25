@@ -8,87 +8,87 @@
   "segments": {
     "b0001-text-01": {
       "sourceHash": "0b2da9139c4643834adecd14538b97aa77f0f93d92b83644b3f05bc6c2d81dfa",
-      "targetHash": "955d272f2a038d82f8ef8e3515e8247ecb53c3442ddb774bf934e7960cc47cdf",
-      "machineHash": "955d272f2a038d82f8ef8e3515e8247ecb53c3442ddb774bf934e7960cc47cdf",
-      "machineText": "你已经构建了第一个 Wails 应用。请按照下面的学习路径继续，或者，如果你已经知道自己想构建什么，可以直接跳到相应指南。",
+      "targetHash": "2757f23f40ae900803a84bef172cc3ceb5050c091bd9254ea1a09aee1d66d016",
+      "machineHash": "2757f23f40ae900803a84bef172cc3ceb5050c091bd9254ea1a09aee1d66d016",
+      "machineText": "你已建立第一個 Wails 應用程式。請依照下方的學習路徑繼續，若已知道要建立什麼，也可以直接前往相關指南。",
       "status": "machine-translated",
       "sourcePreview": "You've built your first Wails app. Follow the learning path below, or jump to a guide when you alrea…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0002-heading-01": {
       "sourceHash": "8d8cd546b58d91c300d3149ef40b8d98d3061dc38f15ea937d2ed785a3f25771",
-      "targetHash": "aa1d24a06624800ad800242d83d2eacb4dd63cb24bb83b2793f85ac132ede6d4",
-      "machineHash": "aa1d24a06624800ad800242d83d2eacb4dd63cb24bb83b2793f85ac132ede6d4",
-      "machineText": "深入学习",
+      "targetHash": "51394c5ec2ebe81d763683b36215bfacd3094dc03dd5a83e6ab7fcf74b76bbf7",
+      "machineHash": "51394c5ec2ebe81d763683b36215bfacd3094dc03dd5a83e6ab7fcf74b76bbf7",
+      "machineText": "深入學習",
       "status": "machine-translated",
       "sourcePreview": "Learn More",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0003-text-01": {
       "sourceHash": "df68af547ca5807d7e2d16f69e7a163fdce2011ad1484bdd4303306e2db0be27",
-      "targetHash": "28551b99e165bd0328a3c63b47feff1662d6b07e8f043fc002c56f1c5902df30",
-      "machineHash": "28551b99e165bd0328a3c63b47feff1662d6b07e8f043fc002c56f1c5902df30",
-      "machineText": "每次通过一个完整的应用继续学习：",
+      "targetHash": "0a3de9085c0c21b8ea0bf453e50b8b124c7a380dc4b8a1afed2086bf0398f680",
+      "machineHash": "0a3de9085c0c21b8ea0bf453e50b8b124c7a380dc4b8a1afed2086bf0398f680",
+      "machineText": "每次透過一個完整的應用程式繼續學習：",
       "status": "machine-translated",
       "sourcePreview": "Continue learning with one complete application at a time:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0004-text-01": {
       "sourceHash": "74af96db0f7d1c3ecf6e54ab9bed782d63db7ef2485cce10434ba7a539a8ad4a",
-      "targetHash": "ebfc3d379b6c62171264e9ae216d4efa0ef53d4cc3e68fb265361538a20a213b",
-      "machineHash": "ebfc3d379b6c62171264e9ae216d4efa0ef53d4cc3e68fb265361538a20a213b",
-      "machineText": "\u003cstrong\u003e[创建二维码服务](/tutorials/01-creating-a-service/)。\u003c/strong\u003e练习如何通过服务向前端公开 Go 逻辑。",
+      "targetHash": "61828193ffd7cc73ee5339e16fbc7af19e8f8b734d9205d14271b7369934efb5",
+      "machineHash": "61828193ffd7cc73ee5339e16fbc7af19e8f8b734d9205d14271b7369934efb5",
+      "machineText": "\u003cstrong\u003e[建立 QR Code 服務](/tutorials/01-creating-a-service/)。\u003c/strong\u003e練習透過服務將 Go 邏輯公開給前端。",
       "status": "machine-translated",
       "sourcePreview": "**[Create a QR code service](/tutorials/01-creating-a-service/).** Practise exposing Go logic to you…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0005-text-01": {
       "sourceHash": "26d7f63dc5ac1da7e9311b3c28aca100a2149a51fdedcefa35595cf258a35a7f",
-      "targetHash": "d587c4b095eb846ec1e50d1d26166ee8e25b4d28d98644d7feac029bebc9ab75",
-      "machineHash": "d587c4b095eb846ec1e50d1d26166ee8e25b4d28d98644d7feac029bebc9ab75",
-      "machineText": "\u003cstrong\u003e[构建待办事项列表](/tutorials/02-todo-vanilla/)。\u003c/strong\u003e通过服务调用添加、修改和删除应用数据。",
+      "targetHash": "96acd4a22525c2f82e5be76bef1ac25a8d8711f13ebf870c569754501f99dd02",
+      "machineHash": "96acd4a22525c2f82e5be76bef1ac25a8d8711f13ebf870c569754501f99dd02",
+      "machineText": "\u003cstrong\u003e[建立待辦事項清單](/tutorials/02-todo-vanilla/)。\u003c/strong\u003e透過服務呼叫新增、修改及刪除應用程式資料。",
       "status": "machine-translated",
       "sourcePreview": "**[Build a TODO list](/tutorials/02-todo-vanilla/).** Add, change and delete application data throug…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0006-text-01": {
       "sourceHash": "456df0a8ea4fd3bda2ac8f99746c443fee6a3c015fefe0d6bb2130d76d645c9e",
-      "targetHash": "ac0d52ee8bf98f4865b77216dcb44e323222fed075b452623b6d196f2f4dc3bc",
-      "machineHash": "ac0d52ee8bf98f4865b77216dcb44e323222fed075b452623b6d196f2f4dc3bc",
-      "machineText": "\u003cstrong\u003e[构建笔记应用](/tutorials/03-notes-vanilla/)。\u003c/strong\u003e使用文件、原生对话框和已保存的数据。",
+      "targetHash": "ecf6f43a28c76c1d8fff3228d4f22a75578c019162dfd77c016eac9865b6ac1e",
+      "machineHash": "ecf6f43a28c76c1d8fff3228d4f22a75578c019162dfd77c016eac9865b6ac1e",
+      "machineText": "\u003cstrong\u003e[建立筆記應用程式](/tutorials/03-notes-vanilla/)。\u003c/strong\u003e使用檔案、原生對話方塊及已儲存的資料。",
       "status": "machine-translated",
       "sourcePreview": "**[Build a Notes app](/tutorials/03-notes-vanilla/).** Work with files, native dialogs and saved dat…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0007-text-01": {
       "sourceHash": "22cc2c3597a605ac02bed16029ef897727c5ded9271ac02c9d6c2cb7036fc3fa",
-      "targetHash": "8cf67d39d420ea9495c0f2785f3f640c96aa0e6fdd3376ad28fa67420ab072ad",
-      "machineHash": "8cf67d39d420ea9495c0f2785f3f640c96aa0e6fdd3376ad28fa67420ab072ad",
-      "machineText": "准备好探索发布流程后，请按照[应用自动更新教程](/tutorials/04-self-update-a-wails-app/)操作。请参阅[所有教程](/tutorials/overview/)，了解各课的学习成果。",
+      "targetHash": "0e328adc645639744bed1663bb3246de462fa1e65445eed97b2e9494c57005d7",
+      "machineHash": "0e328adc645639744bed1663bb3246de462fa1e65445eed97b2e9494c57005d7",
+      "machineText": "準備好探索版本發布後，請按照[應用程式自動更新教學](/tutorials/04-self-update-a-wails-app/)操作。如需瞭解各課程的學習成果，請參閱[所有教學](/tutorials/overview/)。",
       "status": "machine-translated",
       "sourcePreview": "Once you're ready to explore releases, follow the [self-updating app tutorial](/tutorials/04-self-up…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0008-heading-01": {
       "sourceHash": "5697d03daef4de9cf8db7cb11755f71358a32b4acca94909a9d449f71040d2dd",
@@ -100,19 +100,19 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0009-text-01": {
       "sourceHash": "576d921229d378d8942def257930c87fe6d515b279f8a637edbe66cb7596f023",
-      "targetHash": "626974fe8623d76fc2d350089d67f511f7fbffdf43852a23c076a8febe0d70ab",
-      "machineHash": "626974fe8623d76fc2d350089d67f511f7fbffdf43852a23c076a8febe0d70ab",
-      "machineText": "\u003cstrong\u003e已经在构建自己的应用了？\u003c/strong\u003e请针对当前任务使用相应的操作指南：",
+      "targetHash": "5c953e6404848665d6754d597bf29e516c6f4994e73d1df18fdc541f15d1f6b2",
+      "machineHash": "5c953e6404848665d6754d597bf29e516c6f4994e73d1df18fdc541f15d1f6b2",
+      "machineText": "\u003cstrong\u003e已經在建立自己的應用程式了嗎？\u003c/strong\u003e請針對目前的工作使用操作指南：",
       "status": "machine-translated",
       "sourcePreview": "**Already building your own app?** Use a how-to guide for the task in front of you:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0010-cell-01": {
       "sourceHash": "6710be9e8eac04bf43ab41f59a9fd95f7612877e6329c971de04879747247c62",
@@ -124,367 +124,367 @@
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0011-cell-01": {
       "sourceHash": "2adc964c084749b1f2d8aef24030988b667dbda2e38a6a1699556c93e07c1cea",
-      "targetHash": "df7006ca069712d5419bcde92d83a70be1d878d2caf1fa40532b54ccf65d45bf",
-      "machineHash": "df7006ca069712d5419bcde92d83a70be1d878d2caf1fa40532b54ccf65d45bf",
-      "machineText": "从这里开始",
+      "targetHash": "7d66f1c4885c154fe8d054582e65055735fc132891e60fedabb7bbbcef558ecf",
+      "machineHash": "7d66f1c4885c154fe8d054582e65055735fc132891e60fedabb7bbbcef558ecf",
+      "machineText": "從這裡開始",
       "status": "machine-translated",
       "sourcePreview": "Start here",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0012-cell-01": {
       "sourceHash": "2be9fd2514542ba9675d338db24c023bb47e69d83ae9098b4fdf2ef6a104d107",
-      "targetHash": "a97c3e57d3b9398a6fd9e0104b9ad602fc231e6f44586e6a7c4edba7b1f2a222",
-      "machineHash": "a97c3e57d3b9398a6fd9e0104b9ad602fc231e6f44586e6a7c4edba7b1f2a222",
-      "machineText": "从前端调用 Go",
+      "targetHash": "1301c772075808cfbe084cfd89ff2280d2a161bf8a205c987e6561a37a72d375",
+      "machineHash": "1301c772075808cfbe084cfd89ff2280d2a161bf8a205c987e6561a37a72d375",
+      "machineText": "從前端呼叫 Go",
       "status": "machine-translated",
       "sourcePreview": "Call Go from my frontend",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0013-cell-01": {
       "sourceHash": "e1fa4f0907f67707832233ddb3c38effa413c56c13dab8e2805b461f70b7f054",
-      "targetHash": "e48df9db4501878bbe0755a44238810e96cce47d45e6cf20006c6d5563f68477",
-      "machineHash": "e48df9db4501878bbe0755a44238810e96cce47d45e6cf20006c6d5563f68477",
-      "machineText": "[从 JavaScript 调用 Go](/features/bindings/methods/)",
+      "targetHash": "25f0973e99b70937657b1c47cd0d4ebf5ff9909c1ecb2ff30d04ed019c2d0a03",
+      "machineHash": "25f0973e99b70937657b1c47cd0d4ebf5ff9909c1ecb2ff30d04ed019c2d0a03",
+      "machineText": "[從 JavaScript 呼叫 Go](/features/bindings/methods/)",
       "status": "machine-translated",
       "sourcePreview": "[Call Go from JavaScript](/features/bindings/methods/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0014-cell-01": {
       "sourceHash": "847719acb9835259168081b8b64a7455f3f3fcdca46deaf5ff425e9a229e2782",
-      "targetHash": "827389623d960e23b6ef4f8f18f8758ec3e5690860f502f6f55eaa83f7252a51",
-      "machineHash": "827389623d960e23b6ef4f8f18f8758ec3e5690860f502f6f55eaa83f7252a51",
-      "machineText": "打开或管理窗口",
+      "targetHash": "66558765ba67706286fda8fc645d15a26b6378daea750bbc831d274eeb330a11",
+      "machineHash": "66558765ba67706286fda8fc645d15a26b6378daea750bbc831d274eeb330a11",
+      "machineText": "開啟或管理視窗",
       "status": "machine-translated",
       "sourcePreview": "Open or manage a window",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0015-cell-01": {
       "sourceHash": "d7a05034f5cf0edceaaf13a2ca56dfb1b421ec90d33f666de3d3647f2bb93b61",
-      "targetHash": "5b1ebacdb64a9558d8cbfedafcb21cca5eaef9efa4a9aad80c027136a5fdf9dd",
-      "machineHash": "5b1ebacdb64a9558d8cbfedafcb21cca5eaef9efa4a9aad80c027136a5fdf9dd",
-      "machineText": "[窗口基础知识](/features/windows/basics/)",
+      "targetHash": "6d04d8cf39777e67d7743395bde9f7cf0b56f2fba77e281f936a3730e1aa582e",
+      "machineHash": "6d04d8cf39777e67d7743395bde9f7cf0b56f2fba77e281f936a3730e1aa582e",
+      "machineText": "[視窗基礎](/features/windows/basics/)",
       "status": "machine-translated",
       "sourcePreview": "[Window basics](/features/windows/basics/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0016-cell-01": {
       "sourceHash": "8d4e6f50879777b2c331c176721b3fd7ebc421f6d2ca8024bc304778ad4e2388",
-      "targetHash": "6a43009e804f6183eea2ee5381c91f531b626fdb918f82d103a0013555a992e1",
-      "machineHash": "6a43009e804f6183eea2ee5381c91f531b626fdb918f82d103a0013555a992e1",
-      "machineText": "添加原生菜单或系统托盘图标",
+      "targetHash": "4b7c13af7cbd5eeadac35e64873311336944db1020c47cd44d1f1ce517699b2a",
+      "machineHash": "4b7c13af7cbd5eeadac35e64873311336944db1020c47cd44d1f1ce517699b2a",
+      "machineText": "新增原生選單或系統匣圖示",
       "status": "machine-translated",
       "sourcePreview": "Add native menus or a tray icon",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0017-cell-01": {
       "sourceHash": "f224368451c9e56b3f11e0d97ffb0f0ca7ce372cfd48a6d59048467077910da4",
-      "targetHash": "89f6dcc426795cf652dd984c1970f287c58b98da0e43c3dd59ad0398255481c3",
-      "machineHash": "89f6dcc426795cf652dd984c1970f287c58b98da0e43c3dd59ad0398255481c3",
-      "machineText": "[应用菜单](/features/menus/application/)或[系统托盘菜单](/features/menus/systray/)",
+      "targetHash": "45d40d640ea338362a2fa1dfaf646ccb422e63722f38ee71b41fe3321d64dd7e",
+      "machineHash": "45d40d640ea338362a2fa1dfaf646ccb422e63722f38ee71b41fe3321d64dd7e",
+      "machineText": "[應用程式選單](/features/menus/application/)或[系統匣選單](/features/menus/systray/)",
       "status": "machine-translated",
       "sourcePreview": "[Application menus](/features/menus/application/) or [system tray menus](/features/menus/systray/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0018-cell-01": {
       "sourceHash": "4e842fb13222d155ec284636f5bd4975929f7f131cd69ba1fad01ba550391c12",
-      "targetHash": "b07e93dbbf1d2af0499cd79ffe344afa9014c5c53e56d99bd5b9a5432ca5f117",
-      "machineHash": "b07e93dbbf1d2af0499cd79ffe344afa9014c5c53e56d99bd5b9a5432ca5f117",
-      "machineText": "让用户打开或保存文件",
+      "targetHash": "362e7be84d84b6dd1d7a4b6b04eebf0638726eefb3cebfd286bd1148802f1b86",
+      "machineHash": "362e7be84d84b6dd1d7a4b6b04eebf0638726eefb3cebfd286bd1148802f1b86",
+      "machineText": "要求使用者開啟或儲存檔案",
       "status": "machine-translated",
       "sourcePreview": "Ask the user to open or save a file",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0019-cell-01": {
       "sourceHash": "ccccce02a0dac20892a71861ea2711b73b4ab3d022ba32a4c67691547b3c6e5b",
-      "targetHash": "e4db35ae9fdfeacb99b5d1c0269b23d37768f365b5281a43d144fa0da40e94b9",
-      "machineHash": "e4db35ae9fdfeacb99b5d1c0269b23d37768f365b5281a43d144fa0da40e94b9",
-      "machineText": "[文件对话框](/features/dialogs/file/)",
+      "targetHash": "22ef73a6fa402f0cf555107a50de8b1ee2653d6f749811e54ed101ef8cb25245",
+      "machineHash": "22ef73a6fa402f0cf555107a50de8b1ee2653d6f749811e54ed101ef8cb25245",
+      "machineText": "[檔案對話方塊](/features/dialogs/file/)",
       "status": "machine-translated",
       "sourcePreview": "[File dialogs](/features/dialogs/file/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0020-cell-01": {
       "sourceHash": "7b8eb5433856b4670901b7e3c37e70acba0b5869e1d8c07a521d0fe2714b4b46",
-      "targetHash": "a19f8ec8bcb58b49b31fdd3abe9b312e4e1a036c07e154c3fe954063e2840fc0",
-      "machineHash": "a19f8ec8bcb58b49b31fdd3abe9b312e4e1a036c07e154c3fe954063e2840fc0",
-      "machineText": "在组件之间发送事件",
+      "targetHash": "a8167b226b6247a1e925efbbdb992dd387b17923fbd27d35564b7126b37daa96",
+      "machineHash": "a8167b226b6247a1e925efbbdb992dd387b17923fbd27d35564b7126b37daa96",
+      "machineText": "在元件之間傳送事件",
       "status": "machine-translated",
       "sourcePreview": "Send events between components",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0021-cell-01": {
       "sourceHash": "10118f8bfea705ca0926d7c01c4271e28a7d71d84ad19f12a3bf101c9a6d1e7b",
-      "targetHash": "b7de8fcaa0f3c379b609b5f96b80344becf4d299caa0ae5069c7d06e5b27b219",
-      "machineHash": "b7de8fcaa0f3c379b609b5f96b80344becf4d299caa0ae5069c7d06e5b27b219",
-      "machineText": "[事件系统](/features/events/system/)",
+      "targetHash": "d745a9c6e56fb5f10b544aaed3aa61ea3262c5c77eaf81a59a3213cf191fa249",
+      "machineHash": "d745a9c6e56fb5f10b544aaed3aa61ea3262c5c77eaf81a59a3213cf191fa249",
+      "machineText": "[事件系統](/features/events/system/)",
       "status": "machine-translated",
       "sourcePreview": "[Event system](/features/events/system/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0022-cell-01": {
       "sourceHash": "7927fac5d0e9aa73edf4712c24962b76cabe8b5c34ddbe564c141f6306c6a0cf",
-      "targetHash": "d50d75757d4e3307a5a3c1403e64b812abcdf20aba120c0ab6ffb66f82cb1131",
-      "machineHash": "d50d75757d4e3307a5a3c1403e64b812abcdf20aba120c0ab6ffb66f82cb1131",
-      "machineText": "复制文本或接收拖放的文件",
+      "targetHash": "cdf3ac19e85f557d8ab5465334aeed7601b5387c248351ac6492a1683d578155",
+      "machineHash": "cdf3ac19e85f557d8ab5465334aeed7601b5387c248351ac6492a1683d578155",
+      "machineText": "複製文字或接收拖放的檔案",
       "status": "machine-translated",
       "sourcePreview": "Copy text or accept dropped files",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0023-cell-01": {
       "sourceHash": "8cfd5e83701651ee205a9112af8d2297c797d8f7c4084d80092856df7837331c",
-      "targetHash": "ae27a0d4e7ec9cb86c29cc04dc477b0a378a540e279675a9ba832759f686fe1e",
-      "machineHash": "ae27a0d4e7ec9cb86c29cc04dc477b0a378a540e279675a9ba832759f686fe1e",
-      "machineText": "[剪贴板](/features/clipboard/basics/)或[文件拖放](/features/drag-and-drop/files/)",
+      "targetHash": "5bed2f45862495e4921c17c9d7c64c25820fc6ef77a1833a60ed21237a050b0f",
+      "machineHash": "5bed2f45862495e4921c17c9d7c64c25820fc6ef77a1833a60ed21237a050b0f",
+      "machineText": "[剪貼簿](/features/clipboard/basics/)或[檔案拖放](/features/drag-and-drop/files/)",
       "status": "machine-translated",
       "sourcePreview": "[Clipboard](/features/clipboard/basics/) or [file drag and drop](/features/drag-and-drop/files/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0024-cell-01": {
       "sourceHash": "1721010fb31a716625ff9bf83affcb3afaff09567bfeaf2af53e72ce32bd5db4",
-      "targetHash": "bcf2b3a79dfb26f01ba6fa2e59bef3c264a06c03e6c6cbae735fdb7a9d7a0759",
-      "machineHash": "bcf2b3a79dfb26f01ba6fa2e59bef3c264a06c03e6c6cbae735fdb7a9d7a0759",
-      "machineText": "添加键盘快捷键",
+      "targetHash": "57e1525a16e6c773e81893576f43b7f3cb632e24686fc10be66b9e8b2df3b70a",
+      "machineHash": "57e1525a16e6c773e81893576f43b7f3cb632e24686fc10be66b9e8b2df3b70a",
+      "machineText": "新增鍵盤快速鍵",
       "status": "machine-translated",
       "sourcePreview": "Add keyboard shortcuts",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0025-cell-01": {
       "sourceHash": "0d694e7bb2f55c1e9f8a6178c334ea861f0d16aae49f14da66d67ea54c05efc7",
-      "targetHash": "d40b138ed6e6e38e2c942381832d7ae2383979c4d945ae0c5f7412f7d8ce54a6",
-      "machineHash": "d40b138ed6e6e38e2c942381832d7ae2383979c4d945ae0c5f7412f7d8ce54a6",
-      "machineText": "[键盘快捷键](/features/keyboard/shortcuts/)",
+      "targetHash": "7268789741469787c15595e2be7be4a9de99f560078cc47203871ede24d964bd",
+      "machineHash": "7268789741469787c15595e2be7be4a9de99f560078cc47203871ede24d964bd",
+      "machineText": "[鍵盤快速鍵](/features/keyboard/shortcuts/)",
       "status": "machine-translated",
       "sourcePreview": "[Keyboard shortcuts](/features/keyboard/shortcuts/)",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0026-cell-01": {
       "sourceHash": "21e666dd0cb95cf2f845b0db3940da697a408415a44b9490c8d14f23d3cb2c5a",
-      "targetHash": "82221516d9eae1f08b34ac181d77770ccdce4bb85c6e785835be281f8a43cdc1",
-      "machineHash": "82221516d9eae1f08b34ac181d77770ccdce4bb85c6e785835be281f8a43cdc1",
-      "machineText": "构建和打包应用",
+      "targetHash": "ea7b1e0db4128ae040639ff6f783574df438b6c9bbb862dc36f357717f925205",
+      "machineHash": "ea7b1e0db4128ae040639ff6f783574df438b6c9bbb862dc36f357717f925205",
+      "machineText": "建置及封裝應用程式",
       "status": "machine-translated",
       "sourcePreview": "Build and package my app",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0027-cell-01": {
       "sourceHash": "8bbf5f6e91a2d4245088e674a32dd85f321987831a2cf23686ddbe807ce42ae2",
-      "targetHash": "08ec08cb55aa90edd8e57c914c6909c36ec7c30d5ae82a0f412d1451c724173f",
-      "machineHash": "08ec08cb55aa90edd8e57c914c6909c36ec7c30d5ae82a0f412d1451c724173f",
-      "machineText": "先参阅[构建应用](/guides/build/building/)，再为[Windows](/guides/build/windows/)、[macOS](/guides/build/macos/)或[Linux](/guides/build/linux/)打包",
+      "targetHash": "557b9e3437f6c4d11827db731cacd6c89c6f800c6864a98c3e02758ef124be4c",
+      "machineHash": "557b9e3437f6c4d11827db731cacd6c89c6f800c6864a98c3e02758ef124be4c",
+      "machineText": "先參閱[建置應用程式](/guides/build/building/)，再針對[Windows](/guides/build/windows/)、[macOS](/guides/build/macos/)或[Linux](/guides/build/linux/)進行封裝",
       "status": "machine-translated",
       "sourcePreview": "[Building applications](/guides/build/building/), then package for [Windows](/guides/build/windows/)…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0028-text-01": {
       "sourceHash": "ba4826aa0f24afa6cccabcdb3fe2fdd4ddee86a3b8df45cef13bbd5ae083f66d",
-      "targetHash": "2817d75c7e181c1e2c9b2bb24bd7a84c0b6aa190af8911332d9160dcaa95d838",
-      "machineHash": "2817d75c7e181c1e2c9b2bb24bd7a84c0b6aa190af8911332d9160dcaa95d838",
-      "machineText": "这些页面位于侧边栏的**操作指南**下。你可以直接打开相关主题，无须按顺序阅读整个章节。",
+      "targetHash": "dce674af466f4947992239d43f88601587e4b12e2dc7336f4f6b55655ceca3e6",
+      "machineHash": "dce674af466f4947992239d43f88601587e4b12e2dc7336f4f6b55655ceca3e6",
+      "machineText": "這些頁面位於側邊欄的**操作指南**下方。你不必依序閱讀整個章節，可直接開啟相關主題。",
       "status": "machine-translated",
       "sourcePreview": "These pages live under **How-to Guides** in the sidebar. You can open the relevant topic without rea…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0029-heading-01": {
       "sourceHash": "0b9329b918cfbe6405eefa0390e1a93fb42ae4941941ec0e5d4c2028b9298428",
-      "targetHash": "bc665470af16f69c4454a28f193d914295c48b71d2ebbc6592e9396c5e427847",
-      "machineHash": "bc665470af16f69c4454a28f193d914295c48b71d2ebbc6592e9396c5e427847",
-      "machineText": "了解 Wails 的工作原理",
+      "targetHash": "40f7c1235591b116c814f62a4472d08f8d09b506933f938c0ea54ce28922df52",
+      "machineHash": "40f7c1235591b116c814f62a4472d08f8d09b506933f938c0ea54ce28922df52",
+      "machineText": "瞭解 Wails 的運作方式",
       "status": "machine-translated",
       "sourcePreview": "Understand How Wails Works",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0030-text-01": {
       "sourceHash": "1254d0f39aa70c8d0294272b50c330bb6b48d74628366db7891e611d0ae97202",
-      "targetHash": "4c04f50b4c76bc99fdd818ce8dbea1d9f2106fd9aa97de010e6875c5d265d1a8",
-      "machineHash": "4c04f50b4c76bc99fdd818ce8dbea1d9f2106fd9aa97de010e6875c5d265d1a8",
-      "machineText": "如果想了解代码背后的设计，请参阅**核心概念**：",
+      "targetHash": "177e4bd81bae7812527a35b7e121aba7c7f20cac4b05d96d7efd00afe9c7447f",
+      "machineHash": "177e4bd81bae7812527a35b7e121aba7c7f20cac4b05d96d7efd00afe9c7447f",
+      "machineText": "若想瞭解程式碼背後的設計，請參閱**核心概念**：",
       "status": "machine-translated",
       "sourcePreview": "Use **Core Concepts** when you want to understand the design behind the code:",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0031-text-01": {
       "sourceHash": "958f89bb7163652e8c3570aeeaff9e50dad8fe5a57bdb4675c2106a622536ee9",
-      "targetHash": "1f181523bb20bc2c87da933dadc614705d18cab420ba7ef0fe3c3988361bcdcd",
-      "machineHash": "1f181523bb20bc2c87da933dadc614705d18cab420ba7ef0fe3c3988361bcdcd",
-      "machineText": "[Wails 的工作原理](/concepts/architecture/)介绍 Go 后端、前端和原生 WebView 之间的连接。",
+      "targetHash": "429641986d4cb5c1b2aaa1bd7f3cb5f8806103a433507bf7ccb3796bfae6ebfe",
+      "machineHash": "429641986d4cb5c1b2aaa1bd7f3cb5f8806103a433507bf7ccb3796bfae6ebfe",
+      "machineText": "[Wails 的運作方式](/concepts/architecture/)說明 Go 後端、前端與原生 WebView 之間的連接。",
       "status": "machine-translated",
       "sourcePreview": "[How Wails works](/concepts/architecture/) connects the Go backend, frontend and native WebView.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0032-text-01": {
       "sourceHash": "83c36fe8f20233947630c13ea0b4a9415d231cde4c786c3080cc3b893e3d60ee",
-      "targetHash": "7e46c11f844ef3a2943ce8d9aca7dc5e80664645b0d39fd1ed5cf74cd11a125d",
-      "machineHash": "7e46c11f844ef3a2943ce8d9aca7dc5e80664645b0d39fd1ed5cf74cd11a125d",
-      "machineText": "[Go 与前端的桥接](/concepts/bridge/)说明调用如何在 Go 与 JavaScript 之间传递。",
+      "targetHash": "3cc3a234fcd8ddfaf41e75d5d461f44e493d2de30571c67e656f1f4ac38b8a2d",
+      "machineHash": "3cc3a234fcd8ddfaf41e75d5d461f44e493d2de30571c67e656f1f4ac38b8a2d",
+      "machineText": "[Go 與前端橋接](/concepts/bridge/)說明呼叫如何在 Go 與 JavaScript 之間傳遞。",
       "status": "machine-translated",
       "sourcePreview": "[Go-frontend bridge](/concepts/bridge/) explains how calls cross between Go and JavaScript.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0033-text-01": {
       "sourceHash": "9a8722f5c416b3ad38faa0491877259267ac18b62658442a012ba878bf3299c2",
-      "targetHash": "2557c81bda0956b8b1e862d46b80e11a70ced41697d83e68555bd8a01676b9d9",
-      "machineHash": "2557c81bda0956b8b1e862d46b80e11a70ced41697d83e68555bd8a01676b9d9",
-      "machineText": "[应用生命周期](/concepts/lifecycle/)说明启动和关闭过程。",
+      "targetHash": "bccba7523b2f37e11bbb2f292c94426d582f6ea6b93c22a057c7fce42a65fece",
+      "machineHash": "bccba7523b2f37e11bbb2f292c94426d582f6ea6b93c22a057c7fce42a65fece",
+      "machineText": "[應用程式生命週期](/concepts/lifecycle/)說明啟動及關閉流程。",
       "status": "machine-translated",
       "sourcePreview": "[Application lifecycle](/concepts/lifecycle/) explains startup and shutdown.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0034-text-01": {
       "sourceHash": "377dc185c9bd88cb3e732331688caf66519f38b94d11885e4f249aa4848e2b7f",
-      "targetHash": "1dcfdc67d6b43f48e59903dba53f88ffc43f3015d8a0dab07dc7e2e3a2fc847e",
-      "machineHash": "1dcfdc67d6b43f48e59903dba53f88ffc43f3015d8a0dab07dc7e2e3a2fc847e",
-      "machineText": "[构建系统](/concepts/build-system/)说明项目任务和前端工具的作用。",
+      "targetHash": "7ddc4eaee1cd0d5ea47dd82c0c5208fc7a269bf5c34a92a9cfffa154a9769bd6",
+      "machineHash": "7ddc4eaee1cd0d5ea47dd82c0c5208fc7a269bf5c34a92a9cfffa154a9769bd6",
+      "machineText": "[建置系統](/concepts/build-system/)說明專案工作與前端工具的作用。",
       "status": "machine-translated",
       "sourcePreview": "[Build system](/concepts/build-system/) explains the role of project tasks and frontend tooling.",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0035-heading-01": {
       "sourceHash": "b2423c4a43ab33a327fe00b14c2182265e9400ba2857339381b6ac4b0ec1a4b6",
-      "targetHash": "bde2543809a0aed8773a875c8cbe8b29a77be27bf5621820ec6311934e515908",
-      "machineHash": "bde2543809a0aed8773a875c8cbe8b29a77be27bf5621820ec6311934e515908",
-      "machineText": "查阅 API",
+      "targetHash": "4e69ff1cdab8f03689b601a645b1b4e4cb7c76481fbc8c9fcaa18f16e56fb412",
+      "machineHash": "4e69ff1cdab8f03689b601a645b1b4e4cb7c76481fbc8c9fcaa18f16e56fb412",
+      "machineText": "查閱 API",
       "status": "machine-translated",
       "sourcePreview": "Look Up an API",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0036-text-01": {
       "sourceHash": "a9e6b0b84703c2d614d59425dd3241e0c9cd85c132d4d26f48a98e213baca276",
-      "targetHash": "2f00eaa363b8b04eea7b3d942bffa13e3380732b7cc1b095a904722dbdde398f",
-      "machineHash": "2f00eaa363b8b04eea7b3d942bffa13e3380732b7cc1b095a904722dbdde398f",
-      "machineText": "当你需要查找类型、方法、选项或命令，而不是学习教程时，请使用[API 参考](/reference/overview/)。对于命令行操作，请先查看[CLI 命令概览](/reference/cli/)；如需了解各个命令的详细信息，请参阅[CLI 标志和示例](/guides/cli/)。",
+      "targetHash": "b469173a95671ab292c11822808e04d28ecd97e43f27161dbff33bbb62ff51b6",
+      "machineHash": "b469173a95671ab292c11822808e04d28ecd97e43f27161dbff33bbb62ff51b6",
+      "machineText": "需要查找型別、方法、選項或命令，而不是學習課程時，請使用[API 參考](/reference/overview/)。若要進行命令列操作，請先參閱[CLI 命令概覽](/reference/cli/)；個別命令的詳細資訊則請參閱[CLI 旗標與範例](/guides/cli/)。",
       "status": "machine-translated",
       "sourcePreview": "Use the [API Reference](/reference/overview/) when you need a type, method, option or command rather…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0037-heading-01": {
       "sourceHash": "c349345d8b4816a442f7826cc5bcc69628075dc2de6771adc1fce02b1fd940b9",
-      "targetHash": "93997c622a9d8f3754f69aa82bb5bace45bfc5eafad388499a551882d905ae0f",
-      "machineHash": "93997c622a9d8f3754f69aa82bb5bace45bfc5eafad388499a551882d905ae0f",
-      "machineText": "获取帮助",
+      "targetHash": "e7b1e10c6212478e38feadd335c2ff677a8a688bee53e07a17eb4d72a3d34c50",
+      "machineHash": "e7b1e10c6212478e38feadd335c2ff677a8a688bee53e07a17eb4d72a3d34c50",
+      "machineText": "取得協助",
       "status": "machine-translated",
       "sourcePreview": "Get Help",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "b0038-text-01": {
       "sourceHash": "0b57cca97eef36cd6db44e9c6d4a3726e17b3df5a63992b9834b5ddda15c0f2c",
-      "targetHash": "bb009337887a0b85755c0dd27cae9b1a034d0195660096ab213cd573e98ab06f",
-      "machineHash": "bb009337887a0b85755c0dd27cae9b1a034d0195660096ab213cd573e98ab06f",
-      "machineText": "查看[常见问题](/faq/)、浏览[可运行的示例](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples)，或在[Discord](https://discord.gg/JDdSxwjhGf)中提问。平台特定问题归类在侧边栏的**故障排除**下。",
+      "targetHash": "f6ab6c3bd1fc1a00d3b259ba3eaf015cf385b94cf51506387d4fe13bd08eefe9",
+      "machineHash": "f6ab6c3bd1fc1a00d3b259ba3eaf015cf385b94cf51506387d4fe13bd08eefe9",
+      "machineText": "請查看[常見問題](/faq/)、瀏覽[可運作的範例](https://github.com/wailsapp/wails/tree/releases/v3-beta/v3/examples)，或在[Discord](https://discord.gg/JDdSxwjhGf)中提問。各平台特有的問題集中列於側邊欄的**疑難排解**下方。",
       "status": "machine-translated",
       "sourcePreview": "Check the [frequently asked questions](/faq/), browse the [working examples](https://github.com/wail…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "fm-description": {
       "sourceHash": "829a718dbb72787ff84e3f8754196b84a077a19f11c95da2fa1cfcc3943e04b5",
-      "targetHash": "d3585982274850d763177bb41527ca660251a84e63c3cb4b4328566f387c7a43",
-      "machineHash": "d3585982274850d763177bb41527ca660251a84e63c3cb4b4328566f387c7a43",
-      "machineText": "构建第一个应用后该做什么",
+      "targetHash": "83d517200d70478bd7985202372cd107fff777565531c756f446cc75473d6e97",
+      "machineHash": "83d517200d70478bd7985202372cd107fff777565531c756f446cc75473d6e97",
+      "machineText": "建立第一個應用程式後的後續學習方向",
       "status": "machine-translated",
       "sourcePreview": "Where to go after building your first app",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     },
     "fm-title": {
       "sourceHash": "759f4c0213571addf354aadab734cf53182c7930fa752b44ed51122c728616d1",
-      "targetHash": "6854e28a2dc6e8bfb74df3d82804a129444ec6caee270465709d74b94db27d02",
-      "machineHash": "6854e28a2dc6e8bfb74df3d82804a129444ec6caee270465709d74b94db27d02",
-      "machineText": "后续步骤",
+      "targetHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
+      "machineHash": "b3493d929198fc711ee04c926df5e676f4be23a9d961586995e5b1f8f5a3ec43",
+      "machineText": "後續步驟",
       "status": "machine-translated",
       "sourcePreview": "Next Steps",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
-      "updatedAt": "2026-10-26T00:54:49Z"
+      "updatedAt": "2026-11-06T10:50:36Z"
     }
   }
 }

@@ -338,7 +338,7 @@ func registerNativeFeatures(app *application.App) {
 }
 ```
 
-Genau dieses Muster verwendet das [Kitchen-Sink-Beispiel](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) – siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
+Dies ist genau das Muster, das die [Kitchen Sink](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) verwendet – siehe `native_features_stub.go`, `native_features_ios.go` und `native_features_android.go`.
 
 @note{type="note" title="API für native Funktionen und Eventbenennung"}
 Zwei Konventionen solltest du kennen:
@@ -499,7 +499,7 @@ wails3 task android:run    # Android Emulator
 wails3 task run            # Desktop
 ```
 
-Durchsuche den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile). Besonders die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Anpassen plattformspezifischer Funktionen.
+Durchsuchen Sie den Quellcode unter [`v3/examples/mobile`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile) – insbesondere die Dateien `native_features_ios.go` und `native_features_android.go` eignen sich als Ausgangspunkte zum Kopieren und Einfügen für plattformspezifische Funktionen.
 
 ## Wie geht es weiter?
 

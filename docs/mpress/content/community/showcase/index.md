@@ -48,6 +48,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith screenshot" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui screenshot" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio screenshot" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn screenshot" loading="lazy"><span>Larvyn</span></a>
 </div>
 
 ## How to add my project in showcase
@@ -59,7 +60,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 `docs/mpress/content/community/showcase` folder.
 
 ### Rename the copied file to the name of your project. (Name should not start
-with `_`))
+with `_`)
 
 ### Update the title, image, link and content of the file.
 ### Add it on the above list in

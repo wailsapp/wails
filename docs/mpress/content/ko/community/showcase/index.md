@@ -1,6 +1,6 @@
 ---
 title: "개요"
-description: "Wails로 빌드한 애플리케이션을 살펴보세요"
+description: "Wails로 빌드된 애플리케이션을 살펴보세요"
 slug: "community/showcase"
 sourcePath: "community/showcase/index.md"
 ---
@@ -48,22 +48,23 @@ sourcePath: "community/showcase/index.md"
 <a class="mpress-showcase-card" href="/community/showcase/packsmith/"><img src="/assets/showcase-images/packsmith-logo.webp" alt="Packsmith 스크린샷" loading="lazy"><span>Packsmith</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui 스크린샷" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio 스크린샷" loading="lazy"><span>MQ Studio</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn 스크린샷" loading="lazy"><span>Larvyn</span></a>
 </div>
 
 ## 쇼케이스에 내 프로젝트를 추가하는 방법
 
 @steps
-### 저장소를 포크합니다.
-### 이미지를 `docs/mpress/static/showcase-images` 폴더에 추가합니다.
-### 기존 `.md` 쇼케이스 파일을 복사하세요.
+### 저장소를 포크하세요.
+### `docs/mpress/static/showcase-images` 폴더 아래에 이미지를 추가하세요.
+### 다음 위치에 있는 기존 `.md` 쇼케이스 파일을 복사하세요.
 `docs/mpress/content/community/showcase` 폴더입니다.
 
-### 복사한 파일의 이름을 프로젝트 이름으로 변경합니다. (이름의 시작 부분에 사용하면 안 되는 문자는
-`_`입니다.))
+### 복사한 파일의 이름을 프로젝트 이름으로 변경하세요. (이름은
+`_`(으)로 시작해서는 안 됩니다.)
 
-### 파일의 제목, 이미지, 링크 및 콘텐츠를 업데이트합니다.
-### 다음 파일의 위 목록에 프로젝트를 추가합니다.
+### 파일의 제목, 이미지, 링크 및 콘텐츠를 업데이트하세요.
+### 위 목록의 다음 위치에 프로젝트를 추가하세요.
 `docs/mpress/content/community/showcase/index.md`.
 
-### PR을 제출합니다.
+### PR을 제출하세요.
 @end

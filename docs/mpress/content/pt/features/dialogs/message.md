@@ -1,17 +1,17 @@
 ---
-title: "Caixas de diálogo de mensagens"
+title: "Caixas de diálogo de mensagem"
 description: "Exiba informações, avisos, erros e perguntas"
 slug: "features/dialogs/message"
 sourcePath: "features/dialogs/message.md"
 ---
 
-## Caixas de diálogo de mensagens
+## Caixas de diálogo de mensagem
 
-O Wails fornece **caixas de diálogo de mensagens nativas** com uma aparência apropriada para cada plataforma: caixas de diálogo de informações, avisos, erros e perguntas, com títulos, mensagens e botões personalizáveis. API simples, comportamento nativo e acessibilidade por padrão.
+O Wails fornece **caixas de diálogo de mensagem nativas** com aparência adequada a cada plataforma: caixas de diálogo de informação, aviso, erro e pergunta com títulos, mensagens e botões personalizáveis. API simples, comportamento nativo e acessibilidade por padrão.
 
 ## Como criar caixas de diálogo
 
-As caixas de diálogo de mensagens são acessadas por meio do gerenciador `app.Dialog`:
+As caixas de diálogo de mensagem são acessadas pelo gerenciador `app.Dialog`:
 
 ```go
 app.Dialog.Info()
@@ -20,9 +20,9 @@ app.Dialog.Warning()
 app.Dialog.Error()
 ```
 
-Todos os métodos retornam um `*MessageDialog` que pode ser configurado por meio do encadeamento de métodos.
+Todos os métodos retornam um `*MessageDialog` que pode ser configurado por encadeamento de métodos.
 
-## Caixa de diálogo de informações
+## Caixa de diálogo de informação
 
 Exiba mensagens informativas:
 
@@ -72,7 +72,7 @@ app.Dialog.Warning().
 
 - Avisos não críticos
 - Avisos de descontinuação
-- Mensagens de atenção
+- Mensagens de cautela
 - Possíveis problemas
 
 **Exemplo — Aviso de espaço em disco:**
@@ -128,7 +128,7 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Caixa de diálogo de pergunta
 
-Faça perguntas aos usuários e trate as respostas por meio de callbacks dos botões:
+Faça perguntas aos usuários e processe as respostas por meio dos callbacks dos botões:
 
 ```go
 dialog := app.Dialog.Question().
@@ -216,7 +216,7 @@ dialog := app.Dialog.Info().
 
 **Botão único (Informação/Aviso/Erro):**
 
-As caixas de diálogo de informações, avisos e erros exibem um botão "OK" padrão:
+As caixas de diálogo de informação, aviso e erro exibem um botão "OK" padrão:
 
 ```go
 app.Dialog.Info().
@@ -262,7 +262,7 @@ dialog.Show()
 
 **Botões padrão e Cancelar:**
 
-Use `SetDefaultButton()` para especificar qual botão fica realçado e é acionado pela tecla Enter. Use `SetCancelButton()` para especificar qual botão é acionado pela tecla Escape.
+Use `SetDefaultButton()` para especificar qual botão ficará realçado e será acionado por Enter. Use `SetCancelButton()` para especificar qual botão será acionado por Escape.
 
 ```go
 dialog := app.Dialog.Question().
@@ -299,9 +299,9 @@ dialog.Show()
 **Práticas recomendadas:**
 
 - **1-3 botões:** não sobrecarregue os usuários
-- **Rótulos claros:** "Salvar" em vez de "OK"
+- **Rótulos claros:** use "Salvar", não "OK"
 - **Opção padrão segura:** ação não destrutiva
-- **A ordem importa:** coloque primeiro a ação mais provável (exceto Cancelar)
+- **A ordem importa:** coloque primeiro a ação mais provável, exceto Cancelar
 
 ### Ícone personalizado
 
@@ -315,7 +315,7 @@ app.Dialog.Info().
     Show()
 ```
 
-### Vinculação à janela
+### Vinculação a uma janela
 
 Vincule a caixa de diálogo a uma janela específica:
 
@@ -336,7 +336,7 @@ dialog.Show()
 
 ## Exemplos completos
 
-### Confirmar uma ação destrutiva
+### Confirmar ação destrutiva
 
 ```go
 func deleteFiles(app *application.App, paths []string) {
@@ -449,42 +449,42 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 ### ✅ Faça
 
-- **Seja específico** — "Arquivo salvo em Documentos", não "Sucesso"
-- **Use o tipo apropriado** — Erro para erros, Aviso para avisos
-- **Forneça contexto** — Inclua os detalhes relevantes
-- **Use rótulos claros nos botões** — "Excluir", não "OK"
-- **Defina opções padrão seguras** — Use uma ação não destrutiva
-- **Trate o cancelamento** — O usuário pode fechar a caixa de diálogo
+- **Seja específico** — use "Arquivo salvo em Documentos", não "Sucesso"
+- **Use o tipo apropriado** — Erro para erros e Aviso para avisos
+- **Forneça contexto** — inclua detalhes relevantes
+- **Use rótulos claros nos botões** — use "Excluir", não "OK"
+- **Defina opções padrão seguras** — escolha uma ação não destrutiva
+- **Trate o cancelamento** — o usuário pode fechar a caixa de diálogo
 
 ### ❌ Não faça
 
-- **Não use em excesso** — Isso interrompe o fluxo de trabalho
-- **Não use para atualizações frequentes** — Use notificações em vez disso
+- **Não use em excesso** — isso interrompe o fluxo de trabalho
+- **Não use para atualizações frequentes** — use notificações
 - **Não use mensagens genéricas** — "Erro" não fornece nenhuma informação
-- **Não ignore erros** — Trate os erros de dialog.Show()
-- **Não bloqueie desnecessariamente** — Considere alternativas assíncronas
-- **Não use jargão técnico** — Use linguagem simples
+- **Não ignore erros** — trate os erros de dialog.Show()
+- **Não bloqueie sem necessidade** — considere alternativas assíncronas
+- **Não use jargão técnico** — use linguagem simples
 
 ## Diferenças entre plataformas
 
 ### macOS
 
-- Estilo de painel quando anexada a uma janela
+- Estilo de folha quando vinculada a uma janela
 - Atalhos de teclado padrão (⌘. para Cancelar)
 - Segue automaticamente o tema do sistema
-- Recursos de acessibilidade integrados
+- Acessibilidade integrada
 
 ### Windows
 
 - Caixas de diálogo modais
-- Aparência de TaskDialog
+- Aparência do TaskDialog
 - Esc para Cancelar
 - Segue o tema do sistema
 
 ### Linux
 
-- Caixas de diálogo GTK
-- Varia conforme o ambiente de desktop
+- Caixas de diálogo do GTK
+- Varia de acordo com o ambiente de desktop
 - Segue o tema do ambiente de desktop
 - Navegação padrão pelo teclado
 
@@ -492,7 +492,7 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 @cards{cols="2"}
 📖 Caixas de diálogo de arquivos
-Abertura, salvamento e seleção de pastas.
+Abrir, salvar e selecionar pastas.
 
 [Saiba mais →](/features/dialogs/file/)
 
@@ -504,7 +504,7 @@ Crie janelas de diálogo personalizadas.
 
 ---
 ● Notificações
-Notificações não intrusivas.
+Notificações discretas.
 
 [Saiba mais →](/features/notifications/overview/)
 

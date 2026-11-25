@@ -1,15 +1,15 @@
 ---
 title: "事件系統"
-description: "使用事件系統在元件之間通訊"
+description: "透過事件系統在元件之間通訊"
 slug: "features/events/system"
 sourcePath: "features/events/system.md"
 ---
 
 ## 事件系統
 
-Wails 提供用於發布／訂閱通訊的<strong>統一事件系統</strong>。您可以在任何位置發出及監聽事件——從 Go 到 JavaScript、從 JavaScript 到 Go，以及從視窗到視窗——透過具型別的事件和生命週期掛鉤實現解耦架構。
+Wails 提供用於發布／訂閱通訊的**統一事件系統**。您可以從任何位置發出事件，並在任何位置監聽事件——從 Go 到 JavaScript、從 JavaScript 到 Go，以及從視窗到視窗——藉由具型別的事件與生命週期掛鉤，實現解耦架構。
 
-## 快速入門
+## 快速開始
 
 **Go（發出）：**
 
@@ -30,7 +30,7 @@ Events.On("user-logged-in", (event) => {
 })
 ```
 
-<strong>就這麼簡單！</strong>跨語言發布／訂閱。
+<strong>就是這麼簡單！</strong>跨語言發布／訂閱。
 
 ## 事件類型
 
@@ -74,7 +74,7 @@ app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(e *applicati
 
 ### 視窗事件
 
-視窗專屬事件：
+視窗專屬的事件：
 
 ```go
 window.OnWindowEvent(events.Common.WindowFocus, func(e *application.WindowEvent) {
@@ -96,7 +96,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 app.Event.Emit("event-name", data)
 ```
 
-**使用不同的資料類型：**
+**使用不同的資料型別：**
 
 ```go
 // String
@@ -118,7 +118,7 @@ app.Event.Emit("config", map[string]interface{}{
 app.Event.Emit("items", []string{"a", "b", "c"})
 ```
 
-**發送至特定視窗：**
+**傳送至特定視窗：**
 
 ```go
 window.EmitEvent("window-specific-event", data)
@@ -149,7 +149,7 @@ app.Event.On("custom-event", func(e *application.CustomEvent) {
 })
 ```
 
-**使用型別斷言：**
+**搭配型別斷言：**
 
 ```go
 app.Event.On("user-updated", func(e *application.CustomEvent) {
@@ -167,6 +167,8 @@ app.Event.On("order-created", sendEmail)
 app.Event.On("order-created", updateInventory)
 ```
 
+<strong>傳遞順序：</strong>每個透過`On`、`Once`或`OnMultiple`註冊的處理常式一次只處理一個事件，因此絕不會與自身並行執行，並且會依序收到連續的`Emit`呼叫：如果某次`Emit`在下一次呼叫前返回，每個處理常式都會依該順序看到這些事件。來自不同 goroutine 的並行`Emit`呼叫彼此之間沒有明確定義的順序。不同的處理常式會獨立執行：緩慢的處理常式不會延遲其他處理常式，處理常式之間也沒有順序保證。`Emit`絕不會等待處理常式。移除處理常式後，仍在其佇列中的事件將被捨棄。
+
 ### 在 JavaScript 中
 
 **基本監聽器：**
@@ -179,7 +181,7 @@ Events.On("event-name", (event) => {
 })
 ```
 
-**包含清理作業：**
+**搭配清理：**
 
 ```javascript
 const unsubscribe = Events.On("event-name", handleEvent)
@@ -351,7 +353,7 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 ## 事件掛鉤
 
-掛鉤會在標準監聽器<strong>之前</strong>執行，並且可以<strong>取消</strong>事件：
+掛鉤會在標準監聽器**之前**執行，並可**取消**事件：
 
 ```go
 // Hook - runs first, can cancel
@@ -374,9 +376,9 @@ window.OnWindowEvent(events.Common.WindowClosing, func(e *application.WindowEven
 
 | 功能 | 掛鉤 | 標準監聽器 |
 | --- | --- | --- |
-| 執行順序 | 最先執行，依註冊順序 | 在掛鉤之後執行，順序不保證 |
-| 阻塞 | 同步，會阻塞下一個掛鉤 | 非同步，不阻塞 |
-| 可否取消 | 可以 | 不可以（已傳播） |
+| 執行順序 | 最先執行，並依註冊順序排列 | 在掛鉤之後執行，不保證順序 |
+| 阻塞 | 同步，會阻塞下一個掛鉤 | 非同步、非阻塞 |
+| 能否取消 | 可以 | 不可以（已傳播） |
 | 使用情境 | 控制流程、驗證 | 記錄、附帶作用 |
 
 ## 事件模式
@@ -445,7 +447,7 @@ Events.On("user-data-response", (event) => {
 })
 ```
 
-<strong>注意：</strong>對於請求／回應，**繫結是更好的選擇**。請使用事件來傳送通知。
+<strong>注意：</strong>對於請求／回應，<strong>繫結是更好的選擇</strong>。請使用事件傳送通知。
 
 ### 廣播模式
 
@@ -589,24 +591,24 @@ document.getElementById('button').addEventListener('click', () => {
 - **使用事件傳送通知**——單向通訊
 - **使用繫結處理請求**——雙向通訊
 - **保持事件名稱一致**——使用 kebab-case
-- **記錄事件資料的規格**——其中包含哪些欄位？
-- **完成後取消訂閱**——防止記憶體流失
+- **記錄事件資料**——包含哪些欄位？
+- **使用完畢後取消訂閱**——防止記憶體洩漏
 - **使用掛鉤進行驗證**——控制事件流程
 
-### ❌ 請勿
+### ❌ 避免事項
 
-- **請勿使用事件進行 RPC**——請改用繫結
+- **不要使用事件進行 RPC**——請改用繫結
 - **不要過於頻繁地發出事件**——必要時批次處理
 - **不要在處理常式中阻塞**——讓處理常式保持快速
 - **不要忘記取消訂閱**——否則會造成記憶體洩漏
 - **不要使用事件傳輸大量資料**——請使用繫結
-- **不要形成事件迴圈**——A 發出 B，B 又發出 A
+- **不要建立事件迴圈**——A 發出 B，B 又發出 A
 
 ## 後續步驟
 
 @cards{cols="2"}
 ★ 事件指南
-瞭解事件模式和型別安全的事件產生方式。
+瞭解事件模式與型別安全的事件產生方式。
 
 [深入瞭解 →](/guides/events-reference/)
 
@@ -618,7 +620,7 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 🚀 繫結
-使用繫結進行要求／回應。
+使用繫結處理請求／回應。
 
 [深入瞭解 →](/features/bindings/methods/)
 
@@ -632,4 +634,4 @@ document.getElementById('button').addEventListener('click', () => {
 
 ---
 
-<strong>有問題嗎？</strong>請在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[事件範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events)。
+<strong>有問題嗎？</strong>歡迎在[Discord](https://discord.gg/JDdSxwjhGf)中提問，或查看[事件範例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/events)。

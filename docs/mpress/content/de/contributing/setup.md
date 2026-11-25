@@ -228,7 +228,7 @@ go test ./... -race
 
 ## Mit der Dokumentation arbeiten
 
-Mitwirkende an der Dokumentation können M-Press verwenden, ohne Wails CLI oder die Abhängigkeiten für Desktop-Builds zu installieren. Unter [Dokumentation mit M-Press verfassen](/contributing/documentation/) finden Sie die Downloads der festgelegten Programmversion, die Installation, die Live-Vorschau, die Validierung und den PR-Workflow für `master`.
+Mitwirkende an der Dokumentation können M-Press verwenden, ohne die Wails-CLI oder die Abhängigkeiten für Desktop-Builds zu installieren. Folgen Sie [Dokumentation mit M-Press verfassen](/contributing/documentation/), um Informationen zu den Downloads der festgelegten ausführbaren Dateien, zur Installation, zur Live-Vorschau, zur Validierung und zum PR-Workflow für `master` zu erhalten.
 
 Die englischen Markdown-Dateien befinden sich in `docs/mpress/content/`; die Übersetzungen befinden sich in den Sprachverzeichnissen. Vom Stammverzeichnis des Repositorys aus stellt `mpress dev` die Vorschau unter `http://127.0.0.1:3000` bereit. Beenden Sie sie mit Ctrl+C, bevor Sie die Validierungsbefehle der Anleitung ausführen.
 

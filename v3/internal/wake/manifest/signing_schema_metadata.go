@@ -43,7 +43,7 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	},
 	"timestamp_server": {
 		"darwin":  {"RFC 3161 timestamp URL for portable certificate signing; required for notarized certificate signatures.", `"https://timestamp.example.com"`},
-		"windows": {"RFC 3161 timestamp service URL; defaults to http://timestamp.digicert.com. Timestamp signatures and trust chains are verified.", `"https://timestamp.example.com"`},
+		"windows": {"RFC 3161 timestamp service URL; defaults to `http://timestamp.digicert.com`. Timestamp signatures and trust chains are verified.", `"https://timestamp.example.com"`},
 	},
 	"key_alias": {
 		"android": {"Alias of the Android signing key.", `"upload"`},

@@ -1,6 +1,6 @@
 ---
 title: "通知"
-description: "顯示含動作按鈕與文字輸入欄位的原生系統通知"
+description: "顯示含操作按鈕與文字輸入的原生系統通知"
 slug: "features/notifications/overview"
 sourcePath: "features/notifications/overview.md"
 ---
@@ -9,17 +9,17 @@ sourcePath: "features/notifications/overview.md"
 
 Wails 為桌面應用程式提供完整的跨平台通知系統。此服務可讓您顯示原生系統通知，並支援：
 
-- 含標題、副標題及本文的基本通知
-- 含動作按鈕及文字回覆的互動式通知
-- 可重複用於動作的[通知類別](#heading-6)
-- 自訂[音效](#heading-10)（預設、靜音或指定名稱）
-- [附件](#heading-11)（所有平台皆支援圖片；macOS 支援音訊與視訊）
-- 依據`ThreadID`將[相關通知分組](#heading-13)
+- 包含標題、副標題與內文的基本通知
+- 包含操作按鈕與文字回覆的互動式通知
+- 可重複使用的操作[通知類別](#heading-6)
+- 自訂[音效](#heading-10)（預設、靜音或具名音效）
+- [附件](#heading-11)（所有平台皆支援圖片；macOS 支援音訊與影片）
+- 依`ThreadID`將[相關通知分組](#heading-13)
 - 透過`InterruptionLevel`設定[優先順序](#heading-14)（`passive`／`active`／`timeSensitive`／`critical`）
 - [排程傳送](#heading-15)（macOS 使用原生機制；Windows 與 Linux 使用處理程序內計時器）
-- 依 ID[更新傳送中的通知](#heading-16)
+- 依 ID [更新進行中的通知](#heading-16)
 
-若平台無法支援新加入的選用欄位，該欄位皆會平順降級；各功能的支援對照表請參閱[平台注意事項](#heading-17)。
+當平台無法支援時，每個新增的選用欄位都會妥善降級；各功能的支援對照表請參閱[平台注意事項](#heading-17)。
 
 ## 基本用法
 
@@ -44,7 +44,7 @@ app := application.New(application.Options{
 
 ## 通知授權
 
-macOS 上的通知需要使用者授權。請要求並檢查授權：
+macOS 上的通知需要使用者授權。請求並檢查授權：
 
 ```go
 authorized, err := notifier.CheckNotificationAuthorization()
@@ -59,13 +59,13 @@ if authorized {
 }
 ```
 
-在 Windows 和 Linux 上，此項目一律傳回`true`。
+在 Windows 與 Linux 上，此項一律傳回`true`。
 
 ## 通知類型
 
 ### 基本通知
 
-向使用者傳送基本通知，其中包含唯一 ID、標題、選用的副標題（macOS 和 Linux）及本文文字：
+向使用者傳送包含唯一 ID、標題、選用副標題（macOS 與 Linux）及內文的基本通知：
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -79,7 +79,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### 互動式通知
 
-傳送含動作按鈕及文字輸入欄位的通知。這些通知需要先註冊通知類別：
+傳送包含操作按鈕與文字輸入欄位的通知。這類通知需要先註冊通知類別：
 
 ```go
 // Define a unique category id
@@ -143,7 +143,7 @@ notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
 
 ### 自訂中繼資料
 
-基本通知和互動式通知可包含自訂資料：
+基本通知與互動式通知可包含自訂資料：
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -160,7 +160,7 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 ### 自訂音效
 
-使用`Sound`控制傳送通知時播放的音訊。保留為`nil`會播放平台預設音效；設為`Silent: true`會停用音效；設定`Name`欄位則會播放指定名稱或隨附的音效。
+使用`Sound`控制通知送達時播放的音訊。保留為`nil`會播放平台預設音效；設為`Silent: true`會停用音效；設為`Name`則會播放具名或隨附的音效。
 
 ```go
 // Silent
@@ -179,15 +179,15 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-各平台解析`Name`的方式如下：
+各平台解析`Name`的方式：
 
-- **macOS** — 將`Name`傳給`[UNNotificationSound soundNamed:]`；音訊檔案必須位於應用程式套件的`Library/Sounds`下。
-- **Windows** — 若`Name`已以`ms-winsoundevent:`或`ms-appx:`開頭，便會直接使用；否則會以`ms-winsoundevent:`包裝，作為內建的快顯通知事件名稱使用（請參閱 Microsoft 的快顯通知`<audio>`結構描述文件）。
-- **Linux** — 以 freedesktop `sound-name`提示轉送；是否播放取決於目前使用的通知常駐程式及音效佈景主題。
+- **macOS** — 將`Name`傳遞給`[UNNotificationSound soundNamed:]`；音訊檔案必須位於應用程式套件的`Library/Sounds`下。
+- **Windows** — 如果`Name`已以`ms-winsoundevent:`或`ms-appx:`開頭，便會直接使用；否則會將其包裝在`ms-winsoundevent:`中，作為內建的快顯通知事件名稱（請參閱 Microsoft 的快顯通知`<audio>`結構描述文件）。
+- **Linux** — 以 freedesktop 的`sound-name`提示轉送；是否播放取決於目前使用的通知常駐程式與音效主題。
 
 ### 附件
 
-`Attachments`會在通知中加入媒體檔案。macOS 支援多個任意媒體類型的附件；Windows 和 Linux 僅支援第一個圖片類型的附件。
+`Attachments`可在通知中加入媒體檔案。macOS 支援任意媒體類型的多個附件；Windows 與 Linux 則支援第一個圖片類型的附件。
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -208,11 +208,11 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-`Path`必須是絕對檔案系統路徑。macOS 另接受`file://`URL。
+`Path`必須是絕對檔案系統路徑。macOS 也接受`file://`URL。
 
-#### 附加應用程式隨附的檔案
+#### 附加隨應用程式提供的檔案
 
-作業系統會在傳送通知時從磁碟讀取附件，因此`Path`必須解析為終端使用者電腦上實際存在的檔案。對於隨應用程式封裝的資產（使用`go:embed`嵌入的圖示或圖片），因為檔案位於二進位檔內，而非磁碟上的已知位置，所以沒有可寫死的固定絕對路徑。請在啟動時將它寫入可寫入的目錄一次，然後傳入該路徑：
+作業系統會在通知送達時從磁碟讀取附件，因此`Path`必須能解析為終端使用者電腦上的實際檔案。對於隨應用程式一起封裝的資產（例如使用`go:embed`嵌入的圖示或圖片），您無法將固定的絕對路徑寫死，因為該檔案位於二進位檔內，而非磁碟上的已知位置。請在啟動時將其寫入可寫入目錄一次，並傳入該路徑：
 
 ```go
 import (
@@ -240,11 +240,11 @@ notifier.SendNotification(notifications.NotificationOptions{
 })
 ```
 
-使用者提供或下載的檔案已在磁碟上具有實際路徑，因此不必執行此步驟，便可直接將路徑傳給`Path`。未來版本可能會新增直接傳入記憶體內附件位元組的功能。
+使用者提供或下載的檔案在磁碟上已有實際路徑，因此無須執行此步驟，可直接將其傳給`Path`。未來版本可能會新增直接傳遞記憶體內附件位元組的功能。
 
 ### 串接與分組
 
-`ThreadID`會將相關通知分組，讓作業系統可在「通知中心」／「行動作業中心」中將它們收合。
+`ThreadID`會將相關通知分組，讓作業系統能在「通知中心」／「控制中心」中將其收合。
 
 ```go
 notifier.SendNotification(notifications.NotificationOptions{
@@ -270,14 +270,14 @@ notifier.SendNotification(notifications.NotificationOptions{
 
 | 常數 | 值 | 含義 |
 | --- | --- | --- |
-| `InterruptionLevelPassive` | `"passive"` | 靜默傳送；不會點亮螢幕或播放預設音效 |
+| `InterruptionLevelPassive` | `"passive"` | 安靜傳送；不會點亮螢幕或播放預設音效 |
 | `InterruptionLevelActive` | `"active"` | 預設層級 |
-| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | 在允許的情況下突破「專注模式」／「勿擾模式」 |
-| `InterruptionLevelCritical` | `"critical"` | 略過「專注模式」和鈴聲設定；macOS 需要「重大警示」權限（若無此權限，會無提示地降級） |
+| `InterruptionLevelTimeSensitive` | `"timeSensitive"` | 在允許的情況下突破「專注模式」／「請勿打擾」 |
+| `InterruptionLevelCritical` | `"critical"` | 略過「專注模式」與鈴聲設定；macOS 需要「重大提示」權限（沒有此權限時會無提示地降級） |
 
 各平台的對應方式：
 
-- **macOS** — 設定`UNNotificationContent.interruptionLevel`。`critical`需要 macOS 12+ 和「重大警示」權限。
+- **macOS** — 設定`UNNotificationContent.interruptionLevel`。`critical`需要 macOS 12+ 與「重大提示」權限。
 - **Windows** — 對應至快顯通知的`<toast scenario="...">`屬性。
 - **Linux** — 對應至 freedesktop 的`urgency`提示。
 
@@ -302,13 +302,13 @@ notifier.SendNotification(notifications.NotificationOptions{
 ```
 
 @note{type="caution" title="持續性"}
-在<strong>macOS</strong>上，排程通知使用原生觸發程序，並可在應用程式重新啟動後保留。在<strong>Windows</strong>和<strong>Linux</strong>上，排程會改用行程內的`time.AfterFunc`計時器；若應用程式在傳送前結束，排程通知將會<strong>遺失</strong>，因為`wintoast`和 freedesktop 規格都未提供延後傳送的基本機制。
+在**macOS**上，排程通知使用原生觸發程序，且會在應用程式重新啟動後繼續保留。在**Windows**與**Linux**上，排程會改用處理程序內的`time.AfterFunc`計時器；如果應用程式在通知送達前結束，排程便會**遺失**，因為`wintoast`與 freedesktop 規格都未提供延後傳送的基本機制。
 
 @end
 
 ### 更新通知
 
-`UpdateNotification`會取代具有相同`ID`且仍有效的既有通知：
+`UpdateNotification`會取代具有相同`ID`的進行中通知：
 
 ```go
 notifier.UpdateNotification(notifications.NotificationOptions{
@@ -320,9 +320,9 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 各平台的行為：
 
-- **macOS** — `UNUserNotificationCenter`會依識別碼自動去除重複項目，因此既有通知會直接原地更新。
+- **macOS** — `UNUserNotificationCenter`會依識別碼自動去除重複項目，因此現有通知會直接就地更新。
 - **Linux** — 使用 D-Bus 的`replaces_id`參數取代先前的通知。
-- **Windows** — 目前會以新通知重新傳送。若要真正原地取代，需等待上游`wintoast`支援`tag`／`group`。
+- **Windows** — 目前會以新通知重新傳送。若要真正就地取代，需要上游`wintoast`支援`tag`／`group`。
 
 ## 平台注意事項
 
@@ -331,59 +331,59 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 在 macOS 上，通知：
 
 - 需要使用者授權
-- 需要將應用程式封裝並簽署（散發時還須經過公證）
-- 採用系統標準的通知外觀
+- 需要封裝並簽署應用程式（散布時還須經過公證）
+- 使用系統標準的通知外觀
 - 支援`Subtitle`
-- 支援使用者文字輸入（回覆）
+- 支援使用者輸入文字（回覆）
 - 支援`Destructive`動作選項
-- 支援任意媒體類型（圖片、音訊、影片）的多個`Attachments`
-- 支援使用`ThreadID`在「通知中心」中分組
-- 支援所有`InterruptionLevel`值（`critical`需要「重大警示」權限）
-- 支援可在應用程式重新啟動後保留的原生排程傳送
-- 依`ID`自動去除重複的`UpdateNotification`呼叫
+- 支援多個任意媒體類型（影像、音訊、影片）的`Attachments`
+- 支援以`ThreadID`在「通知中心」中分組
+- 支援所有`InterruptionLevel`值（`critical`需要「重大提示」權利）
+- 支援在應用程式重新啟動後仍會保留的原生排程傳送
+- 依`ID`自動對`UpdateNotification`呼叫去重
 - 自動處理深色／淺色模式
 
 [Windows]
 在 Windows 上，通知：
 
 - 透過`wintoast`後端使用 Windows 系統快顯通知樣式
-- 配合 Windows 佈景主題設定
-- 支援使用者文字輸入（回覆）
+- 配合 Windows 佈景主題設定調整外觀
+- 支援使用者輸入文字（回覆）
 - 支援高 DPI 顯示器
 - 不支援`Subtitle`
-- 支援單一圖片`Attachment`，其位置提示可設為`hero`、`appLogoOverride`或`inline`（預設為`inline`）
-- 支援使用`ThreadID`在「重要訊息中心」中分組
+- 支援單一影像`Attachment`，並可使用`hero`、`appLogoOverride`或`inline`放置位置提示（預設為`inline`）
+- 支援以`ThreadID`在「控制中心」中分組
 - 透過快顯通知的`scenario`屬性支援`InterruptionLevel`
-- 透過行程內計時器支援排程傳送；若應用程式在傳送前結束，**排程通知將會遺失**
-- `UpdateNotification`目前會以新通知重新傳送（若要真正原地取代，仍需等待上游`wintoast`支援`tag`／`group`）
+- 透過程序內計時器支援排程傳送 — 如果應用程式在傳送前結束，**排程通知將會遺失**
+- `UpdateNotification`目前會以新通知重新傳送（真正的就地取代仍在等待上游`wintoast`支援`tag`／`group`）
 
 [Linux]
-在 Linux 上，通知使用 D-Bus 的`org.freedesktop.Notifications`介面。系統<strong>必須執行相容的通知常駐程式</strong>，通知才能運作。
+在 Linux 上，通知使用 D-Bus 的`org.freedesktop.Notifications`介面。若要讓通知正常運作，**必須有相容的通知常駐程式正在執行**。
 
 @note{type="caution" title="系統需求：通知常駐程式"}
 必須安裝並執行與 freedesktop 相容的通知常駐程式。常見選擇包括：
 
-- **dunst** — 輕量且可高度自訂（`apt install dunst`／`dnf install dunst`）
-- **mako** — Wayland 原生（`apt install mako-notifier`）
-- **GNOME Shell** — 在 GNOME 43+ 上會自動註冊此介面。在 Ubuntu 24.04（GNOME Shell 46）上，此介面可能不會在工作階段開始時自行註冊；若未顯示通知，請安裝`dunst`作為備用方案。
-- **xfce4-notifyd** — 隨 XFCE 桌面環境提供
+- **dunst** — 輕量且高度可設定（`apt install dunst`／`dnf install dunst`）
+- **mako** — 原生支援 Wayland（`apt install mako-notifier`）
+- **GNOME Shell** — 在 GNOME 43+ 上會自動註冊介面。在 Ubuntu 24.04（GNOME Shell 46）上，該介面可能不會在工作階段開始時自行註冊；若通知未出現，請安裝`dunst`作為備用方案。
+- **xfce4-notifyd** — 隨 XFCE 桌面環境一併提供
 
-若沒有執行中的常駐程式，`SendNotification`會傳回 D-Bus 錯誤：`The name org.freedesktop.Notifications was not provided by any .service files`。請在應用程式中處理此錯誤，並通知使用者安裝通知常駐程式。
+如果沒有常駐程式正在執行，`SendNotification`將傳回 D-Bus 錯誤：`The name org.freedesktop.Notifications was not provided by any .service files`。請在應用程式中處理此錯誤，並通知使用者安裝通知常駐程式。
 
 @end
 
 在 Linux 上，通知：
 
-- 採用桌面環境的佈景主題
-- 依桌面環境規則決定位置
-- 支援`Subtitle`（對於不會單獨呈現該內容的常駐程式，會將其串接至本文）
-- 不支援使用者文字輸入（不屬於 freedesktop 規格的一部分）
-- 透過`image-path`提示支援單一圖片`Attachment`
-- 支援`ThreadID`（在支援此功能的常駐程式中處理）
-- `Sound.Name`會以`sound-name`提示轉送；是否播放取決於目前使用的常駐程式與音效主題
+- 遵循桌面環境的佈景主題
+- 依照桌面環境規則決定位置
+- 支援`Subtitle`（若常駐程式不會分開呈現，則會將其串接至內文）
+- 不支援使用者輸入文字（不屬於 freedesktop 規格）
+- 透過`image-path`提示支援單一影像`Attachment`
+- 支援`ThreadID`（在常駐程式支援的情況下由其處理）
+- `Sound.Name`會作為`sound-name`提示轉送；是否播放取決於目前使用的常駐程式與音效佈景主題
 - 將`InterruptionLevel`對應至 freedesktop 的`urgency`提示
-- 支援透過行程內計時器排程傳送；如果應用程式在傳送前結束，**已排程的通知將會遺失**
-- `UpdateNotification`使用 D-Bus 的`replaces_id`參數，就地取代先前的通知
+- 透過程序內計時器支援排程傳送 — 如果應用程式在傳送前結束，**排程通知將會遺失**
+- `UpdateNotification`使用 D-Bus 的`replaces_id`參數就地取代先前的通知
 
 @end
 
@@ -394,27 +394,27 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 
 2. 提供清楚簡潔的通知：
-  - 使用具描述性的標題、副標題、文字與動作標題
+  - 使用具描述性的標題、副標題、文字及動作標題
 
 
 3. 妥善處理通知回應：
-  - 檢查通知回應中的錯誤
+  - 檢查通知回應中是否有錯誤
   - 針對使用者動作提供回饋
 
 
-4. 考量平台慣例：
-  - 遵循各平台特有的通知模式
+4. 考量各平台的慣例：
+  - 遵循平台特有的通知模式
   - 遵循系統設定
 
 
-5. 在 Linux 上處理對常駐程式的相依性：
-  - 檢查`SendNotification`傳回的錯誤；缺少常駐程式時會產生 D-Bus 錯誤
+5. 在 Linux 上，請處理常駐程式相依性：
+  - 檢查`SendNotification`傳回的錯誤 — 缺少常駐程式會產生 D-Bus 錯誤
   - 套件文件或應用程式 README 應註明需要 freedesktop 通知常駐程式
 
 
 ## 範例
 
-瀏覽此範例：
+查看此範例：
 
 - [通知](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/notifications)
 
@@ -439,7 +439,7 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 | --- | --- |
 | `SendNotification(options NotificationOptions)` | 傳送基本通知 |
 | `SendNotificationWithActions(options NotificationOptions)` | 傳送包含動作的互動式通知 |
-| `UpdateNotification(options NotificationOptions)` | 依`ID`更新仍有效的既有通知（請參閱[更新通知](#heading-16)） |
+| `UpdateNotification(options NotificationOptions)` | 依據`ID`更新傳送中的通知（請參閱[更新通知](#heading-16)） |
 
 ### 通知類別
 
@@ -452,17 +452,17 @@ notifier.UpdateNotification(notifications.NotificationOptions{
 
 | 方法 | 說明 |
 | --- | --- |
-| `RemoveAllPendingNotifications()` | 移除所有待傳送的通知（僅限 macOS 與 Linux） |
-| `RemovePendingNotification(identifier string)` | 移除指定的待傳送通知（僅限 macOS 與 Linux） |
-| `RemoveAllDeliveredNotifications()` | 移除所有已傳送的通知（僅限 macOS 與 Linux） |
-| `RemoveDeliveredNotification(identifier string)` | 移除指定的已傳送通知（僅限 macOS 與 Linux） |
-| `RemoveNotification(identifier string)` | 移除通知（Linux 特有） |
+| `RemoveAllPendingNotifications()` | 移除所有待處理的通知（僅限 macOS 和 Linux） |
+| `RemovePendingNotification(identifier string)` | 移除特定的待處理通知（僅限 macOS 和 Linux） |
+| `RemoveAllDeliveredNotifications()` | 移除所有已送達的通知（僅限 macOS 和 Linux） |
+| `RemoveDeliveredNotification(identifier string)` | 移除特定的已送達通知（僅限 macOS 和 Linux） |
+| `RemoveNotification(identifier string)` | 移除通知（僅適用於 Linux） |
 
 ### 事件處理
 
 | 方法 | 說明 |
 | --- | --- |
-| `OnNotificationResponse(callback func(result NotificationResult))` | 註冊處理通知回應的回呼函式 |
+| `OnNotificationResponse(callback func(result NotificationResult))` | 註冊用於處理通知回應的回呼函式 |
 
 ### 結構與型別
 

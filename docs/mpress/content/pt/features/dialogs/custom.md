@@ -1,6 +1,6 @@
 ---
 title: "Caixas de diálogo personalizadas"
-description: "Crie caixas de diálogo personalizadas nos seus aplicativos Wails"
+description: "Crie caixas de diálogo personalizadas em seus aplicativos Wails"
 slug: "features/dialogs/custom"
 sourcePath: "features/dialogs/custom.md"
 ---
@@ -30,7 +30,7 @@ dialog.Show()
 dialog.Focus()
 ```
 
-**Pronto!** Uma interface personalizada com comportamento de caixa de diálogo.
+**É só isso!** Uma interface personalizada com comportamento de caixa de diálogo.
 
 ## Como criar caixas de diálogo personalizadas
 
@@ -520,12 +520,12 @@ func (wd *Wizarddialog) Cancel() {
 }
 ```
 
-## Práticas recomendadas
+## Boas práticas
 
 ### ✅ Faça
 
-- **Use as opções de janela adequadas** — AlwaysOnTop, Frameless etc.
-- **Trate o cancelamento** — Sempre ofereça uma maneira de cancelar
+- **Use opções de janela adequadas** — AlwaysOnTop, Frameless etc.
+- **Trate o cancelamento** — Sempre ofereça uma forma de cancelar
 - **Valide a entrada** — Verifique os dados antes de aceitá-los
 - **Forneça feedback** — Estados de carregamento e erros
 - **Use eventos para a comunicação** — Separação clara
@@ -534,11 +534,11 @@ func (wd *Wizarddialog) Cancel() {
 ### ❌ Não faça
 
 - **Não bloqueie a thread principal** — Use canais para retornar os resultados
-- **Não se esqueça de fechar** — Esquecer causa vazamentos de memória
-- **Não ignore a validação** — Sempre valide a entrada
+- **Não se esqueça de fechar** — Isso causa vazamentos de memória
+- **Não pule a validação** — Sempre valide a entrada
 - **Não ignore os erros** — Trate todos os casos de erro
-- **Não complique demais** — Mantenha as caixas de diálogo simples
-- **Não se esqueça da acessibilidade** — Navegação pelo teclado
+- **Não torne a implementação complexa demais** — Mantenha as caixas de diálogo simples
+- **Não se esqueça da acessibilidade** — Permita a navegação pelo teclado
 
 ## Como estilizar caixas de diálogo personalizadas
 
@@ -603,8 +603,8 @@ Caixas de diálogo padrão de informação, aviso e erro.
 [Saiba mais →](/features/dialogs/message/)
 
 ---
-📖 Caixas de diálogo de arquivos
-Abertura, salvamento e seleção de pastas.
+📖 Caixas de diálogo de arquivo
+Abra arquivos, salve arquivos e selecione pastas.
 
 [Saiba mais →](/features/dialogs/file/)
 
@@ -624,4 +624,4 @@ Use eventos para a comunicação com caixas de diálogo.
 
 ---
 
-**Tem alguma dúvida?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo personalizadas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).
+**Tem dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de caixas de diálogo personalizadas](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/dialogs).

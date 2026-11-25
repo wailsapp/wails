@@ -7,9 +7,9 @@ sourcePath: "features/dialogs/message.md"
 
 ## Dialog pesan
 
-Wails menyediakan **dialog pesan native** dengan tampilan yang sesuai untuk setiap platform: dialog informasi, peringatan, kesalahan, dan pertanyaan dengan judul, pesan, serta tombol yang dapat disesuaikan. API sederhana, perilaku native, dan aksesibilitas aktif secara default.
+Wails menyediakan **dialog pesan native** dengan tampilan yang sesuai untuk setiap platform: dialog informasi, peringatan, kesalahan, dan pertanyaan dengan judul, pesan, serta tombol yang dapat disesuaikan. API sederhana, perilaku native, dan aksesibel secara default.
 
-## Membuat Dialog
+## Membuat dialog
 
 Dialog pesan diakses melalui pengelola `app.Dialog`:
 
@@ -40,7 +40,7 @@ app.Dialog.Info().
 - Pesan informatif
 - Pembaruan status
 
-**Contoh—konfirmasi penyimpanan:**
+**Contoh — Konfirmasi penyimpanan:**
 
 ```go
 func saveFile(app *application.App, path string, data []byte) error {
@@ -71,11 +71,11 @@ app.Dialog.Warning().
 **Kasus penggunaan:**
 
 - Peringatan nonkritis
-- Pemberitahuan penghentian penggunaan
+- Pemberitahuan penghentian dukungan
 - Pesan peringatan
 - Potensi masalah
 
-**Contoh—peringatan ruang disk:**
+**Contoh — Peringatan ruang disk:**
 
 ```go
 func checkDiskSpace(app *application.App) {
@@ -108,7 +108,7 @@ app.Dialog.Error().
 - Penanganan pengecualian
 - Masalah kritis
 
-**Contoh—kesalahan jaringan:**
+**Contoh — Kesalahan jaringan:**
 
 ```go
 func fetchData(app *application.App, url string) ([]byte, error) {
@@ -128,7 +128,7 @@ func fetchData(app *application.App, url string) ([]byte, error) {
 
 ## Dialog pertanyaan
 
-Ajukan pertanyaan kepada pengguna dan tangani respons melalui fungsi callback tombol:
+Ajukan pertanyaan kepada pengguna dan tangani respons melalui callback tombol:
 
 ```go
 dialog := app.Dialog.Question().
@@ -162,7 +162,7 @@ dialog.Show()
 - Pilihan ganda
 - Keputusan pengguna
 
-**Contoh—perubahan yang belum disimpan:**
+**Contoh — Perubahan yang belum disimpan:**
 
 ```go
 func closeDocument(app *application.App) {
@@ -198,7 +198,7 @@ func closeDocument(app *application.App) {
 
 ## Opsi dialog
 
-### Judul dan Pesan
+### Judul dan pesan
 
 ```go
 dialog := app.Dialog.Info().
@@ -210,7 +210,7 @@ dialog := app.Dialog.Info().
 
 - **Judul:** Singkat dan deskriptif (2-5 kata)
 - **Pesan:** Jelas, spesifik, dan dapat ditindaklanjuti
-- **Hindari jargon:** Gunakan bahasa yang sederhana
+- **Hindari jargon:** Gunakan bahasa sederhana
 
 ### Tombol
 
@@ -262,7 +262,7 @@ dialog.Show()
 
 **Tombol default dan Batal:**
 
-Gunakan `SetDefaultButton()` untuk menentukan tombol yang disorot dan dipicu oleh Enter. Gunakan `SetCancelButton()` untuk menentukan tombol yang dipicu oleh Escape.
+Gunakan `SetDefaultButton()` untuk menentukan tombol yang disorot dan dipicu dengan Enter. Gunakan `SetCancelButton()` untuk menentukan tombol yang dipicu dengan Escape.
 
 ```go
 dialog := app.Dialog.Question().
@@ -298,12 +298,12 @@ dialog.Show()
 
 **Praktik terbaik:**
 
-- **1-3 tombol:** Jangan membebani pengguna dengan terlalu banyak pilihan
-- **Label yang jelas:** "Simpan", bukan "OK"
-- **Pilihan default yang aman:** Tindakan yang tidak merusak
-- **Urutan itu penting:** Dahulukan tindakan yang paling mungkin dipilih (kecuali Batal)
+- **1-3 tombol:** Jangan membuat pengguna kewalahan
+- **Label yang jelas:** Gunakan "Simpan", bukan "OK"
+- **Default yang aman:** Tindakan nondestruktif
+- **Urutan itu penting:** Letakkan tindakan yang paling mungkin dipilih lebih dahulu (kecuali Batal)
 
-### Ikon Khusus
+### Ikon khusus
 
 Tetapkan ikon khusus untuk dialog:
 
@@ -315,7 +315,7 @@ app.Dialog.Info().
     Show()
 ```
 
-### Penautan ke Jendela
+### Penautan ke jendela
 
 Tautkan ke jendela tertentu:
 
@@ -332,11 +332,11 @@ dialog.Show()
 
 - Dialog muncul di jendela yang tepat
 - Jendela induk dinonaktifkan selama dialog ditampilkan
-- Pengalaman pengguna yang lebih baik saat menggunakan beberapa jendela
+- Pengalaman pengguna yang lebih baik untuk aplikasi berjendela banyak
 
-## Contoh Lengkap
+## Contoh lengkap
 
-### Mengonfirmasi Tindakan Destruktif
+### Mengonfirmasi tindakan destruktif
 
 ```go
 func deleteFiles(app *application.App, paths []string) {
@@ -381,7 +381,7 @@ func deleteFiles(app *application.App, paths []string) {
 }
 ```
 
-### Konfirmasi Keluar
+### Konfirmasi keluar
 
 ```go
 func confirmQuit(app *application.App) {
@@ -400,7 +400,7 @@ func confirmQuit(app *application.App) {
 }
 ```
 
-### Dialog Pembaruan dengan Opsi Unduh
+### Dialog pembaruan dengan opsi unduh
 
 ```go
 func showUpdateDialog(app *application.App) {
@@ -421,7 +421,7 @@ func showUpdateDialog(app *application.App) {
 }
 ```
 
-### Pertanyaan dengan Ikon Khusus
+### Pertanyaan dengan ikon khusus
 
 ```go
 func showCustomIconQuestion(app *application.App, iconBytes []byte) {
@@ -445,34 +445,34 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 }
 ```
 
-## Praktik Terbaik
+## Praktik terbaik
 
 ### ✅ Lakukan
 
-- **Berikan informasi spesifik** - "File disimpan ke Dokumen", bukan "Berhasil"
-- **Gunakan jenis yang sesuai** - Error untuk kesalahan, Warning untuk peringatan
-- **Berikan konteks** - Sertakan detail yang relevan
-- **Gunakan label tombol yang jelas** - "Hapus", bukan "OK"
-- **Tetapkan pilihan default yang aman** - Gunakan tindakan yang tidak merusak
-- **Tangani pembatalan** - Pengguna mungkin menutup dialog
+- **Berikan informasi yang spesifik** — Gunakan "File disimpan ke Dokumen", bukan "Berhasil"
+- **Gunakan jenis yang sesuai** — Kesalahan untuk kesalahan, Peringatan untuk peringatan
+- **Berikan konteks** — Sertakan detail yang relevan
+- **Gunakan label tombol yang jelas** — Gunakan "Hapus", bukan "OK"
+- **Tetapkan default yang aman** — Tindakan nondestruktif
+- **Tangani pembatalan** — Pengguna mungkin menutup dialog
 
-### ❌ Jangan Lakukan
+### ❌ Jangan lakukan
 
-- **Jangan gunakan secara berlebihan** - Mengganggu alur kerja
-- **Jangan gunakan untuk pembaruan yang sering** - Gunakan notifikasi sebagai gantinya
-- **Jangan gunakan pesan umum** - "Kesalahan" tidak memberikan informasi apa pun
-- **Jangan abaikan kesalahan** - Tangani kesalahan dari dialog.Show()
-- **Jangan memblokir tanpa perlu** - Pertimbangkan alternatif asinkron
-- **Jangan gunakan jargon teknis** - Gunakan bahasa yang mudah dipahami
+- **Jangan gunakan secara berlebihan** — Mengganggu alur kerja
+- **Jangan gunakan untuk pembaruan rutin** — Gunakan notifikasi sebagai gantinya
+- **Jangan gunakan pesan generik** — "Kesalahan" tidak memberikan informasi apa pun
+- **Jangan abaikan kesalahan** — Tangani kesalahan dialog.Show()
+- **Jangan memblokir jika tidak perlu** — Pertimbangkan alternatif asinkron
+- **Jangan gunakan jargon teknis** — Gunakan bahasa sederhana
 
-## Perbedaan Antarplatform
+## Perbedaan platform
 
 ### macOS
 
-- Bergaya sheet saat dilampirkan ke jendela
+- Bergaya sheet saat ditautkan ke jendela
 - Pintasan papan ketik standar (⌘. untuk Batal)
-- Secara otomatis mengikuti tema sistem
-- Fitur aksesibilitas tersedia secara bawaan
+- Mengikuti tema sistem secara otomatis
+- Aksesibilitas bawaan
 
 ### Windows
 
@@ -492,27 +492,27 @@ func showCustomIconQuestion(app *application.App, iconBytes []byte) {
 
 @cards{cols="2"}
 📖 Dialog file
-Membuka dan menyimpan file, serta memilih folder.
+Membuka, menyimpan, dan memilih folder.
 
-[Pelajari Selengkapnya →](/features/dialogs/file/)
+[Pelajari Lebih Lanjut →](/features/dialogs/file/)
 
 ---
 ◆ Dialog khusus
 Buat jendela dialog khusus.
 
-[Pelajari Selengkapnya →](/features/dialogs/custom/)
+[Pelajari Lebih Lanjut →](/features/dialogs/custom/)
 
 ---
 ● Notifikasi
 Notifikasi yang tidak mengganggu.
 
-[Pelajari Selengkapnya →](/features/notifications/overview/)
+[Pelajari Lebih Lanjut →](/features/notifications/overview/)
 
 ---
-★ Event
-Gunakan event untuk komunikasi non-pemblokiran.
+★ Peristiwa
+Gunakan peristiwa untuk komunikasi non-pemblokiran.
 
-[Pelajari Selengkapnya →](/features/events/system/)
+[Pelajari Lebih Lanjut →](/features/events/system/)
 
 @end
 

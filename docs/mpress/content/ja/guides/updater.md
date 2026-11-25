@@ -1,13 +1,13 @@
 ---
 title: "アップデーター"
-description: "Wails v3向けのアプリ内自己更新機能 — 差し替え可能なプロバイダー、暗号学的検証、アトミックな置換、テーマ設定や置き換えが可能な既定のUIを提供します。"
+description: "Wails v3 向けのアプリ内セルフアップデート — 差し替え可能なプロバイダー、暗号学的検証、アトミックな入れ替え、テーマ設定や置き換えが可能なデフォルト UI を提供します。"
 slug: "guides/updater"
 sourcePath: "guides/updater.md"
 ---
 
-アップデーターを使うと、ダウンロード、検証、置換のパイプラインを独自に構築しなくても、アプリ内でソフトウェア更新を配信できます。`app.Updater`上で動作し、1つ以上の差し替え可能な`Provider`（GitHub Releases、keygen.sh、Sparkle AppCast、オープンなWails Update Manifestプロトコル、または独自実装）を受け入れ、設定済みの公開鍵でダウンロードを認証し、実行中のバイナリを安全に置き換え、すべての状態遷移を標準のWailsイベントバス経由で通知します。
+アップデーターを使うと、ダウンロード、検証、入れ替えのパイプラインを独自に構築せずに、アプリ内でソフトウェア更新を配信できます。`app.Updater` 上で動作し、差し替え可能な 1 つ以上の `Provider`（GitHub Releases、keygen.sh、Sparkle AppCast、オープンな Wails Update Manifest プロトコル、または独自実装）を受け入れます。設定済みの公開鍵でダウンロードを認証し、実行中のバイナリを安全に入れ替え、すべての遷移を標準の Wails イベントバス経由で通知します。
 
-![「更新の準備完了」状態の既定のアップデーターウィンドウ — 状態に応じたアイコン、バージョン表示（v1.0.0 → v2.0.1 · 8.8 MB）、GFMテーブルを含むMarkdown形式で表示されたリリースノート、単一の主要アクション。](/assets/updater/default-window-ready.png)
+![「更新の準備完了」状態のデフォルトアップデーターウィンドウ — 状態に応じたアイコン、バージョンピル（v1.0.0 → v2.0.1 · 8.8 MB）、GFM テーブルを含む Markdown でレンダリングされたリリースノート、および 1 つの主要アクション。](/assets/updater/default-window-ready.png)
 
 ## クイックスタート
 
@@ -42,40 +42,40 @@ func main() {
 }
 ```
 
-これにより、フレームワークの更新ウィンドウが開き、GitHubを確認してプラットフォーム用アセットをダウンロードし、検証してバイナリを置き換えた後、ユーザーが再起動するのを待ちます。
+これにより、フレームワークの更新ウィンドウが開き、GitHub を確認してプラットフォーム用アセットをダウンロードし、検証してバイナリを入れ替え、ユーザーが再起動するまで待機します。
 
 ## ライフサイクル
 
-`app.Updater`は、次の状態を持つステートマシンです（`updater.State`）。
+`app.Updater` は、次の状態を持つステートマシンです（`updater.State`）。
 
-| 状態 | 該当する状況 |
+| 状態 | 該当するタイミング |
 | --- | --- |
-| `unconfigured` | `Init`が呼び出される前 |
-| `idle` | `Init`の後、最初の確認を行う前 |
-| `checking` | `Check`の処理中 |
-| `up-to-date` | 最新のプロバイダー応答で、呼び出し元が最新であると報告されたとき |
-| `available` | 新しいリリースが見つかったが、まだダウンロードを開始していないとき |
-| `downloading` | プロバイダーからバイト列をストリーミングしているとき |
-| `verifying` | ダウンロードが完了し、署名またはダイジェストを検証しているとき |
-| `installing` | 検証済みのバイト列を展開し、名前を変更してステージングディレクトリに配置しているとき |
-| `ready` | 更新のステージングが完了した状態。適用するには`Restart`を呼び出します |
-| `error` | それまでのいずれかの手順が失敗したとき |
+| `unconfigured` | `Init` が呼び出される前 |
+| `idle` | `Init` の後、最初の確認を行う前 |
+| `checking` | `Check` の実行中 |
+| `up-to-date` | 直近のプロバイダー応答で、呼び出し元が最新であると報告されたとき |
+| `available` | 新しいリリースが見つかり、まだダウンロードを開始していないとき |
+| `downloading` | プロバイダーからバイトデータをストリーミング中 |
+| `verifying` | ダウンロードが完了し、署名またはダイジェストを確認中 |
+| `installing` | 検証済みのバイトデータを展開し、ステージングディレクトリ内へ名前を変更して配置中 |
+| `ready` | 更新のステージングが完了し、適用するには `Restart` を呼び出す |
+| `error` | それ以前のいずれかの手順が失敗したとき |
 
-現在の状態は、いつでも`app.Updater.State()`で確認できます。また、状態が遷移するたびにWailsイベントが発行されます（[イベント](#heading-13)を参照）。
+現在の状態は、いつでも `app.Updater.State()` で確認できます。また、遷移のたびに Wails イベントが発行されます（[イベント](#heading-13)を参照）。
 
-`Restart` は、実行中のアプリケーションに終了を要求する前に、ヘルパーが `application.New` に到達するまで待機します。起動タイムアウトの既定値は 30 秒です。アプリケーションが `application.New` より前に時間のかかる初期化を行う場合は、`Config.HelperReadyTimeout` に、例えば `time.Minute` のような長い時間を設定してください。ゼロは既定値を選択し、負の時間は拒否されます。起動がタイムアウトすると、`Restart` は `updater.ErrHelperNotReady` を返し、実行中のアプリケーションを終了させません。
+`Restart` は、実行中のアプリに終了を要求する前に、ヘルパーが `application.New` に到達するまで待機します。デフォルトの起動タイムアウトは 30 秒です。アプリが `application.New` より前に時間のかかる初期化を行う場合は、`Config.HelperReadyTimeout` に `time.Minute` などの長い期間を設定してください。ゼロを指定するとデフォルトが選択され、負の期間は拒否されます。起動がタイムアウトすると、`Restart` は `updater.ErrHelperNotReady` を返し、実行中のアプリを開いたままにします。
 
-アップデートは、インストール済みのバイナリと同じ場所(macOS では `.app` バンドルと同じ場所)にある `wails-update-*` ディレクトリに配置されるため、このディレクトリには書き込み権限が必要です。
+更新は、インストール済みバイナリの隣（macOS では `.app` バンドルの隣）にある `wails-update-*` ディレクトリへステージングされるため、そのディレクトリには書き込み権限が必要です。
 
-AppImage 内では、アップデーターは読み取り専用のマウントではなく、`$APPIMAGE` が示す `.AppImage` ファイルを置き換えて再起動します。
+AppImage 内では、アップデーターは読み取り専用マウントではなく、`$APPIMAGE` で指定された `.AppImage` ファイルを置き換えて再起動します。
 
-既定のウィンドウには現在の状態が自動的に反映されます。たとえば、`Check`が更新なしを返した場合は次のように表示され、ユーザーは<strong>閉じる</strong>でウィンドウを閉じます。
+デフォルトウィンドウには現在の状態が自動的に反映されます。たとえば、`Check` がアップグレードなしを返すと、ユーザーには次の画面が表示され、**閉じる**で閉じることができます。
 
-![「最新」状態の既定のアップデーターウィンドウ — 緑色のチェックマーク、「最新の状態です」という見出し、単一の「閉じる」ボタン。](/assets/updater/default-window-up-to-date.png)
+![「最新」状態のデフォルトアップデーターウィンドウ — 緑色のチェックマーク、「最新の状態です」という見出し、1 つの「閉じる」ボタン。](/assets/updater/default-window-up-to-date.png)
 
 ## プロバイダー
 
-次のインターフェースを満たすものは、すべて`Provider`として使用できます。
+`Provider` は、次のインターフェースを満たす任意の実装です。
 
 ```go
 type Provider interface {
@@ -85,7 +85,7 @@ type Provider interface {
 }
 ```
 
-リポジトリには4つの実装が含まれています。
+リポジトリ内には 4 つの実装が含まれています。
 
 ### GitHub Releases — `updater/providers/github`
 
@@ -101,7 +101,7 @@ gh, err := github.New(github.Config{
 })
 ```
 
-既定のアセット照合では、ファイル名に含まれる`GOOS`と`GOARCH`の部分文字列を基に選択し、一般的な別名（`amd64` / `x86_64` / `x64`、`arm64` / `aarch64`、`386` / `i386` / `x86` / `ia32`）も認識します。独自の命名規則を使用する場合は、次のように設定します。
+デフォルトのアセットマッチャーは、ファイル名に含まれる `GOOS` と `GOARCH` の部分文字列に基づいて選択し、一般的な別名（`amd64` / `x86_64` / `x64`、`arm64` / `aarch64`、`386` / `i386` / `x86` / `ia32`）も認識します。独自の命名規則を使用する場合は、次のようにします。
 
 ```go
 gh, _ := github.New(github.Config{
@@ -118,7 +118,7 @@ gh, _ := github.New(github.Config{
 })
 ```
 
-`ChecksumAsset`は、内容が`<sha256>  <filename>`形式の行で構成された、同じリリース内の別アセットの名前です（`sha256sum`と`shasum -a 256`が生成する形式です）。プロバイダーは`Check`の実行中にこれを取得し、選択したアーティファクトに一致する行を見つけて`Release.Verification.Digest`を設定するため、フレームワークがダウンロードを検証できます。
+`ChecksumAsset` は、内容が `<sha256>  <filename>` 形式の行で構成される、同じリリース内の別アセットの名前です（`sha256sum` と `shasum -a 256` が生成する形式です）。プロバイダーは `Check` の実行中にそれを取得し、選択したアーティファクトに一致する行を見つけて `Release.Verification.Digest` を設定するため、フレームワークがダウンロードを検証できます。
 
 ### keygen.sh — `updater/providers/keygen`
 
@@ -136,9 +136,9 @@ kg, err := keygen.New(keygen.Config{
 })
 ```
 
-プロバイダーは、keygen.shのアーティファクトごとのSHA-512チェックサムとEd25519ph署名を、フレームワークの`Release.Verification`ブロックに自動的に対応付けます。追加の接続設定は不要です。
+プロバイダーは、keygen.sh のアーティファクトごとの SHA-512 チェックサムと Ed25519ph 署名を、フレームワークの `Release.Verification` ブロックへ自動的にマッピングします。追加の接続設定は不要です。
 
-<strong>トークン形式：</strong>keygen.shのトークンには、ロールを示す接頭辞（`admi-` / `prod-` / `envi-` / `user-`）が付いています。ダッシュボードに表示される未加工のUUIDは、トークンの<em>識別子</em>であり、シークレット値ではありません。シークレットが表示されるのは、トークンの作成時だけです。詳細については、keygen.shの[認証ドキュメント](https://keygen.sh/docs/api/authentication/)を参照してください。
+**トークン形式：** keygen.sh のトークンには、ロールを示す接頭辞（`admi-` / `prod-` / `envi-` / `user-`）が付いています。ダッシュボードに表示される生の UUID はトークンの*識別子*であり、シークレット値ではありません。シークレットはトークン作成時にしか表示されません。詳細については、keygen.sh の[認証ドキュメント](https://keygen.sh/docs/api/authentication/)を参照してください。
 
 ### Sparkle AppCast — `updater/providers/appcast`
 
@@ -150,9 +150,9 @@ ac, err := appcast.New(appcast.Config{
 })
 ```
 
-既存のSparkle / WinSparkleインフラストラクチャに変更を加えず、そのまま導入できます。フィードから`sparkle:shortVersionString`、`<enclosure url type length sparkle:os sparkle:edSignature>`、`sparkle:channel`を読み取ります。
+既存の Sparkle / WinSparkle インフラストラクチャへ変更なしで導入できます。フィードから `sparkle:shortVersionString`、`<enclosure url type length sparkle:os sparkle:edSignature>`、`sparkle:channel` を読み取ります。
 
-Sparkle 1のDSA署名（`sparkle:dsaSignature`）はサポートされていません。この署名方式を使用しているプロジェクトは、EdDSA（Sparkle 2）に移行することを推奨します。
+Sparkle 1 の DSA 署名（`sparkle:dsaSignature`）はサポートされていません。この署名方式を使用しているプロジェクトは、EdDSA（Sparkle 2）へ移行してください。
 
 ### Wails Update Manifest — `updater/providers/endpoint`
 
@@ -165,9 +165,9 @@ ep, err := endpoint.New(endpoint.Config{
 })
 ```
 
-オープンな[Wails Update Manifestプロトコル](/reference/update-manifest/)を使用します。これは、最新リリースとプラットフォーム別のアーティファクトを、チェックサムおよび署名とともにインラインで記述する単一のJSONドキュメントです。同じドキュメントを静的ファイルホスト（S3、GitHub Pages、任意のCDN。すべてのプラットフォームを列挙したマニフェストをチャネルごとに1つ公開します）でも、動的更新サーバーでも使用できます（プロバイダーは確認のたびに`platform`、`arch`、`version`、`channel`を送信するため、サーバーはアーティファクトを1つだけ返したり、ライセンスに基づいてアクセスを制御したりできます）。
+オープンな[Wails Update Manifest プロトコル](/reference/update-manifest/)を使用します。これは、最新リリースとプラットフォームごとのアーティファクトを、チェックサムおよび署名とともにインラインで記述する単一の JSON ドキュメントです。同じドキュメントを、静的ファイルホスト（S3、GitHub Pages、任意の CDN。全プラットフォームを列挙したマニフェストをチャネルごとに 1 つ公開）でも、動的な更新サーバーでも使用できます。動的な更新サーバーの場合、プロバイダーは確認のたびに `platform`、`arch`、`version`、`channel` を送信するため、サーバーはアーティファクトを 1 つだけ返したり、ライセンスに基づいて提供可否を制御したりできます。
 
-URLプレースホルダーを使用すると、静的なレイアウトを1行で設定できます。
+URL プレースホルダーを使うと、静的なレイアウトを 1 行で設定できます。
 
 ```go
 ep, _ := endpoint.New(endpoint.Config{
@@ -175,13 +175,13 @@ ep, _ := endpoint.New(endpoint.Config{
 })
 ```
 
-設定したヘッダーは、マニフェストへのすべてのリクエストで送信されます。アーティファクトのダウンロードでそれらを再利用するのは、マニフェストと同じホスト上で、`https`から`http`へのダウングレードがない場合に限られます。また、オリジンをまたぐリダイレクトやダウングレードを伴うリダイレクトでは、`Authorization`ヘッダーが削除されます。
+設定したヘッダーは、すべてのマニフェストリクエストで送信されます。アーティファクトのダウンロードでそれらを再利用するのは、マニフェストと同じホストで、かつ `https` から `http` へのダウングレードがない場合だけです。また、クロスオリジンまたはダウングレードを伴うリダイレクトでは、`Authorization` ヘッダーが削除されます。
 
-公開処理はCLIが担います。`wails3 updater manifest`は、1つのコマンドでリリースファイルのダイジェストを計算し、署名して、その内容を記述します。`wails3 updater verify`は、アップロード前にその結果を再検証します。[wails3 CLIを使用した公開](/reference/update-manifest/#publishing-with-the-wails3-cli)を参照してください。
+公開側は CLI が担います。`wails3 updater manifest` は 1 つのコマンドでリリースファイルのダイジェストを生成し、署名して、その内容を記述します。`wails3 updater verify` は、アップロード前にその結果を再確認します。[wails3 CLI を使用した公開](/reference/update-manifest/#publishing-with-the-wails3-cli)を参照してください。
 
 ### フォールバックチェーン
 
-`Config.Providers`には順序があります。アップデーターは先頭から順に処理し、最初にリリースを返したプロバイダーを採用します。最初に「最新」と報告したプロバイダーがあれば、その時点でチェーンの処理を打ち切ります（フォールバックは「プライマリに到達できない」場合のためのものであり、「プロバイダー間で結果が一致しない」場合のためのものではありません）。エラーが発生した場合は、次のプロバイダーに進みます。
+`Config.Providers` には順序があります。アップデーターはこれを順番に処理します。最初にリリースを返したプロバイダーが採用され、最初に「最新」と報告したプロバイダーでチェーンの処理を打ち切ります（フォールバックは「プライマリに到達できない」場合のためのものであり、「プロバイダー間で結果が一致しない」場合のためではありません）。エラーが発生すると、次のプロバイダーへ進みます。
 
 ```go
 app.Updater.Init(updater.Config{
@@ -195,7 +195,7 @@ app.Updater.Init(updater.Config{
 
 ### 独自プロバイダーの作成
 
-メソッドは3つだけで、通常の実装なら約150行です。検証、アトミックなステージング、入れ替え、ウィンドウは Updater が担い、プロバイダーのコードは次のリリースを解決して、そのバイト列をストリーミングします。
+必要なメソッドは 3 つで、一般的な実装は約 150 行です。検証、アトミックなステージング、入れ替え、ウィンドウは Updater が担い、プロバイダーコードは次のリリースを特定してバイトデータをストリーミングします。
 
 ```go
 type CustomProvider struct { /* config */ }
@@ -215,11 +215,11 @@ func (p *CustomProvider) Download(ctx context.Context, r *updater.Release, dst i
 }
 ```
 
-ツリー内のプロバイダーを参考にしてください。いずれも単一の Go ファイルです。
+リポジトリ内のプロバイダーを参考にしてください。いずれも 1 つの Go ファイルで実装されています。
 
 ## 暗号学的検証
 
-リリースは、`Config.PublicKey`を信頼の起点として、フレームワークの検証機能によって認証されます。
+リリースは、`Config.PublicKey` を信頼の起点として、フレームワークの検証機能によって認証されます。
 
 ```go
 //go:embed publickey.pem
@@ -232,20 +232,20 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-対応アルゴリズム（`Release.Verification.SignatureAlgo`）：
+サポートされているアルゴリズム（`Release.Verification.SignatureAlgo`）：
 
 | アルゴリズム | 署名対象 | 備考 |
 | --- | --- | --- |
-| `ed25519` | アーティファクトの SHA-256 ダイジェスト | Sparkle EdDSA で使用 |
-| `ed25519ph` | Ed25519ph の事前ハッシュ（内部では SHA-512）を介したアーティファクト全体 | keygen.sh で使用 |
-| `ecdsa-p256` | アーティファクトの SHA-256 ダイジェスト | 生の`r∥s`署名と DER 署名の両方に対応 |
+| `ed25519` | 成果物の SHA-256 ダイジェスト | Sparkle EdDSA で使用 |
+| `ed25519ph` | Ed25519ph の事前ハッシュ（内部では SHA-512）を使用した成果物全体 | keygen.sh で使用 |
+| `ecdsa-p256` | 成果物の SHA-256 ダイジェスト | 生の `r∥s` 署名と DER 署名の両方に対応 |
 
-さらに、リリースにハッシュは含まれるものの署名がない場合は、ダイジェストのみ（`DigestAlgo`：`sha256` / `sha512`）にも対応します。
+さらに、リリースにハッシュは含まれるものの署名がない場合は、ダイジェストのみ（`DigestAlgo`: `sha256` / `sha512`）にも対応します。
 
-署名検証における唯一の信頼アンカーは`Config.PublicKey`です。リリース元が独自の鍵に差し替えることはできません。`Signature`を含むリリースは、`Config.PublicKey`が設定されていなければ安全側に倒して失敗します。検証機能はダウンロード中の1回のストリーミング処理でダイジェストを計算するため、数 GB 規模の更新でも、検証のためにディスクを追加で走査することはありません。
+署名検証における唯一の信頼の基点は `Config.PublicKey` です。リリース元が独自の鍵に差し替えることはできません。`Signature` を含むリリースは、`Config.PublicKey` が設定されていない場合、安全側に倒して失敗します。検証機構はダウンロード中にストリーミング処理でダイジェストを計算するため、数 GB 規模の更新であっても、検証のためにディスクを追加で走査することはありません。
 
 @note{type="caution" title="ダイジェストのみ ≠ 暗号学的検証"}
-`Digest`だけを含むリリースは、自分で管理する暗号学的な信頼の起点ではなく、レジストリの TLS と、レジストリ自体が提供する整合性保証によって認証されます。ビット腐敗の検出にはダイジェストのみの方式を使用し、侵害されたリリースパイプラインによる改ざんへの耐性が必要な場合は署名を使用してください。
+`Digest` のみを含むリリースは、レジストリの TLS と、レジストリ自体が提供する整合性保証によって認証されます。管理下にある暗号学的な信頼の基点に対して認証されるわけではありません。ビットロットの検出にはダイジェストのみを使用し、侵害されたリリースパイプラインによる改ざんへの耐性が必要な場合は署名を使用してください。
 
 @end
 
@@ -257,7 +257,7 @@ wails3 updater genkey
 # updater.key.pub   — bundle in your app via go:embed
 ```
 
-秘密鍵は PKCS#8 PEM、公開鍵は PKIX PEM です。`Config.PublicKey`には`.pub`ファイルをそのまま指定できます（生の32バイト鍵またはその base64 表現にも対応しており、インライン化用の値は`genkey`で出力できます）。リリースには`wails3 updater manifest -key updater.key ...`または`wails3 updater sign`で署名してください。詳しくは「[wails3 CLI を使用した公開](/reference/update-manifest/#publishing-with-the-wails3-cli)」を参照してください。
+秘密鍵は PKCS#8 PEM、公開鍵は PKIX PEM です。`Config.PublicKey` は `.pub` ファイルをそのまま受け付けます（生の 32 バイト鍵またはその base64 も受け付けます。インライン化用の値は `genkey` で出力できます）。リリースには `wails3 updater manifest -key updater.key ...` または `wails3 updater sign` で署名してください。[wails3 CLI を使用した公開](/reference/update-manifest/#publishing-with-the-wails3-cli)を参照してください。
 
 または Go では、次のようにします。
 
@@ -269,29 +269,29 @@ pub, priv, _ := ed25519.GenerateKey(rand.Reader)
 // Persist `priv` securely (HSM, signing CI, etc.); embed `pub` in your binary.
 ```
 
-## アーティファクト形式
+## 成果物の形式
 
-プロバイダーは、公開したファイルのバイト列をストリーミングします。その後、フレームワークが入れ替え前にファイルを展開します。
+プロバイダーは公開されたファイルのバイト列をストリーミングし、フレームワークは入れ替え前にそのファイルを展開します。
 
-- **単一のバイナリ**（例：`myapp-linux-amd64`）— そのまま使用されます。Linux で一般的です。
-- **`.zip`** — その場で展開されます。アーカイブには、トップレベルのエントリが正確に1つだけ含まれている必要があります（通常は macOS の`.app`バンドルまたは単一のバイナリ）。macOS で推奨されるパッケージ形式です。
-- **`.tar.gz`** / **`.tgz`** — トップレベルのエントリを1つだけとする同じ規則に従い、その場で展開されます。バイナリとともにランタイムツリーを配布する Linux ディストリビューションに適しています。
+- **単一バイナリ**（例: `myapp-linux-amd64`）— そのまま使用されます。Linux で一般的です。
+- **`.zip`** — その場で展開されます。アーカイブには、トップレベルのエントリを厳密に 1 つだけ含める必要があります（通常は macOS の `.app` バンドルまたは単一バイナリ）。macOS で推奨されるパッケージ形式です。
+- **`.tar.gz`** / **`.tgz`** — トップレベルのエントリを 1 つだけ含めるという同じ規則に従い、その場で展開されます。バイナリとともにランタイムツリーを配布する Linux ディストリビューションに便利です。
 
-トップレベルのエントリが複数あるアーカイブは拒否されます。フレームワークがディスク上で入れ替える対象は1つだけなので、アーカイブに複数のものが含まれている場合、「このアーカイブを所定の場所に入れ替える」という指示が曖昧になるためです。`.dmg`と`.pkg`（macOS）、および`.msi`（Windows）は v1 ではサポートされません。代わりに、バンドルの`.zip`を配布してください。展開時には zip-slip 対策が適用され、アーカイブルートの外部を指すシンボリックリンクは拒否されます。また、展開後の合計サイズ（2 GiB）とエントリ数（50 000）に上限が設けられます。
+トップレベルのエントリを複数含むアーカイブは拒否されます。フレームワークがディスク上で入れ替える対象は 1 つだけなので、アーカイブに複数のものが含まれている場合、「このアーカイブを所定の場所に入れ替える」という指示が曖昧になるためです。`.dmg` と `.pkg`（macOS）、および `.msi`（Windows）は v1 ではサポートされていません。代わりに、バンドルの `.zip` を配布してください。展開時には zip-slip 対策が適用され、アーカイブルート外を指すシンボリックリンクは拒否されます。また、展開後の合計サイズ（2 GiB）とエントリ数（50 000）には上限があります。
 
 ## デフォルトウィンドウ
 
-`app.Updater.CheckAndInstall(ctx)`は、フレームワークが所有する520×540のウィンドウを開きます。このウィンドウには次の要素があります。
+`app.Updater.CheckAndInstall(ctx)` は、フレームワークが管理する 520×540 のウィンドウを開きます。このウィンドウには次の要素があります。
 
-- 状態に応じて変化するヒーローアイコン（利用可能／ダウンロード中は青い「↓」、準備完了／最新版は緑の「✓」、エラーは赤い「!」）
-- バージョンを示すピル：`v1.0.0 → v2.0.1 · 8.8 MB`
-- <strong>レンダリング済み Markdown</strong>を表示する、スクロール可能なリリースノートパネル（段落、太字／斜体、リスト、GFM テーブル、インラインコード、フェンス付きコードブロック、h1～h3、リンク）
-- 状態ごとに1つの主要アクション（インストール／再起動して適用／再試行）
+- 状態に応じて変化するヒーローアイコン（利用可能／ダウンロード中は青色の ↓、準備完了／最新版は緑色の ✓、エラーは赤色の !）
+- バージョンピル: `v1.0.0 → v2.0.1 · 8.8 MB`
+- **レンダリング済み Markdown**（段落、太字／斜体、リスト、GFM テーブル、インラインコード、フェンス付きコードブロック、h1～h3、リンク）を表示する、スクロール可能なリリースノートパネル
+- 各状態につき 1 つの主要アクション（インストール／再起動して適用／再試行）
 - ゴーストスタイルの副次アクション（このバージョンをスキップ／後で通知）
-- `prefers-color-scheme`によるダーク／ライトモード
-- 合計サイズが不明な場合の不確定型プログレスシマー
+- `prefers-color-scheme` によるダーク／ライトモード
+- 合計サイズが不明な場合の不確定プログレスシマー
 
-Wails イベントバス上の`updater:*`イベントをリッスンし、`updater:user:*`アクションを Go に送り返します。
+Wails イベントバス上の `updater:*` イベントをリッスンし、`updater:user:*` アクションを Go に返します。
 
 ### CSS 変数によるテーマ設定
 
@@ -304,7 +304,7 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-デフォルトのスタイルシートでは、次の変数が公開されています。どの変数も上書きできます。
+デフォルトのスタイルシートでは次の変数が公開されており、どれでも上書きできます。
 
 | 変数 | デフォルト（ライト） | デフォルト（ダーク） |
 | --- | --- | --- |
@@ -320,11 +320,11 @@ app.Updater.Init(updater.Config{
 | `--success` | `#34c759` | — |
 | `--error` | `#ff3b30` | — |
 | `--radius` | `10px` | — |
-| `--font` | システムフォントスタック | — |
+| `--font` | システムスタック | — |
 
-### テンプレートを置き換える
+### テンプレートの置き換え
 
-独自の HTML を用意します。必要なのは、`wails:updater:*` イベントをリッスンし、`wails:updater:user:*` アクションを発行することだけです。
+独自の HTML を指定できます。必要なのは、`wails:updater:*` イベントをリッスンし、`wails:updater:user:*` アクションを送出することだけです。
 
 ```go
 app.Updater.Init(updater.Config{
@@ -335,12 +335,12 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-InitialHTML ウィンドウはアセットサーバーのオリジンなしで読み込まれるため、`/wails/runtime.js` を動的に取得できません。このウィンドウからホストと通信する方法は 2 つあります。
+InitialHTML ウィンドウはアセットサーバーのオリジンなしで読み込まれるため、`/wails/runtime.js` を動的にフェッチできません。このようなウィンドウからホストと通信する方法は 2 つあります。
 
-1. **HTML をそのまま記述します。** フレームワークは、`WebviewWindowOptions.AllowSimpleEventEmit = true` と `HTML` が設定されたウィンドウに最小限の `window.wails.Events` shim を自動挿入します。これはまさに、アップデーターの組み込みパスと BYO パスが行う設定です。ビルド手順は不要です。以下の例ではこの方法を使用します。
-2. **任意のバンドラー**（Vite、esbuild、Rollup）で `@wailsio/runtime` をバンドルし、ビルド時にカスタム HTML へインポートします。`Events.On` は完全にクライアント側で動作するため、そのまま使用できます。一方、`Events.Emit` はランタイムの fetch トランスポートを経由しますが、null オリジンでは機能しません。そのため、ランタイムの [`setTransport`](/guides/custom-transport/) フックを使用し、`window._wails.invoke("wails:event:emit:<name>")` 経由でルーティングする小さな postMessage トランスポートを組み込みます。`window.wails.Events` がすでにスコープ内にある場合、フレームワークによる挿入は何も行わないため、2 つの方法が競合することはありません。
+1. **HTML をそのまま記述します。** フレームワークは、`WebviewWindowOptions.AllowSimpleEventEmit = true` と `HTML` を設定して開いたすべてのウィンドウに、最小限の `window.wails.Events` シムを自動的に挿入します。アップデーターの組み込みパスと BYO パスはいずれも、まさにこの方法を使用します。ビルド手順は不要です。以下の例でもこの方法を使用しています。
+2. **お好みのバンドラー**（Vite、esbuild、Rollup）で `@wailsio/runtime` をバンドルし、ビルド時にカスタム HTML へインポートします。`Events.On` は完全にクライアント側で動作するため、そのまま使用できます。一方、`Events.Emit` はランタイムの fetch トランスポートを経由しますが、null オリジンでは機能しません。そのため、`window._wails.invoke("wails:event:emit:<name>")` を経由してルーティングする小さな postMessage トランスポートを、ランタイムの [`setTransport`](/guides/custom-transport/) フックを使って組み込んでください。`window.wails.Events` がすでにスコープ内にある場合、フレームワークによる注入は何も行わないため、2 つの方法が競合することはありません。
 
-どちらの方法でも、カスタム HTML に記述する JS は同じ `Events.On` / `Events.Emit` API を呼び出します。
+どちらの方法でも、カスタム HTML に記述する JavaScript は同じ `Events.On` / `Events.Emit` API を呼び出します。
 
 ```html
 <script>
@@ -359,13 +359,13 @@ Emit("wails:updater:window:ready");
 </script>
 ```
 
-この shim は、ベア名イベントに必要な最新ランタイムのサブセットを公開します。`Events.On(name, cb)` は購読解除関数を返し、`Events.Emit(nameOrEventObject)` は制限付きの `wails:event:emit:` postMessage パスを介してホストへルーティングします。ページ読み込み時に、インラインスクリプトが実行される前に一度だけインストールされます。
+この shim は、修飾なしの名前を持つイベントに必要な最新ランタイムのサブセットを公開します。`Events.On(name, cb)` は購読解除関数を返し、`Events.Emit(nameOrEventObject)` は制限付きの `wails:event:emit:` postMessage 経路を介してホストへルーティングします。ページ読み込み時に、インラインスクリプトが実行される前に一度だけ組み込まれます。
 
-shim を<em>上書きしたい</em>場合（または別の方法で完全なランタイムを読み込む場合）は、ページ内の最初の `<script>` タグが実行される前に `window.wails.Events` を設定してください。これにより、自動挿入はスキップされます。
+shim を上書きすることを*意図している*場合（または別の方法で完全なランタイムを読み込む場合）は、ページ内の最初の `<script>` タグが実行される前に `window.wails.Events` を設定してください。これにより、注入処理はスキップされます。
 
-### ウィンドウ装飾
+### ウィンドウの装飾
 
-HTML に手を加えずに、ウィンドウオプション（サイズ、フレームなし、常に最前面）を上書きします。
+HTML を変更せずに、ウィンドウオプション（サイズ、フレームレス、常に手前に表示）を上書きできます。
 
 ```go
 Window: &updater.BuiltinWindow{
@@ -382,7 +382,7 @@ Window: &updater.BuiltinWindow{
 
 ### 独自のウィンドウを使用する
 
-自分で作成した `*application.WebviewWindow` を使用して更新フローを動かします。アップデーターはそのウィンドウで `Show()` / `Close()` / `EmitEvent()` を呼び出し、何を描画するかは HTML 側で決定します。
+自分で作成した `*application.WebviewWindow` を対象に更新フローを動作させます。アップデーターはそのウィンドウで `Show()` / `Close()` / `EmitEvent()` を呼び出し、何をレンダリングするかは HTML 側で決定します。
 
 ![ピンクからオレンジへのグラデーション背景、白い角丸カード 1 枚、カスタムタイポグラフィを備え、同じアップデーターイベントによって表示状態が変化する「独自実装」のアップデーターウィンドウ。デフォルト UI を完全に置き換えられることを示しています。](/assets/updater/byo-custom-window.png)
 
@@ -399,14 +399,14 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-HTML では、組み込みテンプレートと同様に `window.wails.Events.On` / `Events.Emit` を使用します。ウィンドウがフレームワーク所有か独自作成かにかかわらず、`AllowSimpleEventEmit: true` が設定されたすべてのウィンドウには、フレームワークによって shim が自動挿入されます。API については、[テンプレートを置き換える](#heading-9)を参照してください。
+HTML では、組み込みテンプレートと同様に `window.wails.Events.On` / `Events.Emit` を使用します。ウィンドウがフレームワーク所有か独自実装かにかかわらず、`AllowSimpleEventEmit: true` が設定されたすべてのウィンドウには、フレームワークによって shim が自動注入されます。API については、[テンプレートを置き換える](#heading-9)を参照してください。
 
 @note{type="caution" title="BYO アップデーターウィンドウには `AllowSimpleEventEmit` が必要です"}
-セキュリティのため、フレームワークはこのフィールドによって `wails:event:emit:` postMessage ショートカットの使用を制限します。このフィールドが設定されていないウィンドウは、ホスト側のカスタムイベントを生成できません。アップデーターのカスタム HTML shim は、このショートカットを介して `updater:user:*` イベントを発行します。そのため、このフィールドを設定し忘れた BYO ウィンドウでは、すべてのボタンクリックが通知なく破棄されます。ユーザーが「インストール」をクリックしても何も起こりません。
+セキュリティ上の理由から、フレームワークは `wails:event:emit:` postMessage ショートカットの使用可否をこのフィールドで制限します。このフィールドが設定されていないウィンドウでは、ホスト側のカスタムイベントを生成できません。アップデーターのカスタム HTML 用 shim は、このショートカットを介して `updater:user:*` イベントを送出します。そのため、このフィールドを設定し忘れた BYO ウィンドウでは、すべてのボタンクリックが何の通知もなく無視されます。ユーザーが「インストール」をクリックしても、何も起こりません。
 
-完全には制御できない HTML（リモート URL やユーザー提供コンテンツ）を読み込むウィンドウでは、`AllowSimpleEventEmit` を必ず<strong>無効</strong>にしてください。有効にすると、XSS シンクを含め、ページ内のあらゆる JavaScript が任意の `app.Event.On(name, …)` ハンドラーを起動できます。このショートカットが伝達できるのはベア名だけであり（ペイロードは不可）、バインディングの Call パスには到達できません。しかし、Go コードのハンドラーがイベント名だけに基づいて処理を実行する場合は、権限を必要とするカスタムイベントハンドラーを起動できてしまいます。
+完全には制御できない HTML（リモート URL やユーザー提供コンテンツ）を読み込むウィンドウでは、`AllowSimpleEventEmit` を必ず**オフ**にしてください。オンにすると、XSS の攻撃経路を含め、ページ内のあらゆる JavaScript が任意の `app.Event.On(name, …)` ハンドラーを発火できます。このショートカットで伝達できるのは修飾なしの名前だけで、ペイロードはなく、binding/Call 経路にも到達できません。しかし、Go コードのハンドラーがイベント名だけを基に動作する場合は、権限を伴うカスタムイベントハンドラーを発火させる可能性があります。
 
-フレームワークの<em>組み込み</em>アップデーターウィンドウでは、このフィールドが内部で設定されています。覚えておく必要があるのは BYO の呼び出し元だけです。
+フレームワークの*組み込み*アップデーターウィンドウでは内部的に設定済みです。設定を忘れないようにする必要があるのは BYO の呼び出し側だけです。
 
 @end
 
@@ -419,15 +419,15 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-ウィンドウは一切開きません。独自の UI（または既存のメインウィンドウ）から `updater:*` イベントを購読し、ボタンハンドラーから `app.Updater.CheckAndInstall(ctx)` を呼び出します。更新が見つかった場合にだけ表示する定期的なバックグラウンドチェックや、更新フローをカスタム設定パネルに統合するアプリに適しています。
+ウィンドウは一切開かれません。独自の UI（または既存のメインウィンドウ）から `updater:*` イベントを購読し、ボタンハンドラーから `app.Updater.CheckAndInstall(ctx)` を呼び出します。何かが見つかった場合にのみ画面へ表示する定期的なバックグラウンドチェックや、更新フローを独自の設定パネルへ統合するアプリに便利です。
 
 ## イベント
 
-Go と JavaScript はどちらも、標準の Wails イベントバスを介して購読します。**通信文字列を手入力しないでください**。updater パッケージ（Go）または runtime パッケージ（JS）がエクスポートする定数を使用してください。両レイヤーは同じ名前のセットを共有し、回帰テストによって同期が維持されています。
+Go と JavaScript は、どちらも標準の Wails イベントバスを介して購読します。**通信上の文字列を手入力しないでください**。updater パッケージ（Go）または runtime パッケージ（JS）がエクスポートする定数を使用してください。両レイヤーは同じ名前のセットを共有しており、リグレッションテストによって同期が保たれています。
 
 ### Go から
 
-定数は `github.com/wailsapp/wails/v3/pkg/updater` にあります。`app.Event.On(name, fn)` を介して購読します。コールバックは `*application.CustomEvent` を受け取り、その `Data` フィールドには[イベントリファレンス](#heading-14)に記載された型付きペイロードが格納されています。JSON デコードではなく、型アサーションを使用してください。
+定数は `github.com/wailsapp/wails/v3/pkg/updater` にあります。`app.Event.On(name, fn)` を介して購読します。コールバックは `*application.CustomEvent` を受け取り、その `Data` フィールドには[イベントリファレンス](#heading-14)に記載された型付きペイロードが格納されます。JSON デコードは行わず、型アサーションを使用してください。
 
 ```go {title="main.go"}
 import (
@@ -460,7 +460,7 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 
 使用可能なすべての Go 定数：
 
-| 定数 | 通信文字列 |
+| 定数 | 通信上の文字列 |
 | --- | --- |
 | `updater.EventCheckStarted` | `wails:updater:check-started` |
 | `updater.EventUpdateAvailable` | `wails:updater:update-available` |
@@ -482,7 +482,7 @@ app.Event.On(updater.EventError, func(e *application.CustomEvent) {
 
 ### JavaScript から
 
-定数は `@wailsio/runtime` の `Updater.Events` 配下にあります。名前は Go と同じで、オートコンプリートで見つけやすいようサブ名前空間（`User.*`、`Window.*`）別に整理されています：
+定数は `@wailsio/runtime` の `Updater.Events` 以下にあります。Go と同じ名前が使用され、オートコンプリートで見つけやすいようにサブ名前空間（`User.*`、`Window.*`）ごとに整理されています。
 
 ```js
 import { Events, Updater } from "@wailsio/runtime";
@@ -502,7 +502,7 @@ Events.On(Updater.Events.Error, (e) => {
 });
 ```
 
-カスタム HTML がホストへ<em>返す</em>ユーザー操作イベントは、`Updater.Events.User` 配下にあります：
+カスタム HTML がホストへ*返送*するユーザー操作イベントは、`Updater.Events.User` 以下にあります。
 
 ```js
 import { Updater } from "@wailsio/runtime";
@@ -520,23 +520,23 @@ document.getElementById("install-btn").addEventListener("click", () => {
 
 | 定数（Go） | 定数（JS） | ペイロード | 発生タイミング |
 | --- | --- | --- | --- |
-| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | なし | 各 `Check` ラウンドトリップの前 |
+| `updater.EventCheckStarted` | `Updater.Events.CheckStarted` | なし | `Check` の各往復処理の前 |
 | `updater.EventUpdateAvailable` | `Updater.Events.UpdateAvailable` | `*Release` | `Check` が新しいリリースを検出したとき |
-| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | なし | `Check` が最新であることを確認したとき |
+| `updater.EventNoUpdate` | `Updater.Events.NoUpdate` | なし | `Check` が最新版であることを確認したとき |
 | `updater.EventDownloadStarted` | `Updater.Events.DownloadStarted` | `*Release` | バイトのストリーミング開始時 |
-| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ダウンロード中は約 10 Hz |
-| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | すべてのバイトの書き込み後、検証前 |
-| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | 署名／ダイジェストのチェック開始時 |
+| `updater.EventDownloadProgress` | `Updater.Events.DownloadProgress` | `Progress` | ダウンロード中は約10 Hz |
+| `updater.EventDownloadComplete` | `Updater.Events.DownloadComplete` | `*Release` | 全バイトの書き込み完了後、検証前 |
+| `updater.EventVerifying` | `Updater.Events.Verifying` | `*Release` | 署名／ダイジェストの検査開始時 |
 | `updater.EventInstalling` | `Updater.Events.Installing` | `*Release` | 展開とステージングの開始時 |
-| `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | 再起動待機中 |
-| `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | いずれかの段階で失敗したとき |
+| `updater.EventUpdateReady` | `Updater.Events.UpdateReady` | `*Release` | 再起動待ち |
+| `updater.EventError` | `Updater.Events.Error` | `ErrorInfo` | いずれかの段階が失敗したとき |
 | `updater.EventMeta` | `Updater.Events.Meta` | `Meta` | スナップショットの再生前に、セッションごとに1回 |
 
-ページ側（ページ → ホスト）— カスタムテンプレートを作成する場合は、コードで購読します：
+ページ側（ページ → ホスト）— カスタムテンプレートを作成する場合は、コードで次のイベントを購読します。
 
 | 定数（Go） | 定数（JS） | タイミング |
 | --- | --- | --- |
-| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | ウィンドウの読み込み完了時。ホストが現在の状態を再送します |
+| `updater.EventWindowReady` | `Updater.Events.Window.Ready` | ウィンドウの読み込み完了時。ホストが現在の状態を再生 |
 | `updater.EventUserInstall` | `Updater.Events.User.Install` | `available`状態でのプライマリアクション |
 | `updater.EventUserRestart` | `Updater.Events.User.Restart` | `ready`状態でのプライマリアクション |
 | `updater.EventUserSkip` | `Updater.Events.User.Skip` | 「このバージョンをスキップ」 |
@@ -549,60 +549,60 @@ document.getElementById("install-btn").addEventListener("click", () => {
 
 | フィールド | 型 | 備考 |
 | --- | --- | --- |
-| `CurrentVersion` | `string` | **必須。** リリースのタグに使用するものと同じ文字列（`v`プレフィックスなし） |
-| `Providers` | `[]updater.Provider` | **必須。** 順序付きフォールバックチェーン |
-| `PublicKey` | `[]byte` | PEMまたは生のバイト列。省略可能ですが、署名付きリリースではこれがないと安全側に倒して失敗します |
-| `CheckInterval` | `time.Duration` | ゼロ以外の場合、`CheckAndInstall`を呼び出すバックグラウンドのポーリングループを開始します |
-| `Platform` | `string` | アセットの選択に使用する`runtime.GOOS`をオーバーライドします |
-| `Arch` | `string` | アセットの選択に使用する`runtime.GOARCH`をオーバーライドします |
-| `Channel` | `string` | 現在は情報提供のみ。プロバイダー固有のチャンネルフィルタリングに使用します |
+| `CurrentVersion` | `string` | <strong>必須。</strong>リリースのタグ付けに使用するものと同じ文字列（`v`プレフィックスなし） |
+| `Providers` | `[]updater.Provider` | <strong>必須。</strong>順序付きフォールバックチェーン |
+| `PublicKey` | `[]byte` | PEMまたは生のバイト列。省略可能ですが、これがない場合、署名付きリリースは安全側に倒して失敗します |
+| `CheckInterval` | `time.Duration` | ゼロ以外の場合、`CheckAndInstall`を呼び出すバックグラウンドのポーリングループを開始 |
+| `Platform` | `string` | アセット選択用の`runtime.GOOS`を上書き |
+| `Arch` | `string` | アセット選択用の`runtime.GOARCH`を上書き |
+| `Channel` | `string` | 現在は情報提供のみ。プロバイダー固有のチャンネルフィルタリング |
 | `Window` | `updater.WindowOption` | `nil`（組み込みのデフォルト）、`&BuiltinWindow{…}`、`BYOWindow(handle)`、または`WindowNone` |
 
 ### `*updater.Updater`のメソッド
 
-| シグネチャ | 用途 |
+| シグネチャ | 目的 |
 | --- | --- |
 | `Init(cfg Config) error` | 構成します。2回目の呼び出しでは`ErrAlreadyConfigured`を返します |
 | `State() State` | 現在のライフサイクルフェーズ |
 | `CurrentVersion() string` | `Init`に渡されたバージョン |
-| `Check(ctx) (*Release, error)` | プロバイダーチェーンを順に調べます。`(rel, nil)` = 検出、`(nil, nil)` = 最新、`(nil, err)` = すべて失敗 |
-| `DownloadAndInstall(ctx) error` | ストリーミング、検証、展開（アーカイブの場合）、ステージングを行います。事前に`Check`を実行しておく必要があります |
-| `CheckAndInstall(ctx) error` | 簡便メソッド：ウィンドウを開き、`Check`を実行し、見つかった場合は`DownloadAndInstall`を実行します |
-| `Restart(ctx) error` | ヘルパーを起動し、`Host.Quit`を呼び出して終了します。ヘルパーが入れ替えと再起動を行います |
-| `DownloadedPath() string` | ステージング済みの更新がディスク上に保存されている場所。存在しない場合は`""` |
-| `SkipVersion(v string)` | `v`をスキップ対象として記録します。以降の`Check`では、そのバージョンを最新として扱います |
-| `SkippedVersion() string` | 現在スキップ対象になっているバージョンを読み取ります |
+| `Check(ctx) (*Release, error)` | プロバイダーチェーンを順に処理します。`(rel, nil)` = 検出、`(nil, nil)` = 最新、`(nil, err)` = すべて失敗 |
+| `DownloadAndInstall(ctx) error` | ストリーミング、検証、（アーカイブの場合は）展開、ステージングを行います。事前に`Check`を呼び出す必要があります |
+| `CheckAndInstall(ctx) error` | 便利なメソッド：ウィンドウを開き、`Check`を実行し、見つかった場合は`DownloadAndInstall`を実行します |
+| `Restart(ctx) error` | ヘルパーを起動し、`Host.Quit`を呼び出して終了します。ヘルパーが入れ替えて再起動します |
+| `DownloadedPath() string` | ステージング済みアップデートがディスク上に存在する場所。存在しない場合は`""` |
+| `SkipVersion(v string)` | `v`をスキップ対象として記録します。以降の`Check`では最新として扱われます |
+| `SkippedVersion() string` | 現在スキップされているバージョンを読み取ります |
 | `StopPeriodicCheck()` | `Config.CheckInterval`によって開始されたタイマーをキャンセルし、ループが終了するまで待機します |
 
 ### エラー
 
-| センチネル | 返される条件 |
+| センチネル | 返される箇所 |
 | --- | --- |
 | `ErrAlreadyConfigured` | 最初に成功した後の`Init` |
 | `ErrNotConfigured` | `Init`より前のすべての操作 |
-| `ErrNoPendingRelease` | 事前の`Check`なしでの`DownloadAndInstall` |
-| `ErrDownloadInProgress` | `DownloadAndInstall` が、同メソッドの別の呼び出しの実行中に呼び出された |
-| `ErrNotReady` | ステージ済みの更新がない状態での`Restart` |
+| `ErrNoPendingRelease` | 事前に`Check`を実行せずに`DownloadAndInstall`を実行した場合 |
+| `ErrDownloadInProgress` | 別の処理の実行中に`DownloadAndInstall`を呼び出した場合 |
+| `ErrNotReady` | ステージ済みの更新がない状態で`Restart`を実行した場合 |
 
 ## 入れ替えの仕組み
 
-`Restart`は、センチネル環境変数を設定して現在のバイナリを再実行します。`application.New`は起動時にそれらを検出し、ヘルパーモードへ処理を切り替えます。
+`Restart`は、センチネル環境変数を設定して現在のバイナリを再実行します。`application.New`は起動時にそれらを検出し、ヘルパーモードに処理を切り替えます。
 
 1. ヘルパーは、親PIDが終了するまで最大30秒待機します（`platformIsAlive`は、Windowsでは`syscall.OpenProcess` + `GetExitCodeProcess`、Unixでは`os.FindProcess` + `proc.Signal(syscall.Signal(0))`を使用してポーリングします）。
-2. ヘルパーはターゲットをバックアップします（ファイルの場合はコピー、macOSの`.app`バンドルディレクトリの場合は再帰コピー）。
-3. ヘルパーは、試行間に500ミリ秒のバックオフを挟みながら最大20回再試行し、ターゲットをステージ済みアーティファクトに置き換えます。
+2. ヘルパーは対象をバックアップします（ファイルの場合はコピー、macOSの`.app`バンドルディレクトリの場合は再帰コピー）。
+3. ヘルパーは、ステージ済みのアーティファクトで対象を置き換えます。試行の間に500ミリ秒のバックオフを挟み、最大20回再試行します。
   - **Unix** — `os.RemoveAll(target)` + `os.Rename(newPath, target)`。古いinodeを参照する開いたファイルディスクリプターは引き続き有効です。
-  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`。Windowsでは、イメージがまだマッピングされているファイルの名前は変更できますが、削除はできません。次回の更新時に、ヘルパーは、所有元のカーネルマッピングが解放済みの残存する`.old.*`兄弟ファイルを削除します。
+  - **Windows** — `os.Rename(target, target.old.<nanos>)` + `os.Rename(newPath, target)`。Windowsでは、イメージがまだマップされているファイルの名前は変更できますが、削除はできません。次回の更新時に、ヘルパーは、所有元のカーネルマッピングが解放された残存`.old.*`兄弟ファイルをすべて削除します。
 
-4. ヘルパーは、新しいバイナリに元の実行ファイルモードを復元します（ダウンロードしたファイルはデフォルトのumaskで作成され、Unixでは`+x`が失われます。Windowsでは何も行いません）。
-5. ヘルパーは、ヘルパーモード用の環境変数を消去し、置き換え後のバイナリを再起動します。
-6. ヘルパーが終了します。
+4. ヘルパーは、新しいバイナリに元の実行ファイルモードを復元します（ダウンロードしたファイルはデフォルトのumaskで作成されるため、Unixでは`+x`が失われます。Windowsでは何も行いません）。
+5. ヘルパーはヘルパーモード用の環境変数を消去し、置き換え済みのバイナリを再起動します。
+6. ヘルパーは終了します。
 
-起動に失敗した場合、ヘルパーはバックアップを復元します。親プロセスが30秒以内に終了しなければ、ヘルパーはターゲットに手を加える前に中止します（そのため、シャットダウンダイアログが`Quit`をブロックしても、ユーザーは動作するアプリを維持できます）。
+起動に失敗した場合、ヘルパーはバックアップを復元します。親プロセスが30秒以内に終了しない場合、ヘルパーは対象に手を加える前に中止します（そのため、シャットダウンダイアログが`Quit`をブロックしても、ユーザーは動作するアプリを維持できます）。
 
-推奨されるパッケージ形式である`.zip`として配布されたmacOSの`.app`バンドルは、検証から準備完了までの間にアーカイブが展開されるため、ヘルパーは実体のあるディレクトリを所定の場所へ入れ替えられます。
+推奨パッケージ形式である`.zip`として配布されるmacOSの`.app`バンドルでは、検証から準備完了までの間にアーカイブが展開されるため、ヘルパーは実ディレクトリを所定の場所に入れ替えられます。
 
-## 定期的な確認
+## 定期チェック
 
 ```go
 app.Updater.Init(updater.Config{
@@ -611,13 +611,13 @@ app.Updater.Init(updater.Config{
 })
 ```
 
-`CheckInterval > 0`の場合、バックグラウンドのgoroutineが設定された間隔で`CheckAndInstall`を呼び出します。別のフロー（確認／ダウンロード／検証／インストール）がすでに進行中の場合、その間に到来したティックは破棄されます。同時実行するステートマシンはサポートされていません。
+`CheckInterval > 0`の場合、バックグラウンドのgoroutineが設定された間隔で`CheckAndInstall`を呼び出します。別のフロー（チェック／ダウンロード／検証／インストール）がすでに進行中のときに到着したtickは破棄されます。状態機械の並行実行はサポートされていません。
 
-何かが見つかった場合にのみ表示するサイレントなバックグラウンドポーリングを行うには、`Window: updater.WindowNone`を設定し、独自のUIから`EventUpdateAvailable`に応答します。
+何かが見つかった場合にのみ通知するサイレントなバックグラウンドポーリングを行うには、`Window: updater.WindowNone`を設定し、独自のUIで`EventUpdateAvailable`に反応するようにします。
 
 ## スキップと後で通知
 
-デフォルトウィンドウの「このバージョンをスキップ」ボタンは、`SkipVersion(rel.Version)`を使用して利用可能なバージョンを記録します。それ以降の`Check`は同じバージョンを検出すると最新版として扱います（ユーザーが`CurrentVersion`を更新するまで。これは`Restart`が成功すると自動的に行われます）。「後で通知」は何も記録せず、ウィンドウを閉じるだけです。
+デフォルトウィンドウの「このバージョンをスキップ」ボタンは、`SkipVersion(rel.Version)`を介して利用可能なバージョンを記録します。それ以降の`Check`は同じバージョンを検出すると最新版として扱います（ユーザーが`CurrentVersion`を更新するまで。これは`Restart`が成功すると自動的に行われます）。「後で通知」は何も記録せず、ウィンドウを閉じるだけです。
 
 ```go
 // Reading what the user skipped (e.g. to surface in app settings)
@@ -631,27 +631,27 @@ app.Updater.SkipVersion("")
 
 ## 配布チェックリスト
 
-アップデーターがインストールするリリースを公開する前に、次の項目を確認してください。
+アップデーターがインストールするリリースを公開する前に、次を確認してください。
 
 1. **適切なアーカイブ形式を選択します。** macOS：`.app`バンドルの`.zip`。Linux：単一バイナリまたは`.tar.gz`。Windows：単一の`.exe`または`.zip`。`.dmg`／`.msi`／`.pkg`はサポートされていません。
-2. **アーティファクトに署名します**。`Config.PublicKey`に対応する秘密鍵を使用してください。プロバイダーが公開するフィード（keygen.sh、AppCast）では、各プロバイダーの署名手順に従います。`ChecksumAsset`を使用するGitHub Releasesでは、`sha256sum`／`shasum -a 256`を使用して`SHA256SUMS`ファイルを生成します。
-3. **バージョン文字列を一致させます。** `Config.CurrentVersion`とリリースのバージョンタグは完全に一致する必要があります（例：`1.0.0` ↔ タグ`v1.0.0`。先頭の`v`はプロバイダー側で削除されます）。
-4. **ターゲットプラットフォームで入れ替えをテストします**。リリース前に少なくとも一度実施してください。コード署名、公証、Gatekeeperへの対応はプラットフォーム固有であり、アップデーター自体の対象外です。
+2. **`Config.PublicKey`に対応する秘密鍵でアーティファクトに署名します**。プロバイダーが公開するフィード（keygen.sh、AppCast）では、各プロバイダーの署名手順に従ってください。`ChecksumAsset`を使用するGitHub Releasesでは、`sha256sum`／`shasum -a 256`を使って`SHA256SUMS`ファイルを生成します。
+3. **バージョン文字列を一致させます。** `Config.CurrentVersion`とリリースのバージョンタグは完全に一致する必要があります（例：`1.0.0` ↔ タグ`v1.0.0`。先頭の`v`はプロバイダー側で除去されます）。
+4. **出荷前に、対象プラットフォームで入れ替えを少なくとも一度テストします**。コード署名、公証、Gatekeeperへの対応はプラットフォーム固有であり、アップデーター自体の対象外です。
 
 ## トラブルシューティング
 
 **「signature requires a public key but none configured」** — リリースに`Signature`フィールドがありますが、`Config.PublicKey`が空です。公開鍵を設定するか、署名を含めないようにリリースパイプラインを変更してください。
 
-**「digest mismatch」** — ダウンロードしたバイト列がプロバイダーの提示した内容と一致しません。通常は、ネットワーク障害による不完全なダウンロードか、破損したアーティファクトが原因です。再実行すると解決することがよくあります。
+**「digest mismatch」** — ダウンロードしたバイト列がプロバイダーの提示内容と一致しません。通常は、ネットワークの一時的な不具合による不完全なダウンロードか、破損したアーティファクトが原因です。再実行すると解決することがよくあります。
 
-**ウィンドウが開いてもすぐに消え、Markdownも進捗も表示されない** — カスタムHTMLが`wails:runtime:ready`を呼び出していません。[テンプレートを置き換える](#heading-9)のshimを参照してください。
+**ウィンドウが開いてもすぐに消え、Markdownも進行状況も表示されない** — カスタムHTMLが`wails:runtime:ready`を呼び出していません。[テンプレートを置き換える](#heading-9)のshimを参照してください。
 
-**Windowsの更新が完了せず、ヘルパーログに「remove old (attempt N): Access is denied」と表示される** — この問題は、このPRの`de764fb`より前のバージョンでのみ発生します。現在の実装では、この問題が発生しないように対象を別名へ変更する方式を使用しています。アップグレードしてください。
+**Windowsの更新が完了せず、ヘルパーログに「remove old (attempt N): Access is denied」と表示される** — このPRの`de764fb`より前のバージョンでのみ発生します。現在の実装ではこの問題が発生しないrename-aside方式を使用しています。アップグレードしてください。
 
-**macOS Gatekeeperが入れ替え後のバイナリをブロックする** — コード署名をエンドツーエンドで維持する必要があります。元の`.app`に署名し、ビルドパイプラインが更新時にエンタイトルメントを変更する場合は、再起動されるバイナリにも<em>さらに</em>再署名してください。
+**macOSのGatekeeperが入れ替え後のバイナリをブロックする** — コード署名をエンドツーエンドで維持する必要があります。元の`.app`に署名し、更新時にビルドパイプラインがentitlementを変更する場合は、再起動するバイナリにも*署名し直して*ください。
 
 ## 関連項目
 
-- 実行可能な例：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
+- 実行可能なサンプル：[`v3/examples/updater`](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/updater)
 - テスト用デモリポジトリ：[`wailsapp/updater-demo`](https://github.com/wailsapp/updater-demo)
-- チュートリアル：[Wailsアプリに自己更新機能を追加する](/tutorials/04-self-update-a-wails-app/)
+- チュートリアル：[Wailsアプリに自己更新を追加する](/tutorials/04-self-update-a-wails-app/)

@@ -44,7 +44,7 @@ wails3 <command> --help
 | `generate bindings` | Generiert Bindings von Go zum Frontend. Flags: `-d` (Ausgabeverzeichnis), `-models`, `-index`, `-ts`, `-i` (Schnittstellen), `-b` (Bundle), `-names` (`Call.ByName` ausgeben), `-noevents`, `-noindex`, `-dry`, `-silent`, `-v`, `-clean` (Standard: `true`), `-f`, `-obfuscated` (`wails_obfuscated.gen.go` mit stabilen Binding-IDs für Garble-Builds generieren; siehe [Verschleierte Builds](/guides/build/obfuscation/)), `-obfuscated-output` (Verzeichnis für die generierte Datei; standardmäßig das Verzeichnis des Hauptpakets). Akzeptiert Paketmuster (z. B. `./...`); wenn keine angegeben sind, wird das aktuelle Verzeichnis verwendet. |
 | `generate icons` | Konvertiert eine Quell-PNG in die plattformspezifischen Symbolformate. Flags: `-input`, `-windowsfilename`, `-macfilename`, `-iconcomposerinput`, `-macassetdir`. |
 | `generate build-assets` | Generiert aus `build/config.yml` den Inhalt des Verzeichnisses `build/` (Taskfile-Fragmente, NSIS-Dateien, `Info.plist`, `.desktop`-Vorlage usw.). |
-| `generate runtime` | Generiert die vorgefertigte Datei `/wails/runtime.js` neu, die an die Webview ausgeliefert wird. |
+| `generate runtime` | Exportiert die in die CLI eingebetteten JavaScript-Bundles für Produktion und Debugging (`-d` legt das Ziel fest). |
 | `generate syso` | Generiert die Windows-Ressourcendatei `.syso` (Symbol + Manifest + Versionsinformationen). |
 | `generate webview2bootstrapper` | Generiert ein WebView2-Bootstrap-Installationsprogramm für Windows. |
 | `generate constants` | Generiert JS-Konstanten für Ereignisnamen aus Go-Ereignistypen. |
@@ -118,4 +118,4 @@ In dieser Version stellt der CLI-Parser `signing` und `entitlements` auf der obe
 
 ---
 
-**Fragen?** Fragen Sie auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder sehen Sie sich die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.
+**Fragen?** Fragt auf [Discord](https://discord.gg/JDdSxwjhGf) nach oder seht euch die [Beispiele](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples) an.

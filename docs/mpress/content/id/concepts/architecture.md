@@ -5,7 +5,7 @@ slug: "concepts/architecture"
 sourcePath: "concepts/architecture.md"
 ---
 
-Wails adalah kerangka kerja untuk membangun aplikasi desktop dengan **Go sebagai backend** dan **teknologi web sebagai frontend**. Namun, tidak seperti Electron, Wails tidak menyertakan browser—Wails menggunakan **WebView native milik sistem operasi**.
+Wails adalah framework untuk membangun aplikasi desktop menggunakan **Go untuk backend** dan **teknologi web untuk frontend**. Namun, tidak seperti Electron, Wails tidak menyertakan browser—Wails menggunakan **WebView native milik sistem operasi**.
 
 ```d2
 direction: left
@@ -22,7 +22,7 @@ Wails App: {
     shape: sequence_diagram
     backend."Serves Static Web App": Menyajikan Aplikasi Web Statis
     backend -> frontend: HTML / JS / CSS
-    frontend."Render Site via OS-native WebView": Merender Situs melalui WebView Bawaan OS
+    frontend."Render Site via OS-native WebView": Merender Situs melalui WebView Native OS
   }
   Regular Communication: Komunikasi Reguler {
     shape: sequence_diagram
@@ -45,15 +45,15 @@ Wails App: {
 | **Browser** | WebView yang disediakan OS | Chromium yang disertakan (~100MB) |
 | **Backend** | Go (dikompilasi) | Node.js (diinterpretasikan) |
 | **Komunikasi** | Bridge dalam memori | IPC (antarproses) |
-| **Ukuran Bundel** | ~15MB | ~150MB |
+| **Ukuran Paket** | ~15MB | ~150MB |
 | **Memori** | ~10MB | ~100MB+ |
-| **Waktu mulai** | &lt;0.5s | 2-3s |
+| **Waktu Mulai** | &lt;0.5 dtk | 2-3 dtk |
 
 ## Komponen Inti
 
 ### 1. WebView Native
 
-Wails menggunakan mesin perender web bawaan sistem operasi:
+Wails menggunakan mesin rendering web bawaan sistem operasi:
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -65,11 +65,11 @@ Wails menggunakan mesin perender web bawaan sistem operasi:
 - Dukungan penuh untuk standar web modern
 
 [macOS]
-**WebKit** (mesin perender Safari)
+**WebKit** (mesin rendering Safari)
 
 - Terintegrasi dalam macOS
 - Mesin yang sama dengan browser Safari
-- Performa dan daya tahan baterai yang sangat baik
+- Performa dan masa pakai baterai yang sangat baik
 - Dukungan penuh untuk standar web modern
 
 [Linux]
@@ -84,10 +84,10 @@ Wails menggunakan mesin perender web bawaan sistem operasi:
 
 **Mengapa hal ini penting:**
 
-- **Tanpa browser yang disertakan** → Ukuran aplikasi lebih kecil
-- **Native pada OS** → Integrasi dan performa lebih baik
+- **Tidak menyertakan browser** → Ukuran aplikasi lebih kecil
+- **Native OS** → Integrasi dan performa lebih baik
 - **Pembaruan otomatis** → Patch keamanan dari pembaruan OS
-- **Perenderan yang familier** → Sama seperti browser sistem
+- **Rendering yang familier** → Sama seperti browser sistem
 
 ### 2. Bridge Wails
 
@@ -102,7 +102,7 @@ Frontend: Frontend (JavaScript) {
 }
 
 Bridge: Bridge Wails {
-  Encoder: Enkoder JSON {
+  Encoder: Encoder JSON {
     shape: rectangle
   }
 
@@ -111,7 +111,7 @@ Bridge: Bridge Wails {
     style.fill: "#10B981"
   }
 
-  Decoder: Dekoder JSON {
+  Decoder: Decoder JSON {
     shape: rectangle
   }
 }
@@ -123,32 +123,32 @@ Backend: Backend (Go) {
   }
 }
 
-Frontend -> Bridge.Encoder: "1. Memanggil metode Go\nGreet('Alice')"
-Bridge.Encoder -> Bridge.Router: "2. Mengodekan ke JSON\n{method: 'Greet', args: ['Alice']}"
-Bridge.Router -> Backend.Services: "3. Merutekan ke layanan\nGreetService.Greet('Alice')"
-Backend.Services -> Bridge.Decoder: "4. Mengembalikan hasil\n'Hello, Alice!'"
-Bridge.Decoder -> Frontend: "5. Mendekodekan ke JS\nPromise diselesaikan"
+Frontend -> Bridge.Encoder: "1. Panggil metode Go\nGreet('Alice')"
+Bridge.Encoder -> Bridge.Router: "2. Enkode ke JSON\n{method: 'Greet', args: ['Alice']}"
+Bridge.Router -> Backend.Services: "3. Arahkan ke layanan\nGreetService.Greet('Alice')"
+Backend.Services -> Bridge.Decoder: "4. Kembalikan hasil\n'Hello, Alice!'"
+Bridge.Decoder -> Frontend: "5. Dekode ke JS\nPromise diselesaikan"
 ```
 
 **Cara kerjanya:**
 
 1. **Frontend memanggil metode Go** (melalui binding yang dibuat otomatis)
-2. **Bridge mengodekan pemanggilan** ke JSON (nama metode + argumen)
-3. **Router menemukan metode Go** dalam layanan yang terdaftar
+2. **Bridge mengenkode panggilan** ke JSON (nama metode + argumen)
+3. **Router menemukan metode Go** dalam layanan terdaftar
 4. **Metode Go dijalankan** dan mengembalikan nilai
 5. **Bridge mendekode hasil** dan mengirimkannya kembali ke frontend
 6. **Promise diselesaikan** di JavaScript dengan hasil tersebut
 
 **Karakteristik performa:**
 
-- **Dalam memori**: Tanpa overhead jaringan, tanpa HTTP
+- **Dalam memori**: Tanpa overhead jaringan dan tanpa HTTP
 - **Tanpa penyalinan** jika memungkinkan (untuk data berukuran besar)
 - **Asinkron secara default**: Tidak memblokir di kedua sisi
-- **Aman secara tipe**: Definisi TypeScript dibuat otomatis
+- **Aman secara tipe**: Definisi TypeScript dibuat secara otomatis
 
 ### 3. Sistem Layanan
 
-Layanan adalah cara yang direkomendasikan untuk mengekspos fungsionalitas Go ke frontend.
+Layanan adalah cara yang direkomendasikan untuk menyediakan fungsionalitas Go bagi frontend.
 
 ```go
 // Define a service (just a regular Go struct)
@@ -175,10 +175,10 @@ app := application.New(application.Options{
 
 **Penemuan layanan:**
 
-- Wails **memindai struct Anda** saat mulai dijalankan
-- **Metode yang diekspor** dapat dipanggil dari frontend
+- Wails **memindai struct Anda** saat dimulai
+- **Method yang diekspor** dapat dipanggil dari frontend
 - **Informasi tipe** diekstrak untuk binding TypeScript
-- **Penanganan kesalahan** berlangsung otomatis (error Go → exception JS)
+- **Penanganan error** berlangsung otomatis (error Go → exception JS)
 
 **Binding TypeScript yang dihasilkan:**
 
@@ -191,33 +191,33 @@ export function GetTime(): Promise<Date>
 **Mengapa menggunakan layanan?**
 
 - **Aman terhadap tipe**: Dukungan penuh untuk TypeScript
-- **Penemuan otomatis**: Tidak perlu mendaftarkan metode secara manual
-- **Terorganisasi**: Kelompokkan fungsionalitas yang terkait
+- **Penemuan otomatis**: Tidak perlu mendaftarkan method secara manual
+- **Terorganisasi**: Kelompokkan fungsionalitas yang berkaitan
 - **Dapat diuji**: Layanan hanyalah struct Go
 
 [Pelajari layanan lebih lanjut →](/features/bindings/services/)
 
-### 4. Sistem Peristiwa
+### 4. Sistem Event
 
-Peristiwa memungkinkan **komunikasi publikasi/langganan** antarkomponen.
+Event memungkinkan **komunikasi pub/sub** antarkomponen.
 
 ```d2
 direction: left
 
-Wails Event System: Sistem Peristiwa Wails {
+Wails Event System: Sistem Event Wails {
   shape: sequence_diagram
 
   window1: Jendela 1
   window2: Jendela 2
   backend: Backend Go
 
-  Event Driver: Penggerak Peristiwa {
+  Event Driver: Penggerak Event {
     shape: sequence_diagram
-    window1."Subscribe to 'data-updated' events": "Berlangganan peristiwa 'data-updated'"
-    window2."Subscribe to 'data-updated' events": "Berlangganan peristiwa 'data-updated'"
+    window1."Subscribe to 'data-updated' events": "Berlangganan event 'data-updated'"
+    window2."Subscribe to 'data-updated' events": "Berlangganan event 'data-updated'"
     backend.a."App Emit('data-updated', data)": "Aplikasi Emit('data-updated', data)"
-    backend.a -> window1.a: Bus Peristiwa JSON
-    backend.a -> window2: Bus Peristiwa JSON
+    backend.a -> window1.a: Bus Event JSON
+    backend.a -> window2: Bus Event JSON
     window1.a."Subscriber processes On('data-updated', handler)": "Pelanggan memproses On('data-updated', handler)"
     window2."Subscriber processes On('data-updated', handler)": "Pelanggan memproses On('data-updated', handler)"
   }
@@ -249,7 +249,7 @@ Events.On('user-logged-in', (user) => {
 })
 ```
 
-[Pelajari peristiwa lebih lanjut →](/features/events/system/)
+[Pelajari event lebih lanjut →](/features/events/system/)
 
 ## Siklus Hidup Aplikasi
 
@@ -264,39 +264,39 @@ Start: Aplikasi Dimulai {
 }
 
 Init: Inisialisasi {
-  Create: Membuat Aplikasi {
+  Create: Buat Aplikasi {
     shape: rectangle
   }
 
-  Register: Mendaftarkan Layanan {
+  Register: Daftarkan Layanan {
     shape: rectangle
   }
 
-  Setup: Menyiapkan Jendela/Menu {
-    shape: rectangle
-  }
-}
-
-Run: Perulangan Peristiwa {
-  Events: Memproses Peristiwa {
-    shape: rectangle
-  }
-
-  Messages: Menangani Pesan {
-    shape: rectangle
-  }
-
-  Render: Memperbarui UI {
+  Setup: Siapkan Jendela/Menu {
     shape: rectangle
   }
 }
 
-Shutdown: Penghentian {
-  Cleanup: Membersihkan Sumber Daya {
+Run: Loop Event {
+  Events: Proses Event {
     shape: rectangle
   }
 
-  Save: Menyimpan Status {
+  Messages: Tangani Pesan {
+    shape: rectangle
+  }
+
+  Render: Perbarui UI {
+    shape: rectangle
+  }
+}
+
+Shutdown: Penonaktifan {
+  Cleanup: Bersihkan Sumber Daya {
+    shape: rectangle
+  }
+
+  Save: Simpan Status {
     shape: rectangle
   }
 }
@@ -312,7 +312,7 @@ Init.Register -> Init.Setup
 Init.Setup -> Run.Events
 Run.Events -> Run.Messages
 Run.Messages -> Run.Render
-Run.Render -> Run.Events: Ulangi
+Run.Render -> Run.Events: Loop
 Run.Events -> Shutdown.Cleanup: Sinyal keluar
 Shutdown.Cleanup -> Shutdown.Save
 Shutdown.Save -> End
@@ -332,7 +332,7 @@ app := application.New(application.Options{
 })
 ```
 
-Tidak ada bidang `OnStartup` pada `application.Options`. Pekerjaan saat startup harus ditempatkan dalam `ServiceStartup(ctx, options)` milik layanan, dalam callback yang didaftarkan melalui `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`, atau cukup dijalankan sebelum `app.Run()`.
+Tidak ada field `OnStartup` pada `application.Options`. Pekerjaan saat startup harus ditempatkan dalam `ServiceStartup(ctx, options)` milik layanan, dalam callback yang didaftarkan melalui `app.Event.OnApplicationEvent(events.Common.ApplicationStarted, ...)`, atau cukup sebelum `app.Run()`.
 
 [Pelajari siklus hidup lebih lanjut →](/concepts/lifecycle/)
 
@@ -356,28 +356,28 @@ Source: Kode Sumber {
 }
 
 Build: Proses Build {
-  AnalyseGo: Menganalisis Kode Go {
+  AnalyseGo: Analisis Kode Go {
     shape: rectangle
   }
 
-  GenerateBindings: Menghasilkan Binding {
+  GenerateBindings: Hasilkan Binding {
     shape: rectangle
   }
 
-  BuildFrontend: Mem-build Frontend {
+  BuildFrontend: Build Frontend {
     shape: rectangle
   }
 
-  CompileGo: Mengompilasi Go {
+  CompileGo: Kompilasi Go {
     shape: rectangle
   }
 
-  Embed: Menyematkan Aset {
+  Embed: Sematkan Aset {
     shape: rectangle
   }
 }
 
-Output: Keluaran {
+Output: Output {
   Binary: "Biner Native\n(myapp.exe/.app)" {
     shape: rectangle
     style.fill: "#10B981"
@@ -385,10 +385,10 @@ Output: Keluaran {
 }
 
 Source.Go -> Build.AnalyseGo
-Build.AnalyseGo -> Build.GenerateBindings: Mengekstrak tipe
+Build.AnalyseGo -> Build.GenerateBindings: Ekstrak tipe
 Build.GenerateBindings -> Source.Frontend: Binding TypeScript
-Source.Frontend -> Build.BuildFrontend: Mengompilasi (Vite/webpack)
-Build.BuildFrontend -> Build.Embed: Aset yang Dibundel
+Source.Frontend -> Build.BuildFrontend: Kompilasi (Vite/webpack)
+Build.BuildFrontend -> Build.Embed: Aset yang dibundel
 Source.Go -> Build.CompileGo
 Build.CompileGo -> Build.Embed
 Build.Embed -> Output.Binary
@@ -397,25 +397,25 @@ Build.Embed -> Output.Binary
 **Langkah-langkah build:**
 
 1. **Analisis kode Go**
-  - Pindai metode yang diekspor dalam layanan
+  - Pindai layanan untuk menemukan method yang diekspor
   - Ekstrak tipe parameter dan nilai kembalian
-  - Buat signature metode
+  - Hasilkan signature method
 
 
-2. **Buat binding TypeScript**
+2. **Hasilkan binding TypeScript**
   - Buat file `.ts` untuk setiap layanan
   - Sertakan definisi tipe lengkap
   - Tambahkan komentar JSDoc
 
 
-3. **Bangun frontend**
+3. **Build frontend**
   - Jalankan bundler Anda (Vite, webpack, dan sebagainya)
   - Minifikasi dan optimalkan
-  - Keluarkan hasil ke `frontend/dist/`
+  - Tulis output ke `frontend/dist/`
 
 
 4. **Kompilasi Go**
-  - Kompilasi dengan pengoptimalan (`-ldflags="-s -w"`)
+  - Kompilasi dengan optimasi (`-ldflags="-s -w"`)
   - Sertakan metadata build
   - Kompilasi khusus platform
 
@@ -423,10 +423,10 @@ Build.Embed -> Output.Binary
 5. **Sematkan aset**
   - Sematkan file frontend ke dalam biner Go
   - Kompres aset
-  - Buat satu file yang dapat dieksekusi
+  - Buat satu file executable
 
 
-**Hasil:** Satu file native yang dapat dieksekusi dengan semua komponen tertanam di dalamnya.
+**Hasil:** Satu file executable native dengan semua komponen disematkan di dalamnya.
 
 [Pelajari proses build lebih lanjut →](/guides/build/building/)
 
@@ -439,7 +439,7 @@ Wails berperilaku berbeda dalam lingkungan pengembangan dan produksi:
 **Karakteristik:**
 
 - **Hot reload**: Perubahan frontend langsung dimuat ulang
-- **Source map**: Lakukan debugging menggunakan kode sumber asli
+- **Peta sumber**: Lakukan debug menggunakan sumber asli
 - **DevTools**: DevTools browser tersedia
 - **Pencatatan log**: Pencatatan log mendetail diaktifkan
 - **Frontend eksternal**: Disajikan dari server pengembangan (Vite)
@@ -464,25 +464,25 @@ WebView: WebView {
   style.fill: "#6B7280"
 }
 
-WailsApp -> DevServer: Mem-proxy permintaan
-DevServer -> WebView: Menyajikan dengan HMR
-WebView -> WailsApp: Memanggil metode Go
+WailsApp -> DevServer: Proksikan permintaan
+DevServer -> WebView: Sajikan dengan HMR
+WebView -> WailsApp: Panggil metode Go
 ```
 
 **Manfaat:**
 
-- Umpan balik seketika atas perubahan
-- Kemampuan debugging lengkap
+- Umpan balik langsung atas perubahan
+- Kemampuan debug lengkap
 - Iterasi lebih cepat
 
 [Produksi (wails3 build)]
 **Karakteristik:**
 
-- **Aset tertanam**: Frontend disertakan dalam biner saat build
+- **Aset tertanam**: Frontend disertakan dalam biner
 - **Dioptimalkan**: Diminifikasi dan dikompresi
 - **Tanpa DevTools**: Dinonaktifkan secara default
 - **Pencatatan log minimal**: Hanya kesalahan
-- **Satu file**: Semuanya terdapat dalam satu file yang dapat dieksekusi
+- **Satu berkas**: Semuanya berada dalam satu berkas yang dapat dieksekusi
 
 **Cara kerjanya:**
 
@@ -490,7 +490,7 @@ WebView -> WailsApp: Memanggil metode Go
 direction: right
 
 Binary: "Biner Tunggal\n(myapp.exe)" {
-  GoCode: Go yang Dikompilasi {
+  GoCode: Go Terkompilasi {
     shape: rectangle
     style.fill: "#00ADD8"
   }
@@ -506,13 +506,13 @@ WebView: WebView {
   style.fill: "#6B7280"
 }
 
-Binary.Assets -> WebView: Menyajikan dari memori
-WebView -> Binary.GoCode: Memanggil metode Go
+Binary.Assets -> WebView: Sajikan dari memori
+WebView -> Binary.GoCode: Panggil metode Go
 ```
 
 **Manfaat:**
 
-- Distribusi dalam satu file
+- Distribusi dalam satu berkas
 - Ukuran lebih kecil (diminifikasi)
 - Performa lebih baik
 - Tanpa dependensi eksternal
@@ -528,33 +528,33 @@ Memahami penggunaan memori membantu Anda membangun aplikasi yang efisien.
 1. **Heap Go**
   - Layanan dan status aplikasi Anda
   - Dikelola oleh pengumpul sampah Go
-  - Biasanya 5-10 MB untuk aplikasi sederhana
+  - Biasanya 5-10MB untuk aplikasi sederhana
 
 
 2. **Memori WebView**
   - DOM, heap JavaScript, CSS
   - Dikelola oleh mesin WebView
-  - Biasanya 10-20 MB untuk aplikasi sederhana
+  - Biasanya 10-20MB untuk aplikasi sederhana
 
 
 3. **Memori Bridge**
   - Buffer pesan untuk komunikasi
-  - Overhead minimal (<1 MB)
+  - Overhead minimal (<1MB)
   - Tanpa penyalinan untuk data berukuran besar jika memungkinkan
 
 
-**Tips pengoptimalan:**
+**Kiat pengoptimalan:**
 
-- **Hindari transfer data berukuran besar**: Teruskan ID, ambil detail sesuai kebutuhan
+- **Hindari transfer data berukuran besar**: Teruskan ID, lalu ambil detail saat diperlukan
 - **Gunakan event untuk pembaruan**: Jangan lakukan polling dari frontend
-- **Streaming file berukuran besar**: Jangan muat seluruhnya ke dalam memori
+- **Lakukan streaming berkas besar**: Jangan muat seluruh berkas ke dalam memori
 - **Bersihkan listener**: Hapus event listener setelah selesai
 
-[Pelajari lebih lanjut tentang performa →](/guides/performance/)
+[Pelajari performa lebih lanjut →](/guides/performance/)
 
 ## Model Keamanan
 
-Wails menyediakan arsitektur yang aman secara bawaan:
+Wails menyediakan arsitektur yang aman secara default:
 
 ```d2
 direction: down
@@ -564,7 +564,7 @@ Frontend: Frontend (Tidak Tepercaya) {
   style.fill: "#EF4444"
 }
 
-Bridge: Bridge Wails (Validasi) {
+Bridge: Wails Bridge (Validasi) {
   shape: diamond
   style.fill: "#F59E0B"
 }
@@ -574,8 +574,8 @@ Backend: Backend (Tepercaya) {
   style.fill: "#10B981"
 }
 
-Frontend -> Bridge: Memanggil metode
-Bridge -> Bridge: "Validasi:\n- Metode tersedia?\n- Tipe sudah benar?\n- Akses diizinkan?"
+Frontend -> Bridge: Panggil metode
+Bridge -> Bridge: "Validasi:\n- Apakah metode tersedia?\n- Apakah tipenya benar?\n- Apakah akses diizinkan?"
 Bridge -> Backend: Jalankan jika valid
 Backend -> Bridge: Kembalikan hasil
 Bridge -> Frontend: Kirim respons
@@ -590,14 +590,14 @@ Bridge -> Frontend: Kirim respons
 
 
 2. **Validasi tipe**
-  - Argumen diperiksa berdasarkan tipe Go
+  - Argumen diperiksa terhadap tipe Go
   - Tipe yang tidak valid ditolak
   - Mencegah serangan injeksi
 
 
 3. **Tanpa eval()**
   - Frontend tidak dapat menjalankan kode Go arbitrer
-  - Hanya metode yang telah ditentukan sebelumnya yang dapat dipanggil
+  - Hanya metode yang telah ditentukan yang dapat dipanggil
   - Tidak ada eksekusi kode dinamis
 
 
@@ -611,20 +611,20 @@ Bridge -> Frontend: Kirim respons
 
 - **Validasi input pengguna** di Go (jangan percayai frontend)
 - **Gunakan konteks** untuk autentikasi/otorisasi
-- **Sanitasi jalur file** sebelum operasi file
+- **Sanitasi jalur berkas** sebelum operasi berkas
 - **Batasi laju** operasi yang mahal
 
-[Pelajari lebih lanjut tentang keamanan →](/guides/security/)
+[Pelajari keamanan lebih lanjut →](/guides/security/)
 
 ## Langkah Berikutnya
 
-**Siklus Hidup Aplikasi** - Pahami proses startup, shutdown, dan hook siklus hidup [Pelajari Lebih Lanjut →](/concepts/lifecycle/)
+**Siklus Hidup Aplikasi** - Pahami startup, shutdown, dan hook siklus hidup [Pelajari Lebih Lanjut →](/concepts/lifecycle/)
 
 **Bridge Go-Frontend** - Pelajari secara mendalam cara kerja bridge [Pelajari Lebih Lanjut →](/concepts/bridge/)
 
 **Sistem Build** - Pahami cara Wails membangun aplikasi Anda [Pelajari Lebih Lanjut →](/concepts/build-system/)
 
-**Mulai Membangun** - Terapkan yang telah Anda pelajari dalam tutorial [Tutorial →](/tutorials/03-notes-vanilla/)
+**Mulai Membangun** - Terapkan hal yang telah Anda pelajari dalam tutorial [Tutorial →](/tutorials/03-notes-vanilla/)
 
 ---
 

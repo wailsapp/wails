@@ -1,27 +1,27 @@
 ---
 title: "애플리케이션 메뉴"
-description: "데스크톱 애플리케이션용 네이티브 메뉴 막대 만들기"
+description: "데스크톱 애플리케이션용 네이티브 메뉴 모음 만들기"
 slug: "features/menus/application"
 sourcePath: "features/menus/application.md"
 ---
 
-## 문제점
+## 문제
 
-전문적인 데스크톱 애플리케이션에는 파일, 편집, 보기, 도움말 등의 메뉴 막대가 필요합니다. 하지만 메뉴는 플랫폼마다 다르게 동작합니다.
+전문적인 데스크톱 애플리케이션에는 파일, 편집, 보기, 도움말 등의 메뉴 모음이 필요합니다. 하지만 메뉴는 플랫폼마다 다르게 작동합니다.
 
-- **macOS**: 화면 상단의 전역 메뉴 막대
-- **Windows**: 창 제목 표시줄의 메뉴 막대
+- **macOS**: 화면 상단의 전역 메뉴 모음
+- **Windows**: 창 제목 표시줄의 메뉴 모음
 - **Linux**: 데스크톱 환경에 따라 다름
 
-플랫폼에 적합한 메뉴를 수동으로 만들려면 번거롭고 오류가 발생하기 쉽습니다.
+각 플랫폼에 적합한 메뉴를 직접 만드는 작업은 번거롭고 오류가 발생하기 쉽습니다.
 
 ## Wails 솔루션
 
-Wails는 플랫폼 네이티브 메뉴를 자동으로 만드는 <strong>통합 API</strong>를 제공합니다. 한 번만 작성하면 모든 플랫폼에서 네이티브 동작을 구현할 수 있습니다.
+Wails는 플랫폼 네이티브 메뉴를 자동으로 만드는 **통합 API**를 제공합니다. 한 번만 작성하면 모든 플랫폼에서 네이티브 동작을 구현할 수 있습니다.
 
-![표준 항목, 체크박스 항목, 라디오 항목 및 하위 메뉴 항목이 포함된 macOS용 Wails 애플리케이션 메뉴](/assets/screenshots/application-menu-macos.png)
+![표준 항목, 체크박스 항목, 라디오 항목 및 하위 메뉴 항목이 있는 macOS용 Wails 애플리케이션 메뉴](/assets/screenshots/application-menu-macos.png)
 
-macOS에서는 애플리케이션 메뉴가 전역 메뉴 막대에 배치됩니다. 이 캡처에는 비활성화된 항목, 체크박스 항목, 라디오 항목 및 하위 메뉴 항목을 포함하여 Wails 메뉴 API가 렌더링한 네이티브 메뉴가 표시되어 있습니다.
+macOS에서는 애플리케이션 메뉴가 전역 메뉴 모음에 배치됩니다. 이 화면에는 비활성화 항목, 체크박스 항목, 라디오 항목 및 하위 메뉴 항목을 포함하여 Wails 메뉴 API가 렌더링한 네이티브 메뉴가 표시되어 있습니다.
 
 ## 빠른 시작
 
@@ -62,7 +62,7 @@ func main() {
 }
 ```
 
-**이것으로 끝입니다!** 이제 표준 항목이 포함된 플랫폼 네이티브 메뉴를 사용할 수 있습니다. `UseApplicationMenu` 옵션을 사용하면 추가 코드 없이 Windows 및 Linux 창에 메뉴가 표시됩니다.
+**이것으로 끝입니다!** 이제 표준 항목이 포함된 플랫폼 네이티브 메뉴를 사용할 수 있습니다. `UseApplicationMenu` 옵션을 사용하면 별도의 코드를 추가하지 않아도 Windows와 Linux 창에 메뉴가 표시됩니다.
 
 ## 메뉴 만들기
 
@@ -93,7 +93,7 @@ fileMenu.Add("Quit").OnClick(func(ctx *application.Context) {
 
 ### 메뉴 설정하기
 
-**권장 방식** — 플랫폼 간 일관성을 위해 `UseApplicationMenu`를 사용하세요.
+**권장 방식** — 플랫폼 간 일관성을 유지하려면 `UseApplicationMenu`를 사용하세요.
 
 ```go
 // Set the application menu once
@@ -105,7 +105,7 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-이 방식은 다음과 같이 동작합니다.
+이 방식은 다음과 같이 작동합니다.
 
 - **macOS**: 메뉴가 화면 상단에 표시됩니다(표준 동작).
 - **Windows/Linux**: `UseApplicationMenu: true`가 설정된 각 창에 애플리케이션 메뉴가 표시됩니다.
@@ -114,16 +114,16 @@ app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 @tabs{sync-key="platform"}
 [macOS]
-**전역 메뉴 막대**(애플리케이션당 하나):
+**전역 메뉴 모음**(애플리케이션당 하나):
 
 ```go
 app.Menu.Set(menu)
 ```
 
-메뉴는 화면 상단에 표시되며 모든 창을 닫아도 유지됩니다. macOS에서는 모든 앱이 전역 메뉴를 사용하므로 `UseApplicationMenu` 옵션이 아무런 영향을 주지 않습니다.
+메뉴는 화면 상단에 표시되며 모든 창을 닫은 후에도 유지됩니다. macOS의 모든 앱은 전역 메뉴를 사용하므로 `UseApplicationMenu` 옵션은 macOS에서 아무 효과가 없습니다.
 
 [Windows]
-**창별 메뉴 막대**:
+**창별 메뉴 모음**:
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -136,10 +136,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-각 창에 자체 메뉴를 설정하거나 애플리케이션 메뉴를 상속하도록 할 수 있습니다. 메뉴는 창의 제목 표시줄에 나타납니다.
+각 창에 자체 메뉴를 지정하거나 애플리케이션 메뉴를 상속하도록 할 수 있습니다. 메뉴는 창의 제목 표시줄에 나타납니다.
 
 [Linux]
-**창별 메뉴 막대**(일반적인 경우):
+**창별 메뉴 모음**(일반적인 경우):
 
 ```go
 // Option 1: Use application menu (recommended)
@@ -152,12 +152,12 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 window.SetMenu(menu)
 ```
 
-동작은 데스크톱 환경에 따라 다릅니다. 일부 환경(예: Unity)은 전역 메뉴를 지원합니다.
+동작은 데스크톱 환경에 따라 다릅니다. Unity와 같은 일부 환경은 전역 메뉴를 지원합니다.
 
 @end
 
 @note{type="tip" title="크로스 플랫폼 메뉴 간소화"}
-`UseApplicationMenu: true`를 사용하면 다음과 같은 플랫폼별 코드가 필요하지 않습니다.
+`UseApplicationMenu: true`를 사용하면 다음과 같은 플랫폼별 코드를 작성할 필요가 없습니다.
 
 ```go
 // Old approach - no longer needed
@@ -172,15 +172,27 @@ if runtime.GOOS == "darwin" {
 
 **창별 사용자 지정 메뉴:**
 
-창에 애플리케이션 메뉴와 다른 메뉴가 필요한 경우 해당 창에 직접 설정하세요.
+창에 애플리케이션 메뉴와 다른 메뉴가 필요하면 해당 창에 직접 설정하세요.
 
 ```go
 window.SetMenu(customMenu)  // Overrides UseApplicationMenu
 ```
 
+**창의 메뉴 모음 제거하기:**
+
+창에서 메뉴 모음을 제거하려면 `nil`를 전달하세요.
+
+```go
+window.SetMenu(nil)
+```
+
+그러면 Windows와 Linux에서는 창에 메뉴 모음이 표시되지 않습니다. `UseApplicationMenu`를 통해 사용하도록 설정한 애플리케이션 메뉴도 표시되지 않으며, 제거된 메뉴의 단축키도 해당 창에서 더 이상 작동하지 않습니다. 창이 시작되기 전에 호출하면 메뉴 모음이 없는 창이 생성됩니다. 나중에 `SetMenu(menu)`를 호출하면 메뉴 모음이 다시 표시됩니다.
+
+macOS에서는 메뉴 모음이 창이 아닌 애플리케이션에 속하므로 `SetMenu`는 아무 작업도 하지 않습니다. 애플리케이션 메뉴를 변경하려면 `app.Menu.Set`를 사용하세요.
+
 ## 메뉴 역할
 
-Wails는 플랫폼에 적합한 메뉴 구조를 자동으로 만드는 <strong>사전 정의된 메뉴 역할</strong>을 제공합니다.
+Wails는 플랫폼에 적합한 메뉴 구조를 자동으로 만드는 **미리 정의된 메뉴 역할**을 제공합니다.
 
 ### 사용 가능한 역할
 
@@ -215,16 +227,16 @@ menu.AddRole(application.HelpMenu)
 [macOS]
 **AppMenu**(앱 이름 포함):
 
-- [App Name] 정보
+- [앱 이름] 정보
 - 환경설정... (⌘,)
 - ---
 - 서비스
 - ---
-- [App Name] 가리기 (⌘H)
+- [앱 이름] 가리기 (⌘H)
 - 다른 항목 가리기 (⌥⌘H)
 - 모두 보기
 - ---
-- [App Name] 종료 (⌘Q)
+- [앱 이름] 종료 (⌘Q)
 
 **FileMenu**:
 
@@ -252,7 +264,7 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**:
 
-- [App Name] 도움말
+- [앱 이름] 도움말
 
 [Windows]
 **FileMenu**:
@@ -264,13 +276,13 @@ menu.AddRole(application.HelpMenu)
 
 **EditMenu**:
 
-- 실행 취소 (Ctrl+Z)
-- 다시 실행 (Ctrl+Y)
+- 실행 취소(Ctrl+Z)
+- 다시 실행(Ctrl+Y)
 - ---
-- 잘라내기 (Ctrl+X)
-- 복사 (Ctrl+C)
-- 붙여넣기 (Ctrl+V)
-- 모두 선택 (Ctrl+A)
+- 잘라내기(Ctrl+X)
+- 복사(Ctrl+C)
+- 붙여넣기(Ctrl+V)
+- 모두 선택(Ctrl+A)
 
 **WindowMenu**:
 
@@ -279,16 +291,16 @@ menu.AddRole(application.HelpMenu)
 
 **HelpMenu**:
 
-- [App Name] 정보
+- [앱 이름] 정보
 
 [Linux]
-Windows와 유사하지만 키보드 단축키는 데스크톱 환경에 따라 다를 수 있습니다.
+Windows와 비슷하지만 키보드 단축키는 데스크톱 환경에 따라 다를 수 있습니다.
 
 @end
 
 ### 역할 메뉴 사용자 지정
 
-`Menu.AddRole(role)`은 역할의 하위 메뉴가 **아니라** **리시버** 메뉴(최상위 메뉴)를 반환합니다. 역할의 하위 메뉴에 항목을 추가하려면 `FindByRole`으로 삽입된 역할 항목을 찾은 다음 해당 항목에서 `GetSubmenu()`을 호출하세요:
+`Menu.AddRole(role)`은 역할의 하위 메뉴가 **아니라** **리시버** 메뉴(최상위 메뉴)를 반환합니다. 역할의 하위 메뉴에 항목을 추가하려면 `FindByRole`으로 삽입된 역할 항목을 찾은 후 해당 항목에서 `GetSubmenu()`을 호출하세요.
 
 ```go
 menu.AddRole(application.FileMenu)
@@ -329,7 +341,7 @@ advancedMenu := toolsMenu.AddSubmenu("Advanced")
 advancedMenu.Add("Configure...").OnClick(showAdvancedSettings)
 ```
 
-<strong>더 많은 메뉴 항목 유형</strong>은 [메뉴 레퍼런스](/features/menus/reference/)를 참조하세요.
+**더 많은 메뉴 항목 유형**은 [메뉴 레퍼런스](/features/menus/reference/)를 참조하세요.
 
 ## 동적 메뉴
 
@@ -358,7 +370,7 @@ func onDocumentChanged() {
 ```
 
 @note{type="caution" title="항상 menu.Update() 호출"}
-메뉴 상태(활성화/비활성화, 레이블, 선택 상태)를 변경한 후에는 <strong>항상 `menu.Update()`</strong>을 호출하세요. 메뉴가 재구성되는 Windows에서는 특히 중요합니다.
+메뉴 상태(활성화/비활성화, 레이블, 선택 상태)를 변경한 후에는 <strong>항상 `menu.Update()`</strong>을 호출하세요. 메뉴를 다시 구성하는 Windows에서는 특히 중요합니다.
 
 자세한 내용은 [메뉴 레퍼런스](/features/menus/reference/#enabled-state)를 참조하세요.
 
@@ -382,7 +394,7 @@ updateMenuItem.OnClick(func(ctx *application.Context) {
 
 ### 메뉴 다시 빌드
 
-큰 변경 사항이 있는 경우 전체 메뉴를 다시 빌드하세요:
+변경 사항이 크다면 전체 메뉴를 다시 빌드하세요:
 
 ```go
 func rebuildFileMenu() {
@@ -457,7 +469,7 @@ menuItem.OnClick(func(ctx *application.Context) {
 
 **메뉴 막대 동작:**
 
-- <strong>화면 상단</strong>에 전역으로 표시됩니다
+- **화면 상단**에 전역으로 표시됩니다
 - 모든 창을 닫아도 유지됩니다
 - 첫 번째 메뉴는 **항상 애플리케이션 메뉴입니다**
 - 표준 항목에는 `menu.AddRole(application.AppMenu)`을 사용하세요
@@ -465,8 +477,8 @@ menuItem.OnClick(func(ctx *application.Context) {
 **표준 위치:**
 
 - **정보**: 애플리케이션 메뉴
-- **환경설정**: 애플리케이션 메뉴 (⌘,)
-- **종료**: 애플리케이션 메뉴 (⌘Q)
+- **환경설정**: 애플리케이션 메뉴(⌘,)
+- **종료**: 애플리케이션 메뉴(⌘Q)
 - **도움말**: 도움말 메뉴
 
 **예:**
@@ -484,13 +496,13 @@ if runtime.GOOS == "darwin" {
 
 **메뉴 막대 동작:**
 
-- <strong>창 제목 표시줄</strong>에 표시됩니다
-- 각 창에는 자체 메뉴가 있습니다
+- **창 제목 표시줄**에 표시됩니다
+- 각 창에 자체 메뉴가 있습니다
 - 애플리케이션 메뉴가 없습니다
 
 **표준 위치:**
 
-- **종료**: 파일 메뉴 (Alt+F4)
+- **끝내기**: 파일 메뉴(Alt+F4)
 - **설정**: 도구 또는 편집 메뉴
 - **정보**: 도움말 메뉴
 
@@ -507,15 +519,15 @@ if runtime.GOOS == "windows" {
 
 **메뉴 막대 동작:**
 
-- 일반적으로 창별로 표시됩니다(Windows와 유사)
-- 일부 데스크톱 환경은 전역 메뉴를 지원합니다(Unity, 확장 기능을 사용하는 GNOME).
-- 모양은 데스크톱 환경에 따라 달라집니다.
+- 일반적으로 창별로 표시됩니다(Windows와 동일)
+- 일부 데스크톱 환경은 전역 메뉴를 지원합니다(Unity, 확장 기능을 사용하는 GNOME)
+- 모양은 데스크톱 환경에 따라 다릅니다
 
 **권장 사항:** Windows 규칙을 따르고 대상 데스크톱 환경에서 테스트하세요.
 
 ## 전체 예제
 
-다음은 프로덕션 환경에서 바로 사용할 수 있는 메뉴 구조입니다.
+다음은 프로덕션에 사용할 수 있는 메뉴 구조입니다:
 
 ```go
 package main
@@ -641,28 +653,28 @@ func showAbout(ctx *application.Context) {
 
 ### ✅ 해야 할 일
 
-- 표준 메뉴(파일, 편집 등)에는 **메뉴 역할을 사용하세요**.
-- 메뉴 구조는 **플랫폼 규칙을 따르세요**.
-- 자주 사용하는 작업에 **키보드 단축키를 추가하세요**.
-- 메뉴 상태를 변경한 후에는 **menu.Update()를 호출하세요**.
-- 동작 방식이 다를 수 있으므로 **모든 플랫폼에서 테스트하세요**.
-- **메뉴 계층을 얕게 유지하세요**. 최대 2-3단계까지만 사용하세요.
-- **명확한 레이블을 사용하세요**. "저장"이 아니라 "프로젝트 저장"을 사용하세요.
+- 표준 메뉴(파일, 편집 등)에는 **메뉴 역할을 사용하세요**
+- 메뉴 구조는 **플랫폼 규칙을 따르세요**
+- 자주 사용하는 작업에는 **키보드 단축키를 추가하세요**
+- 메뉴 상태를 변경한 후에는 **menu.Update()를 호출하세요**
+- 동작이 서로 다르므로 **모든 플랫폼에서 테스트하세요**
+- **메뉴 계층을 얕게 유지하세요**. 최대 2-3단계로 제한하세요
+- **명확한 레이블을 사용하세요**. "저장"이 아니라 "프로젝트 저장"을 사용하세요
 
 ### ❌ 하지 말아야 할 일
 
-- **플랫폼별 단축키를 하드코딩하지 마세요**. `CmdOrCtrl`을 사용하세요.
-- **macOS에서는 파일 메뉴에 종료를 넣지 마세요**. 종료는 애플리케이션 메뉴에 있습니다.
-- **macOS에서는 도움말 메뉴에 정보를 넣지 마세요**. 정보는 애플리케이션 메뉴에 있습니다.
-- **menu.Update() 호출을 잊지 마세요**. 그렇지 않으면 메뉴가 제대로 작동하지 않습니다.
-- **메뉴를 너무 깊게 중첩하지 마세요**. 사용자가 길을 잃을 수 있습니다.
-- **전문 용어를 사용하지 마세요**. 사용자가 이해하기 쉬운 레이블을 사용하세요.
+- **플랫폼 단축키를 하드코딩하지 마세요**. `CmdOrCtrl`을 사용하세요
+- **macOS의 파일 메뉴에 종료를 넣지 마세요**. 종료는 애플리케이션 메뉴에 있습니다
+- **macOS의 도움말 메뉴에 정보를 넣지 마세요**. 정보는 애플리케이션 메뉴에 있습니다
+- **menu.Update() 호출을 잊지 마세요**. 그렇지 않으면 메뉴가 제대로 작동하지 않습니다
+- **너무 깊게 중첩하지 마세요**. 사용자가 길을 잃게 됩니다
+- **전문 용어를 사용하지 마세요**. 사용자에게 친숙한 레이블을 사용하세요
 
 ## 다음 단계
 
 @cards{cols="2"}
-📖 메뉴 참조
-메뉴 항목 유형과 속성에 관한 전체 참조입니다.
+📖 메뉴 레퍼런스
+메뉴 항목 유형과 속성에 관한 전체 레퍼런스입니다.
 
 [자세히 알아보기 →](/features/menus/reference/)
 
@@ -674,7 +686,7 @@ func showAbout(ctx *application.Context) {
 
 ---
 ★ 시스템 트레이 메뉴
-시스템 트레이/메뉴 막대 통합을 추가하세요.
+시스템 트레이/메뉴 막대 연동을 추가하세요.
 
 [자세히 알아보기 →](/features/menus/systray/)
 

@@ -11,9 +11,9 @@ sourcePath: "reference/menu.md"
 
 **メニューの種類：**
 
-- **アプリケーションメニュー** — 上部のメニューバー（ファイル、編集など）
-- **コンテキストメニュー** — 右クリックメニュー
-- **システムトレイメニュー** — システムトレイ／通知領域のメニュー
+- **アプリケーションメニュー** - 上部のメニューバー（ファイル、編集など）
+- **コンテキストメニュー** - 右クリックメニュー
+- **システムトレイメニュー** - システムトレイ／通知領域のメニュー
 
 ## メニューの作成
 
@@ -43,7 +43,7 @@ func (m *Menu) Add(label string) *MenuItem
 
 **パラメーター：**
 
-- `label` — メニュー項目に表示するテキスト
+- `label` - メニュー項目に表示するテキスト
 
 **戻り値：** 作成されたメニュー項目
 
@@ -66,7 +66,7 @@ func (m *Menu) AddSubmenu(label string) *Menu
 
 **パラメーター：**
 
-- `label` — サブメニューのラベル
+- `label` - サブメニューのラベル
 
 **戻り値：** 作成されたサブメニュー
 
@@ -96,17 +96,19 @@ menu.AddSeparator()
 menu.Add("Select All")
 ```
 
-**ベストプラクティス：** 関連するメニュー項目をグループ化するには、セパレーターを使用します。
+**ベストプラクティス：** 関連するメニュー項目をまとめるには、区切り線を使用します。
 
 ### AddSectionHeader()
 
-**macOS 14 以降**で、ネイティブで操作できないセクション見出しを追加します。古いバージョンの macOS とその他すべてのプラットフォーム（サーバービルドを含む）では何もせず、代わりの項目も挿入しません。
+**macOS 14 以降では、ネイティブの操作不可なセクション見出しを追加します**。
+それより古いバージョンの macOS およびその他すべてのプラットフォーム（サーバービルドを含む）では、
+何も行われず、プレースホルダー項目も挿入されません。
 
 ```go
 func (m *Menu) AddSectionHeader(label string)
 ```
 
-トレイメニュー、コンテキストメニュー、アプリケーションメニューでグループにラベルを付けるには、見出しを使用します：
+トレイメニュー、コンテキストメニュー、またはアプリケーションメニュー内のグループにラベルを付けるには、見出しを使用します。
 
 ```go
 menu.AddSectionHeader("mac-node1")
@@ -116,9 +118,12 @@ menu.AddSectionHeader("ai-master")
 menu.Add("Build VM").OnClick(openBuildVM)
 ```
 
-見出しは AppKit の標準的なセクション見出しの外観を使用します。表示中のメニューを再構築した後は、他の構造変更と同様に `menu.Update()` を呼び出してください。`os.Hostname()` で取得した見出しの例は `systray-menu` サンプルを参照してください。
+見出しには、AppKit 標準のセクションヘッダー表示が使用されます。すでに表示されているメニューを再構築した後は、ほかの構造変更の場合と同様に
+`menu.Update()`を呼び出してください。`os.Hostname()`から取得した見出しについては、
+`systray-menu`の例を参照してください。
 
-省略された見出しはラジオグループを分割しません。すべてのプラットフォームでグループを分離する必要がある場合は、`AddSeparator()` を使用してください。
+省略された見出しは、ラジオグループを分割しません。すべてのプラットフォームでラジオ
+グループを分離しておく必要がある場合は、`AddSeparator()`を使用してください。
 
 ### AddCheckbox()
 
@@ -130,8 +135,8 @@ func (m *Menu) AddCheckbox(label string, checked bool) *MenuItem
 
 **パラメーター：**
 
-- `label` — チェックボックスのラベル
-- `checked` — チェック状態の初期値
+- `label` - チェックボックスのラベル
+- `checked` - チェック状態の初期値
 
 **例：**
 
@@ -145,7 +150,7 @@ darkMode.OnClick(func(ctx *application.Context) {
 
 ### AddRadio()
 
-ラジオ形式のメニュー項目（相互排他的なグループ）を追加します。
+ラジオメニュー項目（相互排他的なグループ）を追加します。
 
 ```go
 func (m *Menu) AddRadio(label string, checked bool) *MenuItem
@@ -153,8 +158,8 @@ func (m *Menu) AddRadio(label string, checked bool) *MenuItem
 
 **パラメーター：**
 
-- `label` — ラジオボタンのラベル
-- `checked` — チェック状態の初期値
+- `label` - ラジオボタンのラベル
+- `checked` - チェック状態の初期値
 
 **例：**
 
@@ -188,7 +193,7 @@ item.SetEnabled(false)
 menu.Update()  // Must call to apply changes
 ```
 
-**重要：** メニュー項目のプロパティを変更した後は、必ず `Update()` を呼び出してください。
+**重要：** メニュー項目のプロパティを変更した後は、必ず`Update()`を呼び出してください。
 
 ## メニュー項目のメソッド
 
@@ -202,7 +207,7 @@ func (mi *MenuItem) OnClick(callback func(ctx *application.Context)) *MenuItem
 
 **パラメーター：**
 
-- `callback` — 項目がクリックされたときに呼び出される関数
+- `callback` - 項目がクリックされたときに呼び出される関数
 
 **戻り値：** メニュー項目（メソッドチェーン用）
 
@@ -260,7 +265,7 @@ func updateMenuState() {
 
 ### SetChecked()
 
-チェックボックス形式／ラジオ形式のメニュー項目のチェック状態を設定します。
+チェックボックス／ラジオメニュー項目のチェック状態を設定します。
 
 ```go
 func (mi *MenuItem) SetChecked(checked bool) *MenuItem
@@ -299,13 +304,13 @@ func (mi *MenuItem) SetAccelerator(accelerator string) *MenuItem
 
 **パラメーター：**
 
-- `accelerator` — キーボードショートカット（例："Ctrl+S"、"Cmd+Q"）
+- `accelerator` - キーボードショートカット（例："Ctrl+S"、"Cmd+Q"）
 
 **アクセラレーターの形式：**
 
 - **修飾キー：** `Ctrl`、`Cmd`、`Alt`、`Shift`
 - **キー：** `A-Z`、`0-9`、`F1-F12`、`Enter`、`Backspace`など
-- **プラットフォーム：** macOS では `Cmd`、Windows/Linux では `Ctrl` を使用します。
+- **プラットフォーム：** macOS では`Cmd`、Windows/Linux では`Ctrl`を使用します
 
 **例：**
 
@@ -331,7 +336,7 @@ quitItem.SetAccelerator(quitShortcut)
 
 ### SetTooltip()
 
-メニュー項目にマウスポインターを合わせたときに表示されるツールチップを設定します。
+メニュー項目にカーソルを合わせたときに表示されるツールチップを設定します。
 
 ```go
 func (mi *MenuItem) SetTooltip(tooltip string) *MenuItem
@@ -345,7 +350,7 @@ item.SetTooltip("Opens a file from disk")
 
 ### SetHidden()
 
-メニュー項目の表示と非表示を切り替えます。
+メニュー項目を表示または非表示にします。
 
 ```go
 func (mi *MenuItem) SetHidden(hidden bool) *MenuItem
@@ -396,17 +401,17 @@ editMenu.Add("Paste").SetAccelerator("Ctrl+V").OnClick(paste)
 app.Menu.Set(menu)
 ```
 
-**プラットフォームに関する注意事項：**
+**プラットフォームに関する注記：**
 
 - <strong>macOS：</strong>メニューは画面上部のメニューバーに表示されます
 - <strong>Windows/Linux：</strong>メニューはウィンドウのタイトルバーに表示されます
-- <strong>macOS：</strong>アプリ名を含むアプリケーションメニューが自動的に追加されます
+- <strong>macOS：</strong>アプリ名を使用したアプリケーションメニューが自動的に追加されます
 
 ## コンテキストメニュー
 
 ### app.ContextMenu.New() / app.ContextMenu.Add()
 
-マネージャーを介して`*ContextMenu`を作成し、名前を付けて登録します。`ContextMenuManager.Add`が受け取るのは`*ContextMenu`であり、****`*Menu`ではありません。また、****`app.RegisterContextMenu`メソッドは存在しません。
+マネージャーを介して`*ContextMenu`を作成し、名前を付けて登録します。`ContextMenuManager.Add`が受け取るのは`*ContextMenu`であり、****`*Menu`ではありません。また、****`app.RegisterContextMenu`メソッドはありません。
 
 ```go
 func (cm *ContextMenuManager) New() *ContextMenu
@@ -415,7 +420,7 @@ func (cm *ContextMenuManager) Get(name string) (*ContextMenu, bool)
 func (cm *ContextMenuManager) Remove(name string)
 ```
 
-別の方法として、パッケージレベルの`application.NewContextMenu(name string) *ContextMenu`を使用すると、コンテキストメニューの作成と登録を一度に行えます。
+代わりに、パッケージレベルの`application.NewContextMenu(name string) *ContextMenu`を使用すると、コンテキストメニューの作成と登録を一度に行えます。
 
 **Go：**
 
@@ -434,7 +439,7 @@ app.ContextMenu.Add("editor", contextMenu)
 
 **HTML / CSS：**
 
-右クリックの対象要素（またはその祖先要素）の`--custom-contextmenu` CSSカスタムプロパティに登録名が設定されていると、ランタイムは登録済みのコンテキストメニューを表示します。省略可能な`--custom-contextmenu-data`プロパティは、`ctx.ContextMenuData()`を介してGoコールバックに渡されます。ブラウザーの既定のコンテキストメニューを抑制するには、`--default-contextmenu: hide`（または`auto`/`show`）を設定します。
+右クリックの対象要素（またはその祖先要素）の`--custom-contextmenu` CSSカスタムプロパティに登録名が設定されていると、ランタイムは登録済みのコンテキストメニューを表示します。省略可能な`--custom-contextmenu-data`プロパティは、`ctx.ContextMenuData()`を介してGoコールバックに渡されます。ブラウザーのデフォルトのコンテキストメニューを抑止するには、`--default-contextmenu: hide`（または`auto`/`show`）を設定します。
 
 ```html
 <!-- Trigger context menu on right-click -->
@@ -443,7 +448,7 @@ app.ContextMenu.Add("editor", contextMenu)
 </div>
 ```
 
-`data-wails-context-menu="..."`属性は存在しません。これはランタイムに一度も組み込まれていません。
+`data-wails-context-menu="..."`属性はありません。これはランタイムに一度も接続されていません。
 
 **動的コンテキストメニュー：**
 
@@ -521,7 +526,7 @@ tray.SetMenu(trayMenu)
 
 ### SetTooltip()
 
-トレイアイコンにマウスポインターを合わせたときに表示されるツールチップを設定します。戻り値はありません。
+トレイアイコンにカーソルを合わせたときに表示されるツールチップを設定します。戻り値はありません。
 
 ```go
 func (st *SystemTray) SetTooltip(tooltip string)
@@ -556,7 +561,7 @@ tray.OnClick(func() {
 
 ## 完全な例
 
-### 標準アプリケーションメニュー
+### 標準的なアプリケーションメニュー
 
 ```go
 package main
@@ -752,31 +757,31 @@ func (e *Editor) save() {
 
 ### ✅ 推奨事項
 
-- **標準のアクセラレーターを使用する** — プラットフォームの慣例に従います（コピーにはCtrl+Cなど）
-- **変更後にUpdate()を呼び出す** — 呼び出さないと、変更がメニューに反映されません
-- **関連する項目をグループ化する** — 区切り線を使用してメニュー項目を整理します
-- **使用できない操作を無効化する** — 非表示にせず、SetEnabled(false)で無効化します
-- **明確なラベルを使用する** — 簡潔で内容の分かる表現にします
-- **プラットフォームの慣例に従う** — macOSとWindows/Linuxではメニューのパターンが異なります
+- **標準的なアクセラレーターを使用する** - プラットフォームの慣例に従ってください（コピーにはCtrl+Cなど）
+- **変更後にUpdate()を呼び出す** - 呼び出さないと、変更がメニューに反映されません
+- **関連する項目をグループ化する** - セパレーターを使用してメニュー項目を整理してください
+- **利用できないアクションを無効化する** - 非表示にせず、SetEnabled(false)で無効化してください
+- **明確なラベルを使用する** - 簡潔で内容が伝わる表現にしてください
+- **プラットフォームの慣例に従う** - macOSとWindows/Linuxではメニューのパターンが異なります
 
-### ❌ 非推奨事項
+### ❌ 禁止事項
 
-- **Update()を忘れない** — 最もよくある間違いです
-- **階層を深くしすぎない** — メニューは最大2-3階層に抑えます
-- **曖昧なラベルを使用しない** — 「処理」ではなく「ドキュメントを処理」のようにします
-- **複雑にしすぎない** — メニューはシンプルにし、目的を絞ります
-- **異なるメタファーを混在させない** — 名前付けと構成に一貫性を持たせます
+- **Update()の呼び出しを忘れない** - 最もよくある間違いです
+- **深くネストしすぎない** - メニューは最大2-3階層にしてください
+- **曖昧なラベルを使用しない** - 「処理」ではなく「ドキュメントを処理」のように明確にしてください
+- **複雑にしすぎない** - メニューはシンプルで目的を絞った構成にしてください
+- **異なる概念を混在させない** - 命名と構成に一貫性を持たせてください
 
 ## プラットフォーム固有の注意事項
 
 ### macOS
 
-- アプリ名を含むアプリケーションメニューが自動的に追加されます
+- アプリ名を使用したアプリケーションメニューが自動的に追加されます
 - アクセラレーターには`Ctrl`ではなく`Cmd`を使用します
-- 既定では、アプリケーションメニューに「このアプリについて」、「環境設定」、「終了」が含まれます
+- デフォルトでは、アプリケーションメニューに「このアプリケーションについて」、「環境設定」、「終了」が含まれます
 
 ### Windows/Linux
 
-- アプリケーションメニューは自動的に作成されません
+- アプリケーションメニューは自動的に追加されません
 - アクセラレーターには`Ctrl`を使用します
-- 「終了」は通常、「ファイル」メニューに配置します
+- 通常、「終了」は「ファイル」メニューに配置します

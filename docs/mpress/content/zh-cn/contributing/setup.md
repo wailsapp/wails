@@ -228,7 +228,7 @@ go test ./... -race
 
 ## 处理文档
 
-文档贡献者无需安装 Wails CLI 或桌面构建依赖项即可使用 M-Press。有关固定版本可执行文件的下载、安装、实时预览、验证以及面向 `master` 分支的 PR 工作流，请参阅[使用 M-Press 编写文档](/contributing/documentation/)。
+文档贡献者无需安装 Wails CLI 或桌面应用构建依赖项即可使用 M-Press。请按照[使用 M-Press 编写文档](/contributing/documentation/)中的说明，获取固定版本的可执行文件下载、安装、实时预览、验证以及以`master`为目标的 PR 工作流。
 
 英文 Markdown 文件位于 `docs/mpress/content/`；翻译文件位于各语言目录中。在仓库根目录运行 `mpress dev`，即可在 `http://127.0.0.1:3000` 提供预览。运行指南中的验证命令之前，请先按 Ctrl+C 停止预览。
 

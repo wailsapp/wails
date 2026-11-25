@@ -7,13 +7,13 @@ sourcePath: "features/bindings/best-practices.md"
 
 ## Práticas recomendadas para bindings
 
-Siga **padrões comprovados** ao projetar bindings para criar bindings claros, eficientes e seguros. Este guia aborda princípios de projeto de APIs, otimização de desempenho, padrões de segurança, tratamento de erros e estratégias de teste para aplicações de fácil manutenção.
+Siga **padrões comprovados** ao projetar bindings para torná-los claros, eficientes e seguros. Este guia aborda princípios de design de APIs, otimização de desempenho, padrões de segurança, tratamento de erros e estratégias de teste para aplicações fáceis de manter.
 
-## Princípios de projeto de APIs
+## Princípios de design de APIs
 
 ### 1. Responsabilidade única
 
-Cada serviço deve ter uma única finalidade bem definida:
+Cada serviço deve ter uma única finalidade clara:
 
 ```go
 // ❌ Bad: God object
@@ -112,7 +112,7 @@ func (s *UserService) CreateUser(email, password string) (*User, error) {
 
 ### 1. Operações em lote
 
-Reduza as chamadas pela ponte agrupando as operações em lotes:
+Reduza as chamadas à ponte agrupando as operações em lotes:
 
 ```go
 // ❌ Bad: N calls
@@ -191,7 +191,7 @@ func (s *Service) GetUsers(req PageRequest) (*PageResponse, error) {
 
 ### 3. Cache
 
-Armazene em cache as operações de alto custo:
+Armazene em cache os resultados de operações custosas:
 
 ```go
 type CachedService struct {
@@ -232,9 +232,9 @@ func (s *CachedService) GetData(key string) (interface{}, error) {
 }
 ```
 
-### 4. Transmissão de dados com eventos
+### 4. Streaming com eventos
 
-Use eventos para transmitir dados continuamente:
+Use eventos para transmitir dados em streaming:
 
 ```go
 // ❌ Bad: Polling
@@ -336,7 +336,7 @@ func (s *Service) SaveComment(text string) error {
 
 ### 2. Autenticação
 
-Proteja as operações sensíveis:
+Proteja operações confidenciais:
 
 ```go
 type AuthService struct {
@@ -513,7 +513,7 @@ func (s *UserService) GetUser(id int) (*User, error) {
 
 ### 3. Recuperação de erros
 
-Trate os erros adequadamente:
+Trate os erros de maneira adequada:
 
 ```go
 func (s *Service) ProcessWithRetry(data string) error {
@@ -670,34 +670,34 @@ func TestUserService_WithMock(t *testing.T) {
 ### ✅ Faça
 
 - **Responsabilidade única** — Um serviço, uma finalidade
-- **Nomenclatura clara** — Nomes de métodos descritivos
+- **Nomes claros** — Nomes de métodos descritivos
 - **Valide as entradas** — Sempre no lado do Go
 - **Retorne os erros** — Tratamento explícito de erros
-- **Agrupe as operações em lotes** — Reduza as chamadas pela ponte
-- **Use eventos** — Para transmitir dados continuamente
+- **Agrupe operações em lotes** — Reduza as chamadas à ponte
+- **Use eventos** — Para transmitir dados em streaming
 - **Sanitize as entradas** — Evite injeções
-- **Teste minuciosamente** — Testes unitários e de integração
-- **Documente os métodos** — Os comentários se transformam em JSDoc
+- **Teste rigorosamente** — Testes unitários e de integração
+- **Documente os métodos** — Os comentários se tornam JSDoc
 - **Versione sua API** — Planeje as alterações
 
 ### ❌ Não faça
 
-- **Não crie objetos Deus** — Mantenha os serviços focados
+- **Não crie objetos que fazem tudo** — Mantenha cada serviço concentrado em sua finalidade
 - **Não confie no frontend** — Valide tudo
 - **Não retorne conjuntos de dados enormes** — Use paginação
 - **Não bloqueie a execução** — Use goroutines para operações demoradas
-- **Não ignore os erros** — Trate todos os casos de erro
-- **Não pule os testes** — Teste desde o início e com frequência
-- **Não codifique valores diretamente no código** — Use configurações
+- **Não ignore erros** — Trate todos os casos de erro
+- **Não pule os testes** — Teste desde cedo e com frequência
+- **Não use valores fixos no código** — Use configurações
 - **Não exponha detalhes internos** — Mantenha a implementação privada
 
-## Próximos passos
+## Próximas etapas
 
-- [Métodos](/features/bindings/methods/) — Aprenda os conceitos básicos de vinculação de métodos
+- [Métodos](/features/bindings/methods/) — Aprenda os fundamentos dos bindings de métodos
 - [Serviços](/features/bindings/services/) — Entenda a arquitetura de serviços
-- [Modelos](/features/bindings/models/) — Vincule estruturas de dados complexas
-- [Eventos](/features/events/system/) — Use eventos para publicação/assinatura
+- [Modelos](/features/bindings/models/) — Crie bindings para estruturas de dados complexas
+- [Eventos](/features/events/system/) — Use eventos para publicação e assinatura
 
 ---
 
-**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de vinculação](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).
+**Dúvidas?** Pergunte no [Discord](https://discord.gg/JDdSxwjhGf) ou consulte os [exemplos de bindings](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/binding).

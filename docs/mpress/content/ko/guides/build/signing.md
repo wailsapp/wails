@@ -7,7 +7,7 @@ sourcePath: "guides/build/signing.md"
 
 ## 애플리케이션 코드 서명
 
-이 가이드에서는 macOS, Windows 및 Linux용 Wails 애플리케이션에 서명하는 방법을 설명합니다. Wails v3에는 코드 서명, 공증 및 PGP 키 관리를 위한 CLI 도구가 내장되어 있습니다.
+이 가이드에서는 macOS, Windows 및 Linux용 Wails 애플리케이션에 서명하는 방법을 설명합니다. Wails v3에는 코드 서명, 공증 및 PGP 키 관리를 위한 CLI 도구가 기본으로 제공됩니다.
 
 - **macOS** - macOS 애플리케이션 서명 및 공증
 - **Windows** - Windows 실행 파일 및 패키지 서명
@@ -15,18 +15,20 @@ sourcePath: "guides/build/signing.md"
 
 ## 크로스 플랫폼 서명 매트릭스
 
-다음 매트릭스는 각 소스 플랫폼에서 서명할 수 있는 형식을 보여 줍니다.
+이 매트릭스는 각 소스 플랫폼에서 서명할 수 있는 대상을 보여 줍니다.
 
 | 대상 형식 | Windows에서 | macOS에서 | Linux에서 |
 | --- | :---: | :---: | :---: |
-| Windows EXE/MSI | ✅ | ✅ | ✅ |
-| macOS .app 번들 | ❌ | ✅ | ❌ |
-| macOS 공증 | ❌ | ✅ | ❌ |
+| Windows EXE/DLL/MSIX/APPX, 내보낸 PFX | ✅ | ✅ | ✅ |
+| Windows MSI 또는 인증서 저장소/공급자 ID | ✅ | ❌ | ❌ |
+| macOS .app / Mach-O / DMG, 내보낸 ID | ✅ | ✅ | ✅ |
+| macOS 공증, 팀 API 자격 증명 | ✅ | ✅ | ✅ |
+| macOS 키체인 ID 또는 공증 프로필 | ❌ | ✅ | ❌ |
 | Linux DEB | ✅ | ✅ | ✅ |
 | Linux RPM | ✅ | ✅ | ✅ |
 
 @note{type="tip"}
-Windows 및 Linux 패키지는 **어떤 플랫폼에서든** 서명할 수 있습니다. Apple 도구의 요구 사항으로 인해 macOS 서명에는 Mac이 필요합니다.
+내보낸 Apple ID와 팀 API 자격 증명을 사용하면 이식 가능한 서명 및 공증을 수행할 수 있습니다. macOS 키체인 ID와 공증 프로필을 사용하려면 Mac이 필요합니다. 형식별 제한 사항은 아래에서 설명합니다.
 
 @end
 
@@ -36,15 +38,15 @@ Wails는 사용 가능한 최적의 서명 백엔드를 자동으로 선택합�
 
 | 플랫폼 | 네이티브 백엔드 | 크로스 플랫폼 백엔드 |
 | --- | --- | --- |
-| Windows | `signtool.exe` (Windows SDK) | 내장 |
-| macOS | `codesign` (Xcode) | 사용할 수 없음 |
-| Linux | 해당 없음 | 내장 |
+| Windows | 저장소/공급자 ID, MSI 또는 레거시 RC2 PFX에는 `signtool.exe` 사용 | 내보낸 RSA PFX 및 PE/MSIX에는 기본 제공 백엔드 사용 |
+| macOS | 키체인 ID에는 `codesign` 사용 | 내보낸 PKCS#12 ID 또는 임시 서명에는 기본 제공 백엔드 사용 |
+| Linux | 해당 없음 | 기본 제공 |
 
-Wails는 네이티브 플랫폼에서 실행할 때 호환성을 극대화하기 위해 네이티브 도구를 사용합니다. 크로스 컴파일할 때는 내장 서명 지원을 사용합니다.
+모든 호스트에서 자격 증명 유형에 따라 Apple 서명 백엔드가 선택됩니다. 내보낸 ID에는 Go를 사용하고, macOS 키체인 ID에는 `codesign`을 사용합니다. 티켓 가져오기, 검증 및 스테이플링에는 Go를 사용합니다.
 
 ## 빠른 시작
 
-서명을 가장 빠르게 구성하려면 설정 마법사를 사용하세요.
+서명을 구성하는 가장 빠른 방법은 설정 마법사를 사용하는 것입니다.
 
 ```bash
 wails3 setup
@@ -52,8 +54,8 @@ wails3 setup
 
 이 마법사는 `~/.config/wails/defaults.yaml`에 공유 서명 구성을 작성하며, 이 구성은 **모든 플랫폼에서 서명할 때 적용됩니다**([구성 우선순위](#--2) 참조). 마법사의 서명 단계에서는 다음 작업을 수행합니다.
 
-- **어떤 호스트에서든** 대상으로 지정하려는 플랫폼에 설치된 서명 도구를 감지하고, 사용 중인 OS에 맞는 설치 명령을 표시합니다(예: `brew install gnupg`, `sudo apt install osslsigncode`, `winget install GnuPG.Gpg4win`).
-- macOS에서는 키체인에 있는 Developer ID 인증서를 나열합니다.
+- OpenSSL 및 GnuPG처럼 인증서와 키를 생성하거나 내보내는 설정 도구를 표시합니다. 내보낸 Apple 및 Windows ID에는 기본 제공 서명 도구를 사용합니다. Windows 인증서 저장소/공급자 ID와 MSI 패키지에는 Windows SignTool이 필요합니다.
+- macOS에서는 키체인의 Developer ID 인증서를 나열합니다.
 - Linux에서는 GPG 키를 나열하며 새 키를 **생성하고 내보낼** 수 있습니다.
 - Windows에서는 OpenSSL을 통해 테스트용 **자체 서명 인증서를 생성**할 수 있습니다.
 - 암호를 Taskfile이 아닌 **시스템 키체인에 안전하게 저장합니다**.
@@ -65,17 +67,17 @@ wails3 setup
 
 ## 구성 우선순위
 
-서명 작업을 실행하면 각 서명 옵션은 다음 순서로 결정되며, 먼저 일치하는 값이 사용됩니다.
+서명 작업을 실행하면 각 서명 옵션은 다음 순서로 결정되며, 처음 일치하는 값이 사용됩니다.
 
 1. `wails3 tool sign`에 명시적으로 전달한 플래그(예: `--pgp-key`, `--certificate`, `--identity`).
-2. 일치하는 **프로젝트 Taskfile 변수**(`PGP_KEY`, `SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`, `SIGN_IDENTITY`, …).
+2. 일치하는 **프로젝트 Taskfile 변수**(`PGP_KEY`, `SIGN_CERTIFICATE`/`SIGN_THUMBPRINT`, `SIGN_IDENTITY` 등).
 3. `~/.config/wails/defaults.yaml`에 있는 **전역 구성**(`wails3 setup`에서 작성).
 
-즉, Taskfile 변수는 **선택적 재정의 값**입니다. 변수가 설정되지 않으면 전역으로 구성된 키, 인증서 또는 ID가 사용됩니다. 세 가지 소스 어디에서도 값을 제공하지 않으면 서명 명령이 구성 방법을 알려 주는 명확한 오류를 보고합니다.
+즉, Taskfile 변수는 **선택적 재정의 값**입니다. 변수가 설정되지 않은 경우 전역으로 구성된 키/인증서/ID가 사용됩니다. 세 가지 소스 어디에도 값이 없으면 서명 명령이 구성 방법을 안내하는 명확한 오류를 표시합니다.
 
 ## 프로젝트별 구성
 
-전역이 아닌 단일 프로젝트에 서명을 구성하려면 프로젝트 내부에서 프로젝트별 마법사를 실행하세요. 이 마법사는 해당 프로젝트의 `build/<platform>/Taskfile.yml` 파일에 `vars`을 작성합니다.
+전역 구성이 아닌 단일 프로젝트의 서명을 구성하려면 프로젝트 내부에서 프로젝트별 마법사를 실행하십시오. 그러면 해당 프로젝트의 `build/<platform>/Taskfile.yml` 파일에 `vars`이 작성됩니다.
 
 ```bash
 wails3 signing                                   # all detected platforms
@@ -84,11 +86,11 @@ wails3 signing --platform windows --platform linux
 
 ### 수동 구성
 
-또는 플랫폼별 Taskfile을 직접 편집할 수 있습니다. 각 파일 상단의 `vars` 섹션을 편집하세요.
+또는 플랫폼별 Taskfile을 직접 편집할 수 있습니다. 각 파일 상단의 `vars` 섹션을 편집하십시오.
 
 @tabs
 [macOS]
-`build/darwin/Taskfile.yml`을 편집하세요.
+`build/darwin/Taskfile.yml`을 편집하십시오.
 
 ```yaml
 vars:
@@ -97,7 +99,7 @@ vars:
   # ENTITLEMENTS: "build/darwin/entitlements.plist"
 ```
 
-그런 다음 다음을 실행하세요.
+그런 다음 다음 명령을 실행하십시오.
 
 ```bash
 wails3 task darwin:sign           # Sign only
@@ -105,7 +107,7 @@ wails3 task darwin:sign:notarize  # Sign and notarize
 ```
 
 [Windows]
-`build/windows/Taskfile.yml`을 편집하세요.
+`build/windows/Taskfile.yml`을 편집하십시오.
 
 ```yaml
 vars:
@@ -115,9 +117,9 @@ vars:
   # TIMESTAMP_SERVER: "http://timestamp.digicert.com"
 ```
 
-암호는 시스템 키체인에서 가져옵니다. 구성하려면 `wails3 signing`을 실행하세요.
+암호는 시스템 키체인에서 가져옵니다. 구성하려면 `wails3 signing`을 실행하십시오.
 
-그런 다음 다음을 실행하세요.
+그런 다음 다음 명령을 실행하십시오.
 
 ```bash
 wails3 task windows:sign           # Sign executable
@@ -125,7 +127,7 @@ wails3 task windows:sign:installer # Sign NSIS installer
 ```
 
 [Linux]
-`build/linux/Taskfile.yml`을 편집하세요.
+`build/linux/Taskfile.yml`을 편집하십시오.
 
 ```yaml
 vars:
@@ -133,9 +135,9 @@ vars:
   # SIGN_ROLE: "builder"  # Options: origin, maint, archive, builder
 ```
 
-암호는 시스템 키체인에서 가져옵니다. 구성하려면 `wails3 signing`을 실행하세요.
+암호는 시스템 키체인에서 가져옵니다. 구성하려면 `wails3 signing`을 실행하십시오.
 
-그런 다음 다음을 실행하세요.
+그런 다음 다음 명령을 실행하십시오.
 
 ```bash
 wails3 task linux:sign:deb       # Sign DEB package
@@ -155,7 +157,7 @@ security find-identity -v -p codesigning
 gpg --list-keys
 ```
 
-모든 플랫폼의 서명 구성을 대화형으로 설정하려면 마법사를 사용하세요.
+모든 플랫폼의 서명 구성을 대화형으로 설정하려면 마법사를 사용하십시오.
 
 ```bash
 wails3 signing
@@ -165,13 +167,38 @@ wails3 signing
 
 ### 사전 요구 사항
 
-- Apple Developer 계정(연간 $99)
+- Apple Developer Account(연간 $99)
 - Developer ID Application 인증서
-- Xcode Command Line Tools 설치
+- macOS 키체인 ID를 사용하는 경우: Xcode Command Line Tools 설치
+- 이식 가능한 서명을 사용하는 경우: 내보낸 RSA PKCS#12 ID. Apple 서명 도구는 필요하지 않음
+
+### Wake를 사용한 이식 가능한 서명
+
+Wake는 `wails.yaml`을 직접 읽으며 Taskfile을 실행하지 않습니다. 내보낸 Developer ID ID와 App Store Connect 팀 API 키를 구성하십시오.
+
+```yaml
+darwin:
+  signing:
+    certificate: signing/developer-id.p12
+    credential: APPLE_CERT_PASSWORD
+    timestamp_server: https://timestamp.digicert.com
+  notarization:
+    api_key: signing/AuthKey.p8
+    key_id: ABCDEFGHIJ
+    issuer_id: 00000000-0000-0000-0000-000000000000
+```
+
+`credential`은 인증서 암호를 보관하는 환경 변수의 이름입니다. 두 개인 키 파일 모두 버전 관리 외부에 보관하십시오. [YAML 빌드 가이드](/experimental/yaml-builds/)에 설명된 릴리스 프로필에서 서명 및 공증을 활성화하십시오.
+
+이식 가능한 서명 도구는 64비트 Intel 및 Apple Silicon Mach-O 파일, 유니버설 바이너리, 중첩 코드와 프레임워크가 포함된 표준 앱 번들, 그리고 4 GiB 미만의 UDIF DMG를 지원합니다. 지원되지 않는 레이아웃은 출력을 게시하기 전에 거부합니다. 임시 서명에는 `identity: "-"`을 사용하며 공증할 수 없습니다. PKCS#12 ID에는 AES/PBKDF2 또는 레거시 3DES 암호화를 사용할 수 있습니다. RC2로 내보낸 ID는 지원되는 암호화 방식으로 다시 내보내야 합니다.
+
+이식 가능한 공증 서명에는 명시적인 SHA-2 RFC 3161 타임스탬프 서비스가 필요합니다. 레거시 SHA-1 타임스탬프 서명은 거부됩니다. 팀 API 제출은 최대 5 GiB의 단일 업로드를 지원하지만, 개인 API 키와 멀티파트 업로드는 지원하지 않습니다. 티켓 검증 및 스테이플링에는 `xcrun stapler` 없이 Apple Root G3를 고정하여 관찰된 Apple 서비스 프로토콜을 사용합니다. 배포 신뢰 및 인증서 폐기에 대한 최종 판단은 Gatekeeper가 담당합니다.
+
+다음 섹션에서는 레거시 프로젝트와 키체인 ID를 선택한 Wake 구성에서 사용하는 기존 macOS 키체인 워크플로를 설명합니다.
 
 ### 서명 ID
 
-사용 가능한 서명 ID를 확인하세요.
+사용 가능한 서명 ID를 확인하세요:
 
 ```bash
 security find-identity -v -p codesigning
@@ -196,7 +223,7 @@ App Store 외부에 배포하려면 **Developer ID Application** 인증서가 �
 
 ### 구성
 
-`build/darwin/Taskfile.yml`을 편집하고 서명 변수를 설정하세요.
+`build/darwin/Taskfile.yml`을 편집하고 서명 변수를 설정하세요:
 
 ```yaml
 vars:
@@ -208,7 +235,7 @@ vars:
 | 변수 | 필수 여부 | 설명 |
 | --- | --- | --- |
 | `SIGN_IDENTITY` | 예 | Developer ID(예: "Developer ID Application: Your Company (TEAMID)") |
-| `KEYCHAIN_PROFILE` | 공증 시 필요 | 저장된 자격 증명이 있는 키체인 프로필 이름 |
+| `KEYCHAIN_PROFILE` | 공증 시 필수 | 자격 증명이 저장된 키체인 프로필 이름 |
 | `ENTITLEMENTS` | 아니요 | 엔타이틀먼트 파일 경로 |
 
 그런 다음 다음을 실행하세요:
@@ -220,10 +247,10 @@ wails3 task darwin:sign:notarize  # Build, package, sign, and notarize
 
 ### 엔타이틀먼트
 
-엔타이틀먼트는 앱이 사용할 수 있는 기능을 제어합니다. 일반적으로 Wails 앱은 개발 환경과 프로덕션 환경에서 서로 다른 엔타이틀먼트가 필요합니다:
+엔타이틀먼트는 앱에서 접근할 수 있는 기능을 제어합니다. 일반적으로 Wails 앱은 개발 환경과 프로덕션 환경에 서로 다른 엔타이틀먼트가 필요합니다:
 
-- **개발**: JIT, 서명되지 않은 메모리 및 디버깅 엔타이틀먼트가 필요합니다
-- **프로덕션**: 최소한의 엔타이틀먼트만 사용합니다(네트워크 접근만 허용)
+- **개발**: JIT, 서명되지 않은 메모리 및 디버깅 엔타이틀먼트가 필요합니다.
+- **프로덕션**: 최소한의 엔타이틀먼트만 사용합니다(네트워크 접근만 허용).
 
 대화형 설정 마법사를 사용하여 두 파일을 모두 생성하세요:
 
@@ -234,7 +261,7 @@ wails3 entitlements
 다음 파일이 생성됩니다:
 
 - `build/darwin/entitlements.dev.plist` - 개발 빌드용
-- `build/darwin/entitlements.plist` - 프로덕션/서명된 빌드용
+- `build/darwin/entitlements.plist` - 프로덕션/서명 빌드용
 
 **사용 가능한 프리셋:**\
 
@@ -242,23 +269,23 @@ wails3 entitlements
 | --- | --- |
 | 개발 | JIT, 서명되지 않은 메모리, 디버깅, 네트워크 |
 | 프로덕션 | 네트워크만 허용(최소 권한, 가장 안전함) |
-| 둘 다 | 개발 및 프로덕션 파일을 모두 생성(권장) |
-| App Store | 네트워크 및 파일 접근을 허용하는 샌드박스 활성화 |
+| 둘 다 | 개발 및 프로덕션 파일을 모두 생성합니다(권장). |
+| App Store | 네트워크 및 파일 접근이 허용된 샌드박스 활성화 |
 | 사용자 지정 | 개별 엔타이틀먼트 선택 |
 
 @note{type="note"}
-darwin Taskfile의 `run` 태스크는 `entitlements.dev.plist`을 자동으로 사용합니다. `sign` 태스크는 프로덕션 빌드에 `entitlements.plist`을 사용합니다.
+darwin Taskfile의 `run` 작업은 `entitlements.dev.plist`을 자동으로 사용합니다. `sign` 작업은 프로덕션 빌드에 `entitlements.plist`을 사용합니다.
 
 @end
 
-그런 다음 Taskfile 변수의 `ENTITLEMENTS`이 적절한 파일을 가리키도록 설정하세요.
+그런 다음 Taskfile vars의 `ENTITLEMENTS`이 적절한 파일을 가리키도록 설정하세요.
 
 ### 공증
 
-Apple은 배포되는 모든 앱에 공증을 요구합니다.
+Apple은 배포되는 모든 앱을 공증하도록 요구합니다.
 
 @steps
-### **자격 증명을 키체인에 저장하세요**(최초 한 번만 설정). `wails3 signing`을 실행하거나(필요한 값을 입력하라는 메시지를 표시하고 내부적으로 `notarytool`을 호출함) `notarytool`을 직접 호출하세요:
+### **키체인에 자격 증명을 저장하세요**(최초 한 번만 설정). `wails3 signing`을 실행하면 필요한 값을 묻고 내부적으로 `notarytool`을 호출합니다. 또는 `notarytool`을 직접 호출하세요:
 ```bash
 xcrun notarytool store-credentials "my-notarize-profile" \
   --apple-id "your@email.com" \
@@ -266,7 +293,7 @@ xcrun notarytool store-credentials "my-notarize-profile" \
   --password "app-specific-password"
 ```
 
-### 위의 프로파일 이름과 일치하도록 **Taskfile에서 KEYCHAIN_PROFILE을 설정하세요**.
+### **Taskfile의 KEYCHAIN_PROFILE을 설정하세요**. 위의 프로필 이름과 일치해야 합니다.
 ### **앱에 서명하고 공증하세요**:
 ```bash
 wails3 task darwin:sign:notarize
@@ -289,15 +316,15 @@ spctl --assess --verbose=2 bin/MyApp.app
 ### 사전 요구 사항
 
 - 코드 서명 인증서(DigiCert, Sectigo 등에서 발급)
-- Windows에서 네이티브 서명을 수행하는 경우: Windows SDK 설치(`signtool.exe`용)
-- macOS/Linux에서 크로스 플랫폼 서명을 수행하는 경우: [`osslsigncode`](https://github.com/mtrojnar/osslsigncode)(`wails3 setup` 서명 단계에 호스트별 설치 명령이 표시됨)
+- 이식 가능한 서명: AES/PBKDF2 또는 레거시 3DES로 암호화하여 내보낸 RSA PFX ID. 외부 서명 도구는 필요하지 않습니다.
+- 인증서 저장소/공급자 ID, MSI 패키지 또는 레거시 RC2 PFX: `PATH`에 Windows SDK 서명 도구가 설치된 Windows
 
 ### 자체 서명 인증서 생성(테스트용)
 
 서명 파이프라인만 테스트하려면 `wails3 setup`을 실행하고 서명 단계에서 **Windows** 탭을 연 다음 **자체 서명 인증서 생성**을 선택하세요. OpenSSL을 사용하여 코드 서명용 `.pfx`을 생성하고 전역 구성에 해당 경로를 기록합니다.
 
 @note{type="caution"}
-자체 서명 인증서는 **테스트 및 내부 배포에만 사용해야 합니다**. 최종 사용자에게 SmartScreen 경고가 표시되기 때문입니다. 공개 릴리스에는 신뢰할 수 있는 CA에서 발급한 인증서가 필요합니다.
+자체 서명 인증서는 **테스트 및 내부 배포에만 사용할 수 있습니다**. 최종 사용자에게 SmartScreen 경고가 표시되기 때문입니다. 공개 릴리스에는 신뢰할 수 있는 CA에서 발급한 인증서가 필요합니다.
 
 @end
 
@@ -320,12 +347,12 @@ vars:
 | `TIMESTAMP_SERVER` | 아니요 | 타임스탬프 서버 URL(기본값: http://timestamp.digicert.com) |
 
 @note{type="note"}
-이 변수는 선택적 **재정의**입니다. 설정하지 않으면 `wails3 setup`을 통해 전역으로 구성한 인증서가 사용됩니다. [구성 우선순위](#--2)를 참조하세요.
+이 변수들은 선택적 **재정의 값**입니다. 설정하지 않으면 `wails3 setup`을 통해 전역으로 구성된 인증서를 사용합니다. [구성 우선순위](#--2)를 참조하세요.
 
 @end
 
 @note{type="note"}
-인증서 암호는 Taskfile이 아니라 시스템 키체인에 저장됩니다. `wails3 signing`을 실행하여 구성하거나 CI에서 `WAILS_WINDOWS_CERT_PASSWORD` 환경 변수를 설정하세요.
+인증서 암호는 Taskfile이 아닌 시스템 키체인에 저장됩니다. `wails3 signing`을 실행하여 구성하거나 CI에서 `WAILS_WINDOWS_CERT_PASSWORD` 환경 변수를 설정하세요.
 
 @end
 
@@ -338,19 +365,37 @@ wails3 task windows:sign:installer # Build and sign NSIS installer
 
 ### 크로스 플랫폼 서명
 
-Windows 실행 파일은 모든 플랫폼에서 서명할 수 있습니다. macOS와 Linux에서도 동일한 Taskfile 구성과 명령을 사용할 수 있습니다.
+내보낸 RSA PFX ID를 사용하면 Windows, macOS 및 Linux에서 Go로 EXE/DLL 파일, NSIS 설치 프로그램 실행 파일 및 개별 MSIX/APPX 패키지에 서명할 수 있습니다. 기존 서명은 교체할 수 있습니다. 서명 과정에서는 출력을 준비한 후 서명 및 타임스탬프 검증이 성공한 경우에만 게시하며, 실패하면 원본을 보존합니다. 별도의 서명된 파일을 작성하려면 `--output`을 사용하세요.
+
+Wake는 `wails.yaml`에서 다음 설정을 직접 읽습니다.
+
+```yaml
+windows:
+  signing:
+    certificate: signing/windows.pfx
+    credential: WINDOWS_SIGNING_PASSWORD
+    timestamp_server: http://timestamp.digicert.com
+```
+
+`credential`에는 암호 자체가 아니라 암호가 저장된 환경 변수의 이름을 지정합니다. 릴리스 대상에 `sign: true`을 활성화하세요. 자세한 내용은 [YAML 빌드 가이드](/experimental/yaml-builds/)를 참조하세요. Wake는 Taskfile을 호출하지 않습니다. 레거시 프로젝트에서는 위의 Taskfile 구성을 계속 사용할 수 있습니다.
+
+이식 가능한 프로필은 RSA/SHA-256을 사용하며 타임스탬프 서명자의 신뢰할 수 있는 인증서 체인을 포함해 RFC 3161 타임스탬프를 검증합니다. 기본 서비스는 DigiCert입니다. MSIX Publisher는 서명 인증서의 주체와 일치해야 합니다. 패키지 번들 및 크기가 4GiB 이상인 아카이브는 지원되지 않습니다. PFX 파일은 16MiB로 제한됩니다. 다른 인증서 알고리즘과 RC2 암호화는 거부됩니다. 이식 가능한 서명에 사용하려면 RC2 PFX를 AES 또는 3DES로 다시 내보내세요. Windows에서는 인증된 RC2 PFX에 SignTool을 대신 사용합니다. 암호가 잘못되었거나 PFX가 손상된 경우에는 이 대체 동작이 절대 실행되지 않습니다.
+
+인증서 저장소, 하드웨어 토큰 및 공급자 지원 키는 `thumbprint`을 사용하는 Windows 네이티브 SignTool 워크플로를 계속 사용합니다. MSI 서명에도 Windows의 SignTool이 필요합니다. 내보낸 인증서를 구성하더라도 이러한 워크플로가 이식 가능해지는 것은 아닙니다.
 
 ### 지원되는 Windows 형식
 
 | 형식 | 확장자 | 참고 |
 | --- | --- | --- |
-| 실행 파일 | .exe | 표준 PE 서명 |
-| 설치 프로그램 | .msi | Windows Installer 패키지 |
-| 앱 패키지 | .msix, .appx | 최신 Windows 앱 |
+| 실행 파일 및 라이브러리 | .exe, .dll | NSIS 설치 프로그램을 포함한 이식 가능한 PE 서명 |
+| 설치 프로그램 | .msi | Windows SignTool 필요 |
+| 앱 패키지 | .msix, .appx | 이식 가능한 개별 패키지 서명. 번들은 지원하지 않음 |
 
 ## Linux 패키지 서명
 
-Linux 패키지(DEB 및 RPM)는 PGP/GPG 키로 서명합니다. Windows 및 macOS 코드 서명과 달리 Linux 패키지 서명은 OS가 코드를 신뢰한다는 사실이 아니라 패키지가 신뢰할 수 있는 출처에서 제공되었다는 사실을 증명합니다.
+Linux 패키지(DEB 및 RPM)는 PGP/GPG 키를 사용해 서명합니다. Windows 및 macOS 코드 서명과 달리 Linux 패키지 서명은 코드가 OS에서 신뢰된다는 사실이 아니라 패키지가 신뢰할 수 있는 출처에서 제공되었다는 사실을 증명합니다.
+
+내보낸 ASCII 아머 또는 바이너리 개인 키 파일은 Windows, macOS 및 Linux에서 Go 네이티브 서명자를 사용합니다. 기존 DEB 또는 RPM에 서명할 때 압축 해제나 재압축 없이 패키지 내용을 보존하며 GnuPG, `dpkg-sig` 또는 `rpmsign`을 설치할 필요가 없습니다. Arch 패키지는 동일한 키 로더를 사용해 분리 서명을 작성합니다. GnuPG는 키 생성 및 내보내기와 독립적인 서명 검증에 여전히 유용합니다. 키 파일 대신 키링 ID를 지정하는 레거시 DEB/RPM 구성에서는 기존 외부 서명 도구를 계속 사용합니다.
 
 ### 사전 요구 사항
 
@@ -358,18 +403,18 @@ Linux 패키지(DEB 및 RPM)는 PGP/GPG 키로 서명합니다. Windows 및 macO
 
 ### PGP 키 생성
 
-가장 쉬운 방법은 설정 마법사를 사용하는 것입니다. `wails3 setup`을 실행하고 서명 단계에서 **Linux** 탭을 연 다음 **새 GPG 키 생성**을 선택하세요. 마법사는 다음을 수행합니다:
+가장 간단한 방법은 설정 마법사를 사용하는 것입니다. `wails3 setup`을 실행하고 서명 단계의 **Linux** 탭을 연 다음 **새 GPG 키 만들기**를 선택하세요. 마법사는 다음 작업을 수행합니다.
 
-- GPG 키링에 RSA 4096 키를 생성합니다(무인 실행 및 CI에 적합한 키를 만들려면 암호를 비워 두세요).
-- <strong>키를 `~/.wails/signing/<keyid>.asc`</strong>로 내보냅니다(빌드 서명에 사용하는 파일).
+- GPG 키링에 RSA 4096 키를 생성합니다(무인 실행 및 CI에 적합한 키로 만들려면 암호를 비워 두세요).
+- <strong>키를 `~/.wails/signing/<keyid>.asc`</strong>로 내보냅니다. 빌드는 이 파일을 사용해 서명합니다.
 - 서명할 때 자동으로 사용되도록 키 ID와 내보낸 경로를 모두 `~/.config/wails/defaults.yaml`에 기록합니다.
 
 @note{type="note"}
-키가 **ID만으로** 구성된 경우(예: 마법사가 키를 자동으로 내보내기 전에 생성된 경우), 다음에 Linux 탭을 열면 키가 파일로 내보내지고 경로가 입력됩니다. 수동 단계는 필요하지 않습니다. 빌드는 키 *파일*로 서명하므로 중요한 것은 경로입니다.
+키가 **ID만으로** 구성된 경우(예: 마법사가 키를 자동으로 내보내기 전에 생성된 경우), 다음에 Linux 탭을 열면 키를 파일로 내보내고 경로를 입력하므로 수동 작업이 필요하지 않습니다. 빌드는 키 *파일*로 서명하므로 중요한 것은 경로입니다.
 
 @end
 
-`gpg`을 사용하여 수동으로 수행할 수도 있습니다:
+`gpg`을 사용해 수동으로 수행할 수도 있습니다.
 
 ```bash
 # Interactive — the wizard will prompt for name, email, key size and expiry.
@@ -380,7 +425,7 @@ gpg --armor --export-secret-keys "your@email.com" > signing-key.asc
 gpg --armor --export "your@email.com" > signing-key.pub.asc
 ```
 
-권장 설정: RSA 4096비트, 1년 후 만료, 강력한 암호로 보호.
+권장 설정: RSA 4096비트, 만료 기간 1년, 강력한 암호로 보호.
 
 @note{type="caution"}
 개인 키를 안전하게 보호하세요! 암호화하여 저장하고 안전하게 백업하세요.
@@ -399,15 +444,15 @@ vars:
 
 | 변수 | 필수 여부 | 설명 |
 | --- | --- | --- |
-| `PGP_KEY` | 재정의 | 내보낸 PGP 개인 키 파일의 경로입니다. 설정하지 않으면 `wails3 setup`을 통해 전역으로 구성한 키를 사용합니다. |
+| `PGP_KEY` | 재정의 | 내보낸 PGP 개인 키 파일의 경로(설정하지 않으면 `wails3 setup`을 통해 전역으로 구성된 키 사용) |
 | `SIGN_ROLE` | 아니요 | DEB 서명 역할(기본값: builder) |
 
 @note{type="note"}
-PGP 키 비밀번호는 Taskfile이 아니라 시스템 키 체인에 저장됩니다. 구성하려면 `wails3 signing`을 실행하거나 CI에서 `WAILS_PGP_PASSWORD` 환경 변수를 설정하세요.
+PGP 키 암호는 Taskfile이 아니라 시스템 키체인에 저장됩니다. `wails3 signing`을 실행하여 구성하거나 CI에서 `WAILS_PGP_PASSWORD` 환경 변수를 설정하세요.
 
 @end
 
-그런 다음 다음 명령을 실행하세요.
+그런 다음 다음을 실행하세요.
 
 ```bash
 wails3 task linux:sign:deb       # Build and sign DEB package
@@ -420,13 +465,13 @@ wails3 task linux:sign:packages  # Build and sign all packages
 DEB 패키지의 경우 `SIGN_ROLE`을 통해 서명 역할을 지정할 수 있습니다.
 
 - `origin`: 패키지 원본의 서명
-- `maint`: 패키지 유지관리자의 서명
-- `archive`: 아카이브 유지관리자의 서명
+- `maint`: 패키지 관리자의 서명
+- `archive`: 아카이브 관리자의 서명
 - `builder`: 패키지 빌더의 서명(기본값)
 
 ### 크로스 플랫폼 서명
 
-Linux 패키지는 어느 플랫폼에서든 서명할 수 있습니다. Windows와 macOS에서도 동일한 Taskfile 구성과 명령을 사용할 수 있습니다.
+Linux 패키지는 모든 플랫폼에서 서명할 수 있습니다. Windows와 macOS에서도 동일한 Taskfile 구성 및 명령이 작동합니다.
 
 ### 키 정보 보기
 
@@ -472,12 +517,12 @@ sudo rpm --import myapp-signing.pub.asc
 
 ## GitHub Actions 통합
 
-CI 환경에서는 시스템 키 체인 대신 환경 변수를 통해 비밀번호를 제공합니다.
+CI 환경에서는 시스템 키체인 대신 환경 변수를 통해 암호를 제공합니다.
 
 | 환경 변수 | 설명 |
 | --- | --- |
-| `WAILS_WINDOWS_CERT_PASSWORD` | Windows 인증서 비밀번호 |
-| `WAILS_PGP_PASSWORD` | Linux 패키지용 PGP 키 비밀번호 |
+| `WAILS_WINDOWS_CERT_PASSWORD` | Windows 인증서 암호 |
+| `WAILS_PGP_PASSWORD` | Linux 패키지용 PGP 키 암호 |
 
 Taskfile 변수를 직접 전달할 수도 있습니다.
 
@@ -591,7 +636,7 @@ jobs:
 
 ### 크로스 플랫폼 워크플로(Linux 러너)
 
-단일 Linux 러너에서 Windows 및 Linux 패키지에 서명하세요.
+하나의 Linux 러너에서 Windows 및 Linux 패키지에 서명하세요.
 
 ```yaml
 name: Build and Sign (Cross-Platform)
@@ -659,7 +704,7 @@ jobs:
 ```
 
 @note{type="note"}
-크로스 플랫폼 서명에 Linux 러너를 사용하면 별도의 Windows 러너가 필요하지 않으므로 CI/CD가 간소화됩니다. 다만 macOS 서명에는 Apple의 네이티브 도구가 필요하므로 여전히 macOS 러너를 사용해야 합니다.
+크로스 플랫폼 서명에 Linux 러너를 사용하면 별도의 Windows 러너가 필요하지 않으므로 CI/CD가 간소화됩니다. Apple 키체인 ID 및 공증 프로필에는 macOS 러너가 필요합니다. 내보낸 ID 및 팀 API 자격 증명은 위의 이식 가능한 Wake 워크플로를 지원합니다.
 
 @end
 
@@ -677,15 +722,15 @@ Flags:
                 If omitted, auto-detects which platforms to configure from the build directory.
 ```
 
-마법사는 다음 작업을 안내합니다.
+마법사는 다음 과정을 안내합니다.
 
 - **macOS**: Developer ID 인증서를 선택하고 공증 자격 증명을 구성합니다(`xcrun notarytool store-credentials` 호출).
-- **Windows**: 인증서 파일과 지문 중 하나를 선택하고 비밀번호와 타임스탬프 서버를 설정합니다.
-- **Linux**: 기존 PGP 키를 사용하거나 새 키를 생성하고(`gpg` 호출) 서명 역할을 구성합니다.
+- **Windows**: 인증서 파일과 지문 중 하나를 선택하고 암호와 타임스탬프 서버를 설정합니다.
+- **Linux**: 기존 PGP 키를 사용하거나 새 키를 생성하고(`gpg` 호출), 서명 역할을 구성합니다.
 
 ### wails3 entitlements
 
-macOS 권한을 구성하는 대화형 마법사입니다.
+macOS 엔타이틀먼트를 구성하는 대화형 마법사입니다.
 
 ```bash
 wails3 entitlements [flags]
@@ -694,13 +739,13 @@ Flags:
   --output    Output path for entitlements.plist (default: build/darwin/entitlements.plist)
 ```
 
-**프리셋:**
+**사전 설정:**
 
-- **개발**: JIT, 디버깅 및 네트워크 권한이 포함된 `entitlements.dev.plist`을 생성합니다.
-- **프로덕션**: 최소한의 권한만 포함된 `entitlements.plist`을 생성합니다.
-- **모두**: 두 파일을 모두 생성합니다(권장).
-- **App Store**: Mac App Store용 샌드박스 권한을 생성합니다.
-- **사용자 지정**: 개별 권한과 대상 파일을 선택합니다.
+- **개발**: JIT, 디버깅 및 네트워크 엔타이틀먼트가 포함된 `entitlements.dev.plist`을 생성합니다.
+- **프로덕션**: 최소한의 엔타이틀먼트가 포함된 `entitlements.plist`을 생성합니다.
+- **둘 다**: 두 파일을 모두 생성합니다(권장).
+- **App Store**: Mac App Store용 샌드박스 엔타이틀먼트를 생성합니다.
+- **사용자 지정**: 개별 엔타이틀먼트와 대상 파일을 선택합니다.
 
 ### wails3 sign
 
@@ -713,11 +758,11 @@ wails3 sign GOOS=windows
 wails3 sign GOOS=linux
 ```
 
-이 명령은 Taskfile의 서명 구성을 사용하는 해당 `<platform>:sign` 작업을 실행합니다.
+Taskfile의 서명 구성을 사용하는 해당 `<platform>:sign` 작업을 실행합니다.
 
 ### wails3 tool sign
 
-특정 파일에 직접 서명하는 저수준 명령입니다. Taskfile 내부에서 사용됩니다.
+특정 파일에 직접 서명하는 저수준 명령입니다. Taskfile에서 내부적으로 사용합니다.
 
 ```bash
 wails3 tool sign [flags]
@@ -736,7 +781,7 @@ wails3 tool sign [flags]
 | 플래그 | 설명 |
 | --- | --- |
 | `--certificate` | PKCS#12(.pfx/.p12) 인증서의 경로 |
-| `--password` | 인증서 비밀번호 |
+| `--password` | 인증서 암호 |
 | `--timestamp` | 타임스탬프 서버 URL |
 
 **macOS 전용 플래그:**\
@@ -744,32 +789,35 @@ wails3 tool sign [flags]
 | 플래그 | 설명 |
 | --- | --- |
 | `--identity` | 서명 ID(임시 서명에는 '-' 사용) |
-| `--entitlements` | 권한 plist의 경로 |
+| `--entitlements` | 엔타이틀먼트 plist의 경로 |
 | `--hardened-runtime` | 강화된 런타임 활성화(기본값: true) |
 | `--notarize` | 공증을 위해 제출 |
-| `--keychain-profile` | 공증용 키 체인 프로필 |
+| `--keychain-profile` | 공증용 키체인 프로필 |
+| `--notary-key` | App Store Connect 팀 API 비공개 키 `.p8` 파일. Go Notary API 클라이언트를 사용합니다. |
+| `--notary-key-id` | 팀 API 키 ID. `--notary-key`과 함께 사용해야 합니다. |
+| `--notary-issuer-id` | 팀 발급자 ID. `--notary-key`과 함께 사용해야 합니다. |
 
 **Windows 전용 플래그:**\
 
 | 플래그 | 설명 |
 | --- | --- |
-| `--thumbprint` | Windows 저장소의 인증서 지문 |
+| `--thumbprint` | Windows 저장소에 있는 인증서의 지문 |
 
 **Linux 전용 플래그:**\
 
 | 플래그 | 설명 |
 | --- | --- |
-| `--pgp-key` | PGP 개인 키 경로 |
-| `--pgp-password` | PGP 키 비밀번호 |
+| `--pgp-key` | PGP 비공개 키의 경로 |
+| `--pgp-password` | PGP 키 암호 |
 | `--role` | DEB 서명 역할(origin/maint/archive/builder) |
 
 ### 서명 상태 확인(네이티브 도구)
 
-`wails3 signing`은(는) 서명 자격 증명을 구성합니다. 서명 상태를 확인하려면 네이티브 도구를 직접 사용하세요:
+`wails3 signing`은 서명 자격 증명을 구성합니다. 서명 상태를 확인하려면 네이티브 도구를 직접 사용하십시오.
 
 | 작업 | 명령 |
 | --- | --- |
-| macOS 코드 서명 ID 목록 표시 | `security find-identity -v -p codesigning` |
+| macOS 코드 서명 ID 나열 | `security find-identity -v -p codesigning` |
 | 공증 자격 증명 저장 | `xcrun notarytool store-credentials "<profile>" --apple-id … --team-id … --password …` |
 | PGP 키 파일 확인 | `gpg --show-keys <key.asc>` |
 | PGP 키 쌍 생성 | `gpg --full-generate-key` |
@@ -781,27 +829,27 @@ wails3 tool sign [flags]
 
 **"Developer ID 인증서를 찾을 수 없음"**
 
-- 인증서가 키체인에 설치되어 있는지 확인하세요.
-- `security find-identity -v -p codesigning`을 사용하여 인증서가 만료되지 않았는지 확인하세요.
-- "Apple Development" 인증서만이 아니라 "Developer ID Application" 인증서가 있는지 확인하세요.
+- 인증서가 키체인에 설치되어 있는지 확인하십시오.
+- `security find-identity -v -p codesigning`을 사용하여 인증서가 만료되지 않았는지 확인하십시오.
+- "Apple Development" 인증서만 있는 것이 아니라 "Developer ID Application" 인증서가 있는지 확인하십시오.
 
 **"공증 실패"**
 
-- 공증 로그를 확인하세요: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
-- 강화된 런타임이 활성화되어 있는지 확인하세요.
-- 앱에 서명되지 않은 바이너리가 포함되어 있지 않은지 확인하세요.
+- 공증 로그를 확인하십시오: `xcrun notarytool log <submission-id> --keychain-profile <profile>`
+- 강화된 런타임이 활성화되어 있는지 확인하십시오.
+- 앱에 서명되지 않은 바이너리가 포함되어 있지 않은지 확인하십시오.
 
 **"코드 서명 실패"**
 
-- 키체인이 잠금 해제되어 있는지 확인하세요: `security unlock-keychain`
-- 앱 번들의 파일 권한을 확인하세요.
+- 키체인이 잠금 해제되어 있는지 확인하십시오: `security unlock-keychain`
+- 앱 번들의 파일 권한을 확인하십시오.
 
 ### Windows 문제
 
 **"인증서를 찾을 수 없음"**
 
-- 인증서 경로가 올바른지 확인하세요.
-- 인증서 비밀번호를 확인하세요.
+- 인증서 경로가 올바른지 확인하십시오.
+- 인증서 암호를 확인하십시오.
 - 인증서가 유효한지(만료되거나 폐기되지 않았는지) 확인하세요.
 
 **"타임스탬프 서버 오류"**

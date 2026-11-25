@@ -9,7 +9,7 @@ image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
 ---
 
-@video{src="/assets/videos/wails-v3-release-clean-av1.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Release-Film zu Wails v3.0.0 – am besten im Vollbildmodus ansehen" width="1920" height="1080"}
+@video{src="/assets/videos/wails-v3-release-clean-av1.mp4, /assets/videos/wails-v3-release-clean-h264.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Release-Film zu Wails v3.0.0 – am besten im Vollbildmodus ansehen" width="1920" height="1080"}
 
 ## Es ist da!
 

@@ -5,15 +5,15 @@ slug: "feedback"
 sourcePath: "feedback.md"
 ---
 
-Wir freuen uns über Ihr Feedback und möchten Sie ausdrücklich dazu ermutigen! Suchen Sie bitte nach vorhandenen Issues oder Diskussionen, bevor Sie neue erstellen. Sie können auf folgende Arten beitragen:
+Wir freuen uns über Ihr Feedback und ermutigen Sie ausdrücklich dazu! Suchen Sie bitte nach bestehenden Issues oder Diskussionen, bevor Sie neue erstellen. Sie können auf folgende Arten beitragen:
 
 @tabs
 [Fehler]
 Wenn Sie einen Fehler finden, [erstellen Sie bitte ein Issue](https://github.com/wailsapp/wails/issues/new/choose) auf GitHub und verwenden Sie dafür die Vorlage für Fehlerberichte.
 
-- Beschreiben Sie den Fehler eindeutig anhand eines einfachen, reproduzierbaren Beispiels. Wenn aus der Dokumentation nicht klar hervorgeht, was *geschehen sollte*, geben Sie dies im Bericht an.
-- Fügen Sie die Ausgabe von `wails3 doctor` Ihrem Bericht hinzu.
-- Wenn der Fehler in einem Verhalten besteht, das nicht der aktuellen Dokumentation entspricht, führen Sie bitte außerdem folgende Schritte aus:
+- Beschreiben Sie den Fehler eindeutig anhand eines einfachen, reproduzierbaren Beispiels. Falls aus der Dokumentation nicht klar hervorgeht, was *geschehen sollte*, erwähnen Sie dies im Bericht.
+- Fügen Sie die Ausgabe von `wails3 doctor` in Ihren Bericht ein.
+- Falls der Fehler in einem Verhalten besteht, das nicht der aktuellen Dokumentation entspricht, gehen Sie bitte außerdem wie folgt vor:
   - Aktualisieren Sie ein vorhandenes Beispiel im Verzeichnis `v3/examples` oder erstellen Sie ein neues Beispiel, das das Problem eindeutig veranschaulicht.
   - Erstellen Sie einen [PR](https://github.com/wailsapp/wails/pulls), der auf das Issue verweist.
 
@@ -25,10 +25,10 @@ Wenn Sie einen Fehler finden, [erstellen Sie bitte ein Issue](https://github.com
 
 Sie können Fehler auch im Discord-Kanal [#v3](https://discord.gg/bdj28QNHmT) diskutieren.
 
-[Korrekturen]
-Wenn Sie eine Fehlerkorrektur oder eine Verbesserung der Dokumentation haben, gehen Sie bitte wie folgt vor:
+[Fehlerbehebungen]
+Wenn Sie eine Fehlerbehebung oder eine Verbesserung der Dokumentation haben, gehen Sie bitte wie folgt vor:
 
-- Erstellen Sie im [Wails-Repository](https://github.com/wailsapp/wails) einen Pull Request und beachten Sie dabei die [Richtlinien für Beiträge](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
+- Erstellen Sie einen Pull Request im [Wails-Repository](https://github.com/wailsapp/wails) und befolgen Sie dabei die [Richtlinien für Beiträge](https://github.com/wailsapp/wails/blob/master/CONTRIBUTING.md).
 - Verweisen Sie in der PR-Beschreibung auf alle zugehörigen Issues.
 
 [Erweiterungen]
@@ -38,10 +38,10 @@ Neue Funktionen und Änderungen am öffentlichen Verhalten werden über einen Pu
 - Kopieren Sie die Vorlage und erstellen Sie anschließend einen PR-Entwurf mit dem Titel `[WEP] <title>`, der ausschließlich den WEP und unterstützendes Material enthält.
 - Sie können eine Idee zunächst informell in den [GitHub Discussions](https://github.com/wailsapp/wails/discussions) oder im Discord-Kanal [#v3](https://discord.gg/bdj28QNHmT) diskutieren. Für eine Entscheidung der Maintainer ist jedoch ein WEP-PR erforderlich.
 
-[Zustimmung]
-- Zeigen Sie Ihre Unterstützung für Fehlerberichte, WEPs und Diskussionen auf GitHub mit der Reaktion :thumbsup:.
-- Fügen Sie bitte *nicht* einfach Kommentare wie „+1“ oder „bei mir auch“ hinzu.
-- Fügen Sie einen Kommentar hinzu, wenn Sie etwas Wesentliches beitragen können, beispielsweise „Dieser Fehler betrifft auch ARM-Builds“ oder „Ein anderer Ansatz wäre ...“.
+[Unterstützen]
+- Zeigen Sie Ihre Unterstützung für Fehler, WEPs und Diskussionen mit der :thumbsup:-Reaktion auf GitHub.
+- Fügen Sie bitte *nicht* einfach Kommentare wie „+1“ oder „Ich auch“ hinzu.
+- Fügen Sie einen Kommentar hinzu, wenn Sie etwas Wesentliches beitragen können, beispielsweise „Dieser Fehler betrifft auch ARM-Builds“ oder „Ein anderer Ansatz wäre …“.
 
 @end
 

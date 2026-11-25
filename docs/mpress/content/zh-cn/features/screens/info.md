@@ -1,13 +1,13 @@
 ---
 title: "屏幕信息"
-description: "获取显示器和监视器的信息"
+description: "获取显示屏和监视器的信息"
 slug: "features/screens/info"
 sourcePath: "features/screens/info.md"
 ---
 
 ## 屏幕信息
 
-Wails 提供了一个适用于所有平台的<strong>统一屏幕 API</strong>。使用一致的代码即可获取屏幕信息、检测多个显示器、查询屏幕属性（尺寸、位置、DPI）、识别主显示器并处理 DPI 缩放。
+Wails 提供了可在所有平台上使用的**统一屏幕 API**。你可以使用一致的代码获取屏幕信息、检测多个监视器、查询屏幕属性（尺寸、位置、DPI）、识别主显示屏并处理 DPI 缩放。
 
 ## 快速开始
 
@@ -25,7 +25,7 @@ primary := app.Screen.GetPrimary()
 fmt.Printf("Primary: %s\n", primary.Name)
 ```
 
-<strong>就是这么简单！</strong>跨平台获取屏幕信息。
+<strong>就这么简单！</strong>跨平台获取屏幕信息。
 
 ## 获取屏幕信息
 
@@ -57,7 +57,7 @@ fmt.Printf("Scale factor: %.2f\n", primary.ScaleFactor)
 
 ### 当前屏幕
 
-获取包含某个窗口的屏幕：
+获取窗口所在的屏幕：
 
 ```go
 screen, err := window.GetScreen()
@@ -100,7 +100,7 @@ type Size struct{ Width, Height int }
 type Rect struct{ X, Y, Width, Height int }
 ```
 
-通过`screen.Size.Width`/`screen.Size.Height`读取像素尺寸——不存在顶层`Width`/`Height`字段。
+通过`screen.Size.Width` / `screen.Size.Height`读取像素尺寸——不存在顶层的`Width`/`Height`字段。
 
 ### 物理像素与逻辑像素
 
@@ -143,7 +143,7 @@ func centreOnScreen(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-### 在指定屏幕上定位
+### 定位到指定屏幕
 
 ```go
 func moveToScreen(window *application.WebviewWindow, screenIndex int) {
@@ -184,9 +184,9 @@ func positionBottomRight(window *application.WebviewWindow, screen *Screen) {
 }
 ```
 
-## 多显示器支持
+## 多监视器支持
 
-### 检测多个显示器
+### 检测多个监视器
 
 ```go
 func hasMultipleMonitors() bool {
@@ -198,7 +198,7 @@ func getMonitorCount() int {
 }
 ```
 
-### 列出所有显示器
+### 列出所有监视器
 
 ```go
 func listMonitors() {
@@ -220,7 +220,7 @@ func listMonitors() {
 }
 ```
 
-### 选择显示器
+### 选择监视器
 
 ```go
 func chooseMonitor() (*Screen, error) {
@@ -251,7 +251,7 @@ func chooseMonitor() (*Screen, error) {
 
 ## 完整示例
 
-### 多显示器窗口管理器
+### 多监视器窗口管理器
 
 ```go
 type MultiMonitorManager struct {
@@ -344,7 +344,7 @@ func (sm *ScreenMonitor) checkScreens() {
 }
 ```
 
-### 支持 DPI 感知的窗口尺寸调整
+### 支持 DPI 的窗口尺寸调整
 
 ```go
 func createDPIAwareWindow(screen *Screen) *application.WebviewWindow {
@@ -402,46 +402,46 @@ func visualiseScreenLayout() string {
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 推荐做法
 
-- **检查屏幕数量** - 同时处理单显示器和多显示器配置
+- **检查屏幕数量** - 同时处理单监视器和多监视器情形
 - **使用逻辑像素** - Wails 会自动处理 DPI
 - **将窗口居中** - 用户体验优于固定位置
 - **验证位置** - 确保窗口可见
-- **处理屏幕变化** - 显示器可能会被添加或移除
+- **处理屏幕变化** - 监视器可能会被添加或移除
 - **在不同 DPI 下测试** - 100%、125%、150%、200%
 
-### ❌ 不应该做
+### ❌ 避免做法
 
-- **不要硬编码位置** - 使用屏幕尺寸
-- **不要假定只有主屏幕** - 用户可能有多个显示器
+- **不要硬编码位置** - 应使用屏幕尺寸
+- **不要假定使用主屏幕** - 用户可能有多个屏幕
 - **不要忽略缩放系数** - 这对 DPI 感知很重要
-- **不要将窗口定位到屏幕之外** - 验证坐标
-- **不要忘记处理屏幕变化** - 笔记本电脑会连接或断开扩展坞
-- **不要使用物理像素** - 使用逻辑像素
+- **不要将窗口定位到屏幕之外** - 应验证坐标
+- **不要忘记处理屏幕变化** - 笔记本电脑可能会接入或断开扩展坞
+- **不要使用物理像素** - 应使用逻辑像素
 
 ## 平台差异
 
 ### macOS
 
-- Retina 显示器（2x 缩放系数）
-- 多显示器配置很常见
-- 坐标系：原点（0,0）位于左下角
+- Retina 显示屏（2 倍缩放系数）
+- 多显示屏很常见
+- 坐标系：原点 (0,0) 位于左下角
 - 空间（虚拟桌面）会影响定位
 
 ### Windows
 
-- 多种 DPI 缩放比例（100%、125%、150%、200%）
-- 多显示器配置很常见
-- 坐标系：原点（0,0）位于左上角
-- 按显示器进行 DPI 感知
+- 支持多种 DPI 缩放比例（100%、125%、150%、200%）
+- 多显示屏很常见
+- 坐标系：原点 (0,0) 位于左上角
+- 按监视器感知 DPI
 
 ### Linux
 
 - 因桌面环境而异
-- X11 与 Wayland 之间存在差异
-- DPI 缩放支持情况各异
-- 支持多个显示器
+- X11 与 Wayland 存在差异
+- DPI 缩放支持因环境而异
+- 支持多显示屏
 
 ## 后续步骤
 
@@ -459,7 +459,7 @@ func visualiseScreenLayout() string {
 
 ---
 ◆ 多窗口
-多窗口模式。
+了解多窗口模式。
 
 [了解更多 →](/features/windows/multiple/)
 

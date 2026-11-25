@@ -7,9 +7,9 @@ sourcePath: "features/windows/basics.md"
 
 ## 窗口管理
 
-Wails 提供了一套可跨所有平台使用的<strong>统一窗口管理 API</strong>。您可以创建窗口、控制窗口行为并管理多个窗口，全面掌控窗口的创建、外观、行为和生命周期。
+Wails 提供了一个适用于所有平台的**统一窗口管理 API**。您可以创建窗口、控制其行为，并全面控制多个窗口的创建、外观、行为和生命周期。
 
-## 快速入门
+## 快速开始
 
 ```go
 package main
@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-<strong>就这么简单！</strong>您现在已经拥有了一个跨平台窗口。
+<strong>就这么简单！</strong>您现在已经有了一个跨平台窗口。
 
 ## 创建窗口
 
@@ -55,7 +55,7 @@ window := app.Window.New()
 - 可供前端使用的 WebView
 - 平台原生外观
 
-### 带选项的窗口
+### 使用选项创建窗口
 
 使用自定义配置创建窗口：
 
@@ -83,8 +83,8 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 | `Title` | `string` | 窗口标题 |
 | `Width` | `int` | 窗口宽度（像素） |
 | `Height` | `int` | 窗口高度（像素） |
-| `X` | `int` | X 位置（从左侧起） |
-| `Y` | `int` | Y 位置（从顶部起） |
+| `X` | `int` | X 位置（距左侧） |
+| `Y` | `int` | Y 位置（距顶部） |
 | `AlwaysOnTop` | `bool` | 使窗口保持在其他窗口上方 |
 | `Frameless` | `bool` | 移除标题栏和边框 |
 | `Hidden` | `bool` | 启动时隐藏 |
@@ -97,7 +97,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ### 命名窗口
 
-为窗口命名，以便轻松检索：
+为窗口命名，以便轻松获取：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -114,7 +114,7 @@ if mainWindow, ok := app.Window.GetByName("main-window"); ok {
 **使用场景：**
 
 - 多个窗口（主窗口、设置窗口、关于窗口）
-- 从代码的不同位置查找窗口
+- 从代码的不同部分查找窗口
 - 窗口通信
 
 ## 控制窗口
@@ -136,7 +136,7 @@ if window.IsVisible() {
 
 **使用场景：**
 
-- 启动画面（先显示，然后隐藏）
+- 启动画面（先显示，再隐藏）
 - 设置窗口（不需要时隐藏）
 - 弹出窗口（按需显示）
 
@@ -161,9 +161,9 @@ x, y := window.Position()
 
 **坐标系：**
 
-- (0, 0) 位于主屏幕左上角
-- X 轴正方向向右
-- Y 轴正方向向下
+- (0, 0) 是主屏幕的左上角
+- X 正方向向右
+- Y 正方向向下
 
 ### 窗口状态
 
@@ -225,11 +225,11 @@ window.SetResizable(false)
 window.Close()
 ```
 
-v3 中没有`window.Destroy()`方法——请使用`Close()`，并通过`OnWindowEvent`监听（无法取消），或通过`RegisterHook`挂接处理程序（可调用`e.Cancel()`让窗口保持打开）。
+v3中没有`window.Destroy()`方法——请使用`Close()`，并通过`OnWindowEvent`监听（无法取消），或使用`RegisterHook`挂钩（可调用`e.Cancel()`使窗口保持打开）。
 
 ## 查找窗口
 
-### 按名称
+### 按名称查找
 
 ```go
 if window, ok := app.Window.GetByName("settings"); ok {
@@ -237,9 +237,9 @@ if window, ok := app.Window.GetByName("settings"); ok {
 }
 ```
 
-### 按 ID
+### 按 ID 查找
 
-每个窗口都有唯一 ID：
+每个窗口都有唯一的 ID：
 
 ```go
 id := window.ID()
@@ -253,7 +253,7 @@ if found, ok := app.Window.GetByID(id); ok {
 
 ### 当前窗口
 
-获取当前获得焦点的窗口：
+获取当前具有焦点的窗口：
 
 ```go
 current := app.Window.Current()
@@ -290,7 +290,7 @@ app.Window.OnCreate(func(window application.Window) {
 
 ### 关闭
 
-要阻止窗口关闭，请对`WindowClosing`事件使用`RegisterHook`：
+要阻止窗口关闭，请将`RegisterHook`与`WindowClosing`事件配合使用：
 
 ```go
 window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -305,11 +305,11 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 })
 ```
 
-**重要：**`RegisterHook`会在关闭事件发生前将其拦截。调用`event.Cancel()`可阻止窗口关闭。此方法适用于用户发起的关闭操作（单击 X 按钮）。
+**重要：**`RegisterHook`会在关闭事件发生前将其拦截。调用`event.Cancel()`可阻止窗口关闭。这适用于用户发起的关闭操作（单击 X 按钮）。
 
 ### 销毁
 
-要在窗口关闭时执行清理，请对`WindowClosing`事件使用`OnWindowEvent`：
+要在窗口关闭时执行清理，请将`OnWindowEvent`与`WindowClosing`事件配合使用：
 
 ```go
 window.OnWindowEvent(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -346,7 +346,7 @@ settingsWindow.Show()
 
 ### 窗口通信
 
-窗口可通过事件进行通信：
+窗口可以通过事件进行通信：
 
 ```go
 // In main window
@@ -362,11 +362,11 @@ app.Event.On("data-updated", func(event *application.CustomEvent) {
 })
 ```
 
-**有关更多信息，请参阅[事件](/features/events/system/)。**
+**更多信息请参阅[事件](/features/events/system/)。**
 
 ### 父子窗口
 
-`WebviewWindowOptions`没有`Parent`字段。请将子窗口创建为普通窗口，然后以表单式模态窗口的形式将其附加到父窗口：
+`WebviewWindowOptions`没有`Parent`字段。请将子窗口创建为普通窗口，然后将其作为工作表模态窗口附加到父窗口：
 
 ```go
 // Create child window
@@ -381,11 +381,11 @@ mainWindow.AttachModal(childWindow)
 **行为：**
 
 - 子窗口保持在父窗口上方。
-- 子窗口是模态窗口——会阻止与父窗口交互。
+- 子窗口是模态窗口，会阻止与父窗口交互。
 
 **平台支持：**
 
-- <strong>macOS：</strong>完全支持（显示为附着于父窗口的对话框）。
+- <strong>macOS：</strong>完全支持（显示为表单式窗口）。
 - <strong>Windows：</strong>不支持。
 - <strong>Linux：</strong>不支持。
 
@@ -404,11 +404,11 @@ window.Flash(false) // Stop flashing
 window.SnapAssist()
 ```
 
-没有针对单个窗口的`SetIcon`——应用程序图标通过`app.SetIcon([]byte)`在应用级别设置（对于 Linux 特定的窗口图标，也可在创建窗口时使用`application.LinuxWindow.Icon`字段）。
+没有单窗口专用的`SetIcon`——应用程序图标通过`app.SetIcon([]byte)`在应用层面设置（若要为 Linux 窗口设置专用图标，则在创建窗口时使用`application.LinuxWindow.Icon`字段）。
 
-**贴靠助手：** 通过系统快捷方式路径显示 Windows 11贴靠布局选项。对于需要在原生悬停时显示贴靠布局的自定义 HTML 最大化按钮，请改用[Windows 上的原生非客户区](/features/windows/frameless/#native-non-client-regions-on-windows)。
+<strong>贴靠辅助：</strong>通过系统快捷键路径显示 Windows 11贴靠布局选项。若要让自定义 HTML 最大化按钮在悬停时显示原生贴靠布局，请改用[Windows 上的原生非客户区](/features/windows/frameless/#native-non-client-regions-on-windows)。
 
-**任务栏闪烁：** 适合在窗口最小化时发出通知。
+<strong>任务栏闪烁：</strong>适合在窗口最小化时提示通知。
 
 [macOS]
 **macOS 特定功能：**
@@ -428,18 +428,18 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 **背景类型：**
 
 - `MacBackdropNormal` - 标准窗口
-- `MacBackdropTranslucent` - 半透明背景；要使 WebView 透明，**需要使用私有 API**。
-- `MacBackdropTransparent` - 完全透明；要使 WebView 透明，**需要使用私有 API**。
-- `MacBackdropLiquidGlass` - 玻璃背景；要使 WebView 透明，**需要使用私有 API**。
+- `MacBackdropTranslucent` - 半透明背景；WebView 透明效果**需要使用私有 API**。
+- `MacBackdropTransparent` - 完全透明；WebView 透明效果**需要使用私有 API**。
+- `MacBackdropLiquidGlass` - 玻璃背景；WebView 透明效果**需要使用私有 API**。
 
-请使用`-tags private_mac_apis`进行构建，以便这些效果能透过 WebView 显示。否则，WebView 将保持不透明。`TitleBar.AppearsTransparent`本身使用公共 API。请参阅[私有 macOS API](/guides/build/private-macos-apis/)。
+使用`-tags private_mac_apis`构建，才能透过 WebView 显示这些效果。若不使用，WebView 将保持不透明。`TitleBar.AppearsTransparent`本身使用的是公共 API。请参阅[私有 macOS API](/guides/build/private-macos-apis/)。
 
-**集合行为：** 控制窗口在多个 Space 间的行为：
+<strong>窗口集合行为：</strong>控制窗口在不同空间中的行为：
 
-- `MacWindowCollectionBehaviorCanJoinAllSpaces` - 在所有 Space 中可见
+- `MacWindowCollectionBehaviorCanJoinAllSpaces` - 在所有空间中可见
 - `MacWindowCollectionBehaviorFullScreenAuxiliary` - 可覆盖全屏应用
 
-**原生全屏：** macOS 全屏模式会创建一个新的 Space（虚拟桌面）。
+<strong>原生全屏：</strong>macOS 全屏模式会创建一个新空间（虚拟桌面）。
 
 [Linux]
 **Linux 特定功能：**
@@ -458,18 +458,18 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - GNOME：完全支持
 - KDE Plasma：完全支持
 - XFCE：部分支持
-- 其他：支持情况各异
+- 其他：支持情况不一
 
 **平铺式窗口管理器（Hyprland、Sway、i3 等）：**
 
 - `Minimise()`和`Maximise()`可能无法按预期工作——窗口几何属性由窗口管理器控制
 - `SetSize()`和`SetPosition()`请求仅供参考，可能会被忽略
-- `Fullscreen()`通常会按预期工作
-- 某些窗口管理器不支持窗口置顶
+- `Fullscreen()`通常可以按预期工作
+- 某些窗口管理器不支持窗口始终置顶
 
 @end
 
-## 常见模式
+## 常用模式
 
 ### 启动画面
 
@@ -531,22 +531,22 @@ window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowE
 
 ## 最佳实践
 
-### ✅ 应该做
+### ✅ 推荐做法
 
-- **为重要窗口命名** — 便于日后查找
-- **设置最小尺寸** — 防止布局变得无法使用
-- **将窗口居中** — 用户体验优于随机定位
-- **处理关闭事件** — 防止数据丢失
-- **在所有平台上测试** — 行为因平台而异
-- **使用合适的尺寸** — 考虑不同的屏幕尺寸
+- **为重要窗口命名**——便于之后查找
+- **设置最小尺寸**——防止布局变得无法使用
+- **让窗口居中**——相比随机位置，用户体验更好
+- **处理关闭事件**——防止数据丢失
+- **在所有平台上测试**——行为因平台而异
+- **使用合适的尺寸**——考虑不同的屏幕尺寸
 
-### ❌ 不应该做
+### ❌ 避免的做法
 
-- **不要创建过多窗口** — 会让用户感到困惑
-- **不要忘记关闭窗口** — 否则会导致内存泄漏
-- **不要硬编码窗口位置** — 屏幕尺寸各不相同
-- **不要忽略平台差异** — 应进行充分测试
-- **不要阻塞 UI 线程** — 对耗时操作使用 goroutine
+- **不要创建过多窗口**——会让用户感到困惑
+- **不要忘记关闭窗口**——否则会导致内存泄漏
+- **不要硬编码窗口位置**——屏幕尺寸各不相同
+- **不要忽略平台差异**——应充分测试
+- **不要阻塞 UI 线程**——长时间运行的操作应使用 goroutine
 
 ## 故障排除
 
@@ -568,7 +568,7 @@ window.Focus()
 
 ### 窗口尺寸不正确
 
-**原因：** Windows/Linux 上的 DPI 缩放
+<strong>原因：</strong>Windows/Linux 上的 DPI 缩放
 
 **解决方案：**
 
@@ -580,7 +580,7 @@ window.SetSize(800, 600)
 
 ### 窗口立即关闭
 
-**原因：** 最后一个窗口关闭时应用程序退出
+<strong>原因：</strong>最后一个窗口关闭时，应用程序会退出
 
 **解决方案：**
 
@@ -598,25 +598,25 @@ app := application.New(application.Options{
 ⚙ 窗口选项
 所有窗口选项的完整参考。
 
-[了解更多 →](/features/windows/options/)
+[了解详情 →](/features/windows/options/)
 
 ---
 ▣ 多窗口
-多窗口应用程序的设计模式。
+多窗口应用程序的常用模式。
 
-[了解更多 →](/features/windows/multiple/)
+[了解详情 →](/features/windows/multiple/)
 
 ---
 ★ 无边框窗口
-创建自定义窗口装饰。
+创建自定义窗口边框。
 
-[了解更多 →](/features/windows/frameless/)
+[了解详情 →](/features/windows/frameless/)
 
 ---
 🚀 窗口事件
 处理窗口生命周期事件。
 
-[了解更多 →](/features/windows/events/)
+[了解详情 →](/features/windows/events/)
 
 @end
 

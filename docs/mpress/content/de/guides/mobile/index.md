@@ -1,42 +1,42 @@
 ---
-title: "Übersicht für Mobilgeräte"
+title: "Mobile-Übersicht"
 description: "Erstellen Sie iOS- und Android-Apps aus derselben Go-Codebasis wie Ihre Desktop-App"
 slug: "guides/mobile"
 sourcePath: "guides/mobile/index.md"
 ---
 
-Wails v3 läuft auf **iOS und Android** und verwendet dabei dieselbe `main.go` und dasselbe Frontend, die Sie bereits für Desktop-Anwendungen schreiben. Es gibt weder ein separates Mobilprojekt noch eine Brücke zur gemeinsamen Codenutzung oder eine Neuentwicklung: Das Go-Binärprogramm wird für die mobile Zielplattform kompiliert, und eine native WebView rendert Ihr vorhandenes Frontend.
+Wails v3 läuft auf **iOS und Android** mit demselben `main.go` und Frontend, die Sie bereits für Desktop-Anwendungen schreiben. Es gibt weder ein separates Mobile-Projekt noch eine Brücke zur gemeinsamen Codenutzung oder eine Neuentwicklung: Das Go-Binärprogramm wird für die mobile Zielplattform kompiliert und eine native WebView stellt Ihr bestehendes Frontend dar.
 
 @cards{cols="2"}
 iOS
-WKWebView und UIKit-Host. Assets werden über ein benutzerdefiniertes `wails://`-Schema bereitgestellt – ohne offene Ports. Erfordert **macOS** mit vollständiger Xcode-Installation.
+WKWebView mit UIKit-Host. Assets werden über ein benutzerdefiniertes `wails://`-Schema bereitgestellt – ohne offene Ports. Erfordert **macOS** mit der vollständigen Xcode-Installation.
 
 [iOS-Anleitung →](/guides/mobile/ios/)
 
 ---
 Android
-Android WebView und `WebViewAssetLoader`. Go wird über das NDK als `libwails.so` kompiliert. Funktioniert unter macOS, Linux und Windows.
+Android WebView mit `WebViewAssetLoader`. Go wird über das NDK als `libwails.so` kompiliert. Funktioniert unter macOS, Linux und Windows.
 
 [Android-Anleitung →](/guides/mobile/android/)
 
 @end
 
-## In Aktion: das Kitchen-Sink-Beispiel
+## In Aktion: Kitchen-Sink-Beispiel
 
-Am besten erkennen Sie die Möglichkeiten anhand von **Kitchen Sink** – einer einzelnen Wails-App, die aus einer Codebasis identisch auf iOS, Android und Desktop-Plattformen läuft:
+Am besten sehen Sie am **Kitchen Sink**, was möglich ist: eine einzige Wails-App, die aus einer Codebasis identisch auf iOS, Android und dem Desktop ausgeführt wird:
 
-@linkcard{title="Mobile Kitchen Sink – GitHub" href="https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile" description="Bindings · Ereignisse · Dialoge · Haptik · Geolokalisierung · Biometrie · Benachrichtigungen · sicherer Speicher · und mehr – alles aus einer main.go"}
-Das Beispiel demonstriert alle wichtigen mobilen API-Bereiche auf 7 Registerkarten und läuft auch auf Desktop-Plattformen. Die Registerkarten **Mobil** und **Hardware** werden dort durch eine Plattformprüfung im Frontend ausgeblendet; beim Erstellen für Desktop-Plattformen registriert die Go-Seite keine Handler für mobile `common:*`-Ereignisse. Dies ist das empfohlene Muster, um eine Codebasis auf allen Plattformen auszuliefern.
+@linkcard{title="Mobile Kitchen Sink – GitHub" href="https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/mobile" description="Bindings · Ereignisse · Dialoge · Haptik · Geolokalisierung · Biometrie · Benachrichtigungen · sicherer Speicher · und mehr – alles aus einer einzigen main.go"}
+Das Beispiel demonstriert jede wichtige mobile API-Oberfläche auf 7 Registerkarten und läuft auch auf dem Desktop. Die Registerkarten **Mobile** und **Hardware** werden auf dem Desktop durch eine Plattformprüfung im Frontend ausgeblendet. Die Go-Seite registriert bei einem Desktop-Build keine Handler für mobile `common:*`-Ereignisse. Dies ist das empfohlene Muster, um eine einzige Codebasis auf allen Plattformen bereitzustellen.
 
 | Registerkarte | Plattformen | Gezeigte Funktionen |
 | --- | --- | --- |
-| **Bindings** | alle | JS-→-Go-Dienstaufrufe, die Werte, Structs und Fehler zurückgeben |
-| **Ereignisse** | alle | Go-→-JS-Uhr, JS-→-Go-→-JS-Ping/Pong, Betriebssystemereignisse (Akku, Netzwerk, Design) |
+| **Bindings** | alle | JS → Go-Serviceaufrufe, die Werte, Structs und Fehler zurückgeben |
+| **Ereignisse** | alle | Go → JS-Uhr, JS → Go → JS-Ping/Pong, OS-Systemereignisse (Akku, Netzwerk, Theme) |
 | **Dialoge** | alle | Native Meldungsdialoge auf jeder Plattform |
 | **System** | alle | Zwischenablage, Bildschirmmetriken, Geräteinformationen |
-| **Mobil** | iOS und Android | Teilen-Menü, Ruhezustand verhindern, Taschenlampe, Helligkeit, Biometrie, lokale Benachrichtigungen, sicherer Speicher |
-| **Hardware** | iOS + Android | Haptik, Geolokalisierung, Beschleunigungssensor, Näherungssensor, Sprachausgabe |
-| **Nativ** | iOS + Android | iOS: Haptik + WKWebView-Umschalter · Android: Vibration + Toast-Benachrichtigung |
+| **Mobile** | iOS + Android | Teilen-Menü, Wachhalten, Taschenlampe, Helligkeit, Biometrie, lokale Benachrichtigungen, sicherer Speicher |
+| **Hardware** | iOS + Android | Haptik, Geolokalisierung, Beschleunigungssensor, Näherungssensor, Text-to-Speech |
+| **Nativ** | iOS + Android | iOS: Haptik + WKWebView-Umschalter · Android: Vibration + Toast |
 
 So führen Sie das Beispiel selbst aus:
 
@@ -53,25 +53,25 @@ wails3 task run            # Desktop
 
 Auf jeder Plattform gilt dasselbe Anwendungsmodell:
 
-1. **Go-Backend** – Ihre Dienste, Ereignishandler und Anwendungslogik werden unverändert für `GOOS=ios` und `GOOS=android` kompiliert.
-2. **Frontend** – exakt dasselbe HTML, JavaScript und CSS. Das Paket `@wailsio/runtime` funktioniert identisch; Dienstbindungen, Ereignisse, Dialoge und die Zwischenablage werden über denselben prozessinternen Transport geleitet.
-3. **WebView-Host** – unter iOS eine `WKWebView` innerhalb einer `UIViewController`, unter Android eine `WebView` innerhalb einer `Activity`. Wails richtet die Nachrichtenbrücke automatisch ein.
-4. **Prozessinterne Bereitstellung von Assets** – Assets werden direkt aus dem Go-Arbeitsspeicher bereitgestellt, nicht von einem localhost-Server. Keine offenen Ports, kein Loopback, keine zusätzliche Latenz.
+1. **Go-Backend** – Ihre Services, Ereignis-Handler und Anwendungslogik werden unverändert für `GOOS=ios` und `GOOS=android` kompiliert.
+2. **Frontend** – exakt dasselbe HTML/JS/CSS. Das Paket `@wailsio/runtime` funktioniert identisch; Service-Bindings, Ereignisse, Dialoge und die Zwischenablage werden alle über denselben prozessinternen Transport geleitet.
+3. **WebView-Host** – unter iOS ein `WKWebView` innerhalb eines `UIViewController`, unter Android ein `WebView` innerhalb einer `Activity`. Wails richtet die Nachrichtenbrücke automatisch ein.
+4. **Prozessinterne Asset-Bereitstellung** – Assets werden direkt aus dem Go-Speicher bereitgestellt, nicht von einem Localhost-Server. Keine offenen Ports, kein Loopback, keine zusätzliche Latenz.
 
-Plattformspezifisches Verhalten befindet sich in Dateien, die durch `//go:build ios` oder `//go:build android` geschützt sind. So bleibt Ihr gemeinsam genutzter Code übersichtlich.
+Plattformspezifisches Verhalten befindet sich in Dateien, die durch `//go:build ios` oder `//go:build android` geschützt sind. Dadurch bleibt Ihr gemeinsam genutzter Code übersichtlich.
 
-## Voraussetzungen auf einen Blick
+## Voraussetzungen im Überblick
 
 | Anforderung | iOS | Android |
 | --- | --- | --- |
-| Betriebssystem | Nur macOS | macOS, Linux, Windows |
+| Betriebssystem | nur macOS | macOS, Linux, Windows |
 | Toolchain | Vollständiges Xcode (nicht nur die CLI-Tools) | Android SDK + NDK 26.3.x + JDK |
 | Go | 1.25+ | 1.25+ |
 | npm | ✅ | ✅ |
 | Überprüfen mit | `wails3 doctor` | `wails3 doctor` |
 
 @note{type="tip"}
-Führen Sie nach dem Einrichten Ihrer Toolchain `wails3 doctor` aus. Der Befehl zeigt für jede Plattform genau an, was gefunden wurde und was fehlt.
+Führen Sie nach der Einrichtung Ihrer Toolchain `wails3 doctor` aus. Der Befehl zeigt für jede Plattform genau an, was gefunden wurde und was fehlt.
 
 @end
 
@@ -87,27 +87,27 @@ Beide Plattformen unterstützen dieselben Kernfunktionen:
 | Dialoge zum Öffnen von Dateien | ✅ UIDocumentPicker | ✅ Storage Access Framework |
 | Dialoge zum Speichern von Dateien | ❌ stattdessen in die Sandbox schreiben | ❌ stattdessen in die Sandbox schreiben |
 | Zwischenablage | ✅ UIPasteboard | ✅ ClipboardManager |
-| Bildschirm- und Safe-Area-Metriken | ✅ | ✅ |
+| Bildschirm-/Safe-Area-Metriken | ✅ | ✅ |
 | Lebenszyklusereignisse | ✅ `events.IOS.*` | ✅ `events.Android.*` |
-| Haptisches Feedback | ✅ `IOS.Haptics.*` | ✅ `Android.Haptics.Vibrate` |
+| Haptik | ✅ `IOS.Haptics.*` | ✅ `Android.Haptics.Vibrate` |
 | Geräteinformationen | ✅ `IOS.Device.Info()` | ✅ `Android.Device.Info()` |
-| Native Tabs (iOS) | ✅ UITabBar | — |
+| Native Registerkarten (iOS) | ✅ UITabBar | — |
 | Toast-Meldungen (Android) | — | ✅ `Android.Toast.Show` |
 | Mehrere Fenster | ❌ nur das erste Fenster | ❌ nur das erste Fenster |
-| Fenstergeometrie, Menüs und Tray | bewusste No-Op-Implementierungen | bewusste No-Op-Implementierungen |
+| Fenstergeometrie / Menüs / Taskleistensymbol | bewusst wirkungslose Operationen | bewusst wirkungslose Operationen |
 
 ## Regeln für Build-Tags
 
-Beachten Sie beim Schreiben von plattformabhängigem Code zwei wichtige Regeln:
+Beim Schreiben von plattformabhängigem Code sind zwei wichtige Regeln zu beachten:
 
-- **`ios` impliziert `darwin`** – eine mit `//go:build darwin` gekennzeichnete Datei wird auch für iOS kompiliert. Verwenden Sie `//go:build darwin && !ios`, um ausschließlich macOS anzusprechen.
-- **`android` impliziert `linux`** – eine mit `//go:build linux` gekennzeichnete Datei wird auch für Android kompiliert. Verwenden Sie `//go:build linux && !android`, um ausschließlich Desktop-Linux anzusprechen.
+- **`ios` impliziert `darwin`** – eine mit `//go:build darwin` gekennzeichnete Datei wird daher auch für iOS kompiliert. Verwenden Sie `//go:build darwin && !ios`, um ausschließlich macOS anzusprechen.
+- **`android` impliziert `linux`** – eine mit `//go:build linux` gekennzeichnete Datei wird daher auch für Android kompiliert. Verwenden Sie `//go:build linux && !android`, um ausschließlich Desktop-Linux anzusprechen.
 
-Zur Laufzeit gibt `runtime.GOOS` jeweils `"ios"` beziehungsweise `"android"` zurück.
+Zur Laufzeit gibt `runtime.GOOS` entsprechend `"ios"` beziehungsweise `"android"` zurück.
 
 ## Plattformerkennung zur Laufzeit
 
-Build-Tags sind für Code vorgesehen, der nur auf einer bestimmten Plattform *kompiliert* werden kann. Verwenden Sie für gewöhnliche Verzweigungen in gemeinsam genutztem Code `application.System`. Dieses Objekt ist in jedem Build verfügbar (keine Build-Tags erforderlich), sodass dieselbe Datei überall funktioniert:
+Build-Tags sind für Code vorgesehen, der nur auf einer bestimmten Plattform *kompiliert* werden kann. Verwenden Sie für gewöhnliche Verzweigungen in gemeinsam genutztem Code `application.System`. Diese Funktion ist in jedem Build verfügbar (Build-Tags sind nicht erforderlich), sodass dieselbe Datei überall funktioniert:
 
 ```go
 import "github.com/wailsapp/wails/v3/pkg/application"
@@ -124,9 +124,9 @@ if application.System.IsPlatform(application.PlatformIOS) {
 }
 ```
 
-Verfügbar sind `IsMobile()`, `IsDesktop()`, `IsServer()` (das Build-Tag `server`) und `IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)`.
+Verfügbar sind: `IsMobile()`, `IsDesktop()`, `IsServer()` (der Build-Tag `server`) und `IsPlatform(application.PlatformMacOS | PlatformWindows | PlatformLinux | PlatformIOS | PlatformAndroid | PlatformServer)`.
 
-Das Frontend enthält die entsprechenden Hilfsfunktionen in `@wailsio/runtime`:
+Im Frontend stehen die entsprechenden Hilfsfunktionen in `@wailsio/runtime` zur Verfügung:
 
 ```js
 import { System } from "@wailsio/runtime";
@@ -139,19 +139,19 @@ if (System.IsIOS()) { /* … */ }      // also IsAndroid, IsMac, IsWindows, IsLi
 
 @cards{cols="2"}
 🚀 Ihre erste mobile App
-Bringen Sie eine Wails-Desktop-App innerhalb weniger Minuten im iOS-Simulator oder Android-Emulator zum Laufen.
+Übertragen Sie eine Wails-Desktop-App und führen Sie sie innerhalb weniger Minuten im iOS-Simulator oder Android-Emulator aus.
 
 [Erste Schritte →](/guides/mobile/first-mobile-app/)
 
 ---
 iOS-Leitfaden
-Vollständige Einrichtung der iOS-Toolchain sowie Simulator, Geräte-Builds, Signierung, Konfiguration und API-Referenz.
+Vollständige Einrichtung der iOS-Toolchain sowie Informationen zu Simulator, Geräte-Builds, Signierung, Konfiguration und API-Referenz.
 
 [iOS-Leitfaden →](/guides/mobile/ios/)
 
 ---
 Android-Leitfaden
-Vollständige Einrichtung von Android SDK und NDK sowie Emulator, APK-Signierung, Play-Store-Paketierung und API-Referenz.
+Vollständige Einrichtung von Android SDK und NDK sowie Informationen zu Emulator, APK-Signierung, Play-Store-Paketierung und API-Referenz.
 
 [Android-Leitfaden →](/guides/mobile/android/)
 

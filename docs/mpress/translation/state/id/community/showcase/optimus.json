@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "extractor": "markdown-blocks-v2",
   "pageKey": "f3df2fe79f2e00919df3",
   "sourceFile": "community/showcase/optimus.md",
   "sourceLanguage": "en",
@@ -18,18 +19,18 @@
       "updatedAt": "2026-09-13T23:13:28Z"
     },
     "b0002-text-01": {
-      "sourceHash": "6b9aae2a0a94c87b1187e3e02d60ad7201582cfd09bcad3840848da3a376d926",
+      "sourceHash": "10c5d2af6a9d3baaf3d92d0b3e9dafb181f123d8277f8c18402a046e00fae192",
       "targetHash": "18a69cd6748f3e3384247ed3b13dd47202238b52897283e9e2881615a853171e",
       "machineHash": "18a69cd6748f3e3384247ed3b13dd47202238b52897283e9e2881615a853171e",
       "machineText": "[Optimus](https://github.com/splode/optimus) adalah aplikasi desktop untuk pengoptimalan gambar. Aplikasi ini mendukung konversi dan kompresi antara format gambar WebP, JPEG, dan PNG.",
       "status": "final",
-      "sourcePreview": "[Optimus](https://github.com/splode/optimus) is a desktop image optimization\\ application. It suppor…",
+      "sourcePreview": "[Optimus](https://github.com/splode/optimus) is a desktop image optimization application. It support…",
       "provider": "codex",
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-description-01": {
+    "fm-description": {
       "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
       "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
       "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
@@ -41,7 +42,7 @@
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
     },
-    "fm-title-01": {
+    "fm-title": {
       "sourceHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
       "targetHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
       "machineHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
@@ -52,6 +53,62 @@
       "model": "gpt-5.6-sol",
       "promptVersion": "mpress-translation-v2",
       "updatedAt": "2026-09-13T23:13:28Z"
+    }
+  },
+  "migration": {
+    "fromExtractor": "mpd-v1",
+    "fromSourceFile": "community/showcase/optimus.mpd",
+    "sourceHash": "2bcecae8f550a0f4db756e58e33230effe096a4309a726573ce211dbb907adce",
+    "targetHash": "49ca7b4fc0fb947f25d614f23cee7cf5adc92239e4236c5fa103e09b54d93cb8",
+    "previousSegments": {
+      "b0001-text-01": {
+        "sourceHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+        "targetHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+        "machineHash": "c9c9e53721af1968934589795a223e300b5de6ce1620d807c471e17398183403",
+        "machineText": "![Optimus](/assets/showcase-images/optimus.webp)",
+        "status": "final",
+        "sourcePreview": "![Optimus](/assets/showcase-images/optimus.webp)",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "b0002-text-01": {
+        "sourceHash": "6b9aae2a0a94c87b1187e3e02d60ad7201582cfd09bcad3840848da3a376d926",
+        "targetHash": "18a69cd6748f3e3384247ed3b13dd47202238b52897283e9e2881615a853171e",
+        "machineHash": "18a69cd6748f3e3384247ed3b13dd47202238b52897283e9e2881615a853171e",
+        "machineText": "[Optimus](https://github.com/splode/optimus) adalah aplikasi desktop untuk pengoptimalan gambar. Aplikasi ini mendukung konversi dan kompresi antara format gambar WebP, JPEG, dan PNG.",
+        "status": "final",
+        "sourcePreview": "[Optimus](https://github.com/splode/optimus) is a desktop image optimization\\ application. It suppor…",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-description-01": {
+        "sourceHash": "8686c48dedebbc66000373a36089eddb5655598bb36599ba68e8ae1b61f97032",
+        "targetHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineHash": "918bb0cb28085995159b38afff247c727d49b0fa8f1e0933d483801823b01737",
+        "machineText": "Aplikasi desktop yang dibuat dengan Wails",
+        "status": "final",
+        "sourcePreview": "A desktop application built with Wails",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      },
+      "fm-title-01": {
+        "sourceHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+        "targetHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+        "machineHash": "f877033d654c21fa2432e21688290cae69e1bab2fa9c791cdaf14c71eb8f5b2f",
+        "machineText": "Optimus",
+        "status": "final",
+        "sourcePreview": "Optimus",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "promptVersion": "mpress-translation-v2",
+        "updatedAt": "2026-09-13T23:13:28Z"
+      }
     }
   }
 }

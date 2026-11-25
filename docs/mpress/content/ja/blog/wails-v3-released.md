@@ -9,7 +9,7 @@ image: "/assets/videos/wails-v3-release-clean-poster.webp"
 sourcePath: "blog/wails-v3-released.md"
 ---
 
-@video{src="/assets/videos/wails-v3-release-clean-av1.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 リリース映像 — 全画面表示を推奨" width="1920" height="1080"}
+@video{src="/assets/videos/wails-v3-release-clean-av1.mp4, /assets/videos/wails-v3-release-clean-h264.mp4" poster="/assets/videos/wails-v3-release-clean-poster.webp" title="Wails v3.0.0 リリース映像 — 全画面表示を推奨" width="1920" height="1080"}
 
 ## ついに登場！
 

@@ -1,5 +1,5 @@
 ---
-title: "Ringkasan dialog"
+title: "Ringkasan Dialog"
 description: "Tampilkan dialog sistem native di aplikasi Anda"
 slug: "features/dialogs/overview"
 sourcePath: "features/dialogs/overview.md"
@@ -11,7 +11,7 @@ Wails menyediakan **dialog sistem native** yang berfungsi di semua platform: dia
 
 ![Dialog pertanyaan Wails di macOS dengan tombol Batal dan Buang](/assets/screenshots/dialog-question-macos.png)
 
-API yang sama ditampilkan sesuai konvensi setiap platform yang didukung. Contoh macOS ini menunjukkan dialog pertanyaan yang ditautkan ke jendela Wails, termasuk tombol default dan tombol batal.
+API yang sama dirender sesuai konvensi setiap platform yang didukung. Contoh macOS ini menampilkan dialog pertanyaan yang terpasang pada jendela Wails, termasuk tombol default dan tombol batal.
 
 ## Mulai Cepat
 
@@ -92,8 +92,8 @@ app.Dialog.Warning().
 **Kasus penggunaan:**
 
 - Peringatan nonkritis
-- Pemberitahuan deprekasi
-- Pesan kehati-hatian
+- Pemberitahuan penghentian dukungan
+- Pesan kewaspadaan
 
 ### Dialog kesalahan
 
@@ -156,7 +156,7 @@ if err == nil && path != "" {
 }
 ```
 
-**Pilihan jamak:**
+**Pilihan ganda:**
 
 ```go
 paths, err := app.Dialog.OpenFile().
@@ -227,7 +227,7 @@ app.Dialog.Info().
 
 **Tombol khusus untuk dialog pertanyaan:**
 
-Gunakan `AddButton()` untuk menambahkan tombol. Metode ini mengembalikan `*Button` yang dapat Anda konfigurasi dengan callback:
+Gunakan `AddButton()` untuk menambahkan tombol. Tindakan ini mengembalikan `*Button` yang dapat Anda konfigurasi dengan callback:
 
 ```go
 dialog := app.Dialog.Question().
@@ -270,9 +270,9 @@ dialog.SetCancelButton(cancelBtn)   // Escape triggers Cancel
 dialog.Show()
 ```
 
-### Penautan ke Jendela
+### Pemasangan ke Jendela
 
-Tautkan dialog ke jendela tertentu:
+Pasang dialog ke jendela tertentu:
 
 ```go
 dialog := app.Dialog.Info().
@@ -299,7 +299,7 @@ dialog.Show()
 - Mendukung navigasi papan ketik
 - Pintasan standar (⌘. untuk Batal)
 - Fitur aksesibilitas bawaan
-- Bergaya lembar saat ditautkan ke jendela
+- Bergaya lembar saat dipasang ke jendela
 
 **Contoh:**
 
@@ -321,7 +321,7 @@ dialog.Show()
 - Mendukung navigasi papan ketik
 - Pintasan standar (Esc untuk Batal)
 - Fitur aksesibilitas bawaan
-- Modal terhadap jendela induk
+- Bersifat modal terhadap jendela induk
 
 **Contoh:**
 
@@ -339,8 +339,8 @@ app.Dialog.Error().
 - Tampilan dialog GTK
 - Mengikuti tema desktop
 - Mendukung navigasi papan ketik
-- Integrasi dengan lingkungan desktop
-- Bervariasi menurut lingkungan desktop (GNOME, KDE, dan sebagainya)
+- Integrasi lingkungan desktop
+- Bervariasi menurut DE (GNOME, KDE, dan sebagainya)
 
 **Contoh:**
 
@@ -476,21 +476,21 @@ func exportData(app *application.App) {
 
 ### ✅ Lakukan
 
-- **Gunakan dialog native** — UX lebih baik daripada dialog khusus
-- **Berikan pesan yang jelas** — Sampaikan secara spesifik
-- **Tetapkan judul yang sesuai** — Konteks itu penting
-- **Gunakan tombol default secara bijak** — Jadikan opsi aman sebagai default
-- **Tangani pembatalan** — Pengguna mungkin membatalkan
-- **Validasi file yang dipilih** — Periksa jenis file
+- **Gunakan dialog native** - UX lebih baik daripada dialog khusus
+- **Berikan pesan yang jelas** - Sampaikan secara spesifik
+- **Tetapkan judul yang sesuai** - Konteks itu penting
+- **Gunakan tombol default dengan bijak** - Jadikan opsi aman sebagai default
+- **Tangani pembatalan** - Pengguna mungkin membatalkan
+- **Validasi file yang dipilih** - Periksa jenis file
 
-### ❌ Jangan Lakukan
+### ❌ Jangan
 
-- **Jangan gunakan dialog secara berlebihan** — Mengganggu alur kerja
-- **Jangan gunakan dialog untuk pesan yang sering muncul** — Gunakan notifikasi
-- **Jangan lupa menangani kesalahan** — Pengguna mungkin membatalkan
-- **Jangan lakukan pemblokiran jika tidak diperlukan** — Pertimbangkan alternatif
-- **Jangan gunakan pesan generik** — Sampaikan secara spesifik
-- **Jangan abaikan perbedaan platform** — Uji di semua platform
+- **Jangan menggunakan dialog secara berlebihan** - Mengganggu alur kerja
+- **Jangan gunakan untuk pesan yang sering muncul** - Gunakan notifikasi
+- **Jangan lupa menangani kesalahan** - Pengguna mungkin membatalkan
+- **Jangan melakukan pemblokiran jika tidak perlu** - Pertimbangkan alternatif
+- **Jangan gunakan pesan umum** - Gunakan pesan yang spesifik
+- **Jangan abaikan perbedaan antarplatform** - Uji di semua platform
 
 ## Langkah Berikutnya
 

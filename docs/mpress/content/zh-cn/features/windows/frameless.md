@@ -1,15 +1,15 @@
 ---
 title: "无边框窗口"
-description: "使用无边框窗口创建自定义窗口装饰"
+description: "使用无边框窗口创建自定义窗口边框"
 slug: "features/windows/frameless"
 sourcePath: "features/windows/frameless.md"
 ---
 
 ## 无边框窗口
 
-Wails 提供基于 CSS 拖动区域并具有平台原生行为的<strong>无边框窗口支持</strong>。移除平台原生标题栏后，便可完全控制窗口装饰、创建自定义设计和独特的用户体验，同时保留拖动、调整大小和系统控件等基本功能。
+Wails 通过基于 CSS 的拖动区域和平台原生行为提供**无边框窗口支持**。移除平台原生标题栏后，可以完全控制窗口边框、实现自定义设计并打造独特的用户体验，同时保留拖动、调整大小和系统控件等基本功能。
 
-![作为无边框窗口运行，并采用 macOS 原生圆角的默认 Wails v3 TypeScript 入门应用](/assets/screenshots/frameless-v3-native-corners-macos.png)
+![默认的 Wails v3 TypeScript 入门应用以无边框窗口运行，并使用 macOS 原生圆角](/assets/screenshots/frameless-v3-native-corners-macos.png)
 
 上例是启用了`Frameless: true`的默认 Wails v3 TypeScript 入门应用。
 
@@ -47,13 +47,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 </div>
 ```
 
-<strong>就这么简单！</strong>现在你已经有了自定义标题栏。
+<strong>就这么简单！</strong>现在你已经拥有自定义标题栏。
 
 ## 创建无边框窗口
 
 ### 圆角半径（macOS）
 
-默认情况下，无边框窗口会保留 AppKit 的标准 macOS 圆角。设置`Mac.CornerRadius`以使用自定义半径（单位为点）：
+默认情况下，无边框窗口会保留 AppKit 标准的 macOS 圆角。设置`Mac.CornerRadius`可使用自定义半径（以点为单位）：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -85,22 +85,22 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**你将获得：**
+**效果：**
 
 - 无标题栏
 - 无窗口边框
 - 无系统按钮
 - 透明背景（可选）
 
-**你需要实现：**
+**需要自行实现：**
 
 - 可拖动区域
-- 关闭、最小化和最大化按钮
-- 调整大小手柄（如果窗口可调整大小）
+- 关闭/最小化/最大化按钮
+- 调整大小手柄（如果窗口大小可调）
 
 ### 使用透明背景
 
-<strong>macOS 上的私有 API：</strong>设置`Mac.Backdrop: application.MacBackdropTransparent`并使用`-tags private_mac_apis`构建，才能使 WebView 透明。如果没有该标签，即使 HTML/CSS 背景透明，原生 WebView 仍不透明。`Frameless`和`TitleBar.AppearsTransparent`本身使用公共 API。请参阅[macOS 私有 API](/guides/build/private-macos-apis/#webview-transparency-and-background)。
+<strong>macOS 上的私有 API：</strong>要使 WebView 透明，请设置`Mac.Backdrop: application.MacBackdropTransparent`并使用`-tags private_mac_apis`构建。如果不使用该标签，即使 HTML/CSS 背景透明，原生 WebView 仍不透明。`Frameless`和`TitleBar.AppearsTransparent`本身使用公共 API。请参阅[macOS 私有 API](/guides/build/private-macos-apis/#webview-transparency-and-background)。
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -116,7 +116,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 - 圆角
 - 自定义形状
-- 叠加窗口
+- 浮层窗口
 - 启动画面
 
 ## 拖动区域
@@ -198,7 +198,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-**按钮使用的 JavaScript：**
+**按钮所需的 JavaScript：**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -210,37 +210,37 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ## Windows 上的原生非客户区
 
-Windows 可以将自定义标题栏的某些部分视为原生非客户区。这样，你既能使用任意 HTML/CSS 设计绘制标题栏和标题栏按钮，又能保留 Windows 原生行为：标题区域可拖动窗口，最大化按钮可显示 Windows 11的贴靠助手/贴靠布局，最小化、最大化和关闭按钮则可接收原生命中测试及鼠标状态。
+Windows 可将自定义标题栏的部分区域视为原生非客户区。这样便可使用任意 HTML/CSS 设计绘制标题栏和标题按钮，同时保留 Windows 原生行为：通过标题区域拖动窗口，自定义最大化按钮可显示 Windows 11 Snap Assist / Snap Layouts，并且最小化、最大化和关闭按钮可获得原生命中测试和鼠标状态。
 
-下面的视频展示了一个使用 Windows 原生命中测试的自定义 HTML/CSS 标题栏，其中包括自定义最大化按钮上的 Windows 11贴靠助手/贴靠布局。
+下方视频展示了一个使用 Windows 原生命中测试的自定义 HTML/CSS 标题栏，其中自定义最大化按钮支持 Windows 11 Snap Assist / Snap Layouts。
 
 <video src="/assets/windows-native-non-client-regions/wails-app-region.mp4" controls muted playsInline></video>
 
 Wails 支持两种 Windows 专用机制：
 
-- `app-region`：通过 WebView2 的原生非客户区支持实现
-- `--wails-non-client-region`：通过 Wails 运行时跟踪自定义标题栏按钮实现
+- 通过 WebView2 的原生非客户区支持实现`app-region`
+- 通过 Wails 运行时跟踪自定义标题按钮来实现`--wails-non-client-region`
 
 ### 选择模式
 
 @note{type="caution" title="实验性功能"}
-`WebView2CompositionHosting`会改变窗口在底层托管 WebView2 以及与其交互的方式。Wails 不再使用默认的 HWND 托管 WebView2 控制器，而是采用合成控制器托管并显式转发输入。此模式可能存在渲染、输入、焦点或 WebView2 Runtime 兼容性问题。仅当你需要自定义标题栏按钮具备原生行为时才启用此模式，并在你支持的 Windows 和 WebView2 Runtime 版本上仔细测试应用。
+`WebView2CompositionHosting`会改变窗口在底层托管 WebView2 及与其交互的方式。Wails 不再使用默认的 HWND 托管 WebView2 控制器，而是使用合成控制器托管并显式转发输入。此模式可能存在渲染、输入、焦点或 WebView2 Runtime 兼容性问题。仅在需要自定义标题按钮具备原生行为时启用此模式，并在应用支持的 Windows 和 WebView2 Runtime 版本上进行充分测试。
 
 @end
 
-请根据你需要的 Windows 功能进行选择：
+请根据所需的 Windows 功能进行选择：
 
-- 如需通过 WebView2 的`app-region: drag`和`app-region: no-drag`实现简单的原生应用拖动，请使用`NonClientRegionSupport`。
-- 如果你希望自定义的最小化、最大化和关闭按钮像 Windows 原生标题栏按钮一样工作，请使用`WebView2CompositionHosting`。
-- 如果同一窗口既需要 WebView2 原生`app-region`支持，又需要由 Wails 管理的自定义标题栏按钮区域，请同时启用两者。
+- 若要通过 WebView2 的`app-region: drag`和`app-region: no-drag`实现简单的原生应用拖动，请使用`NonClientRegionSupport`。
+- 若要让自定义最小化、最大化和关闭按钮表现得像 Windows 原生标题按钮，请使用`WebView2CompositionHosting`。
+- 如果同一窗口既需要 WebView2 原生的`app-region`支持，也需要由 Wails 管理的自定义标题按钮区域，请同时启用两者。
 
-`NonClientRegionSupport`是 Wails `--wails-draggable`跟踪机制的一种轻量级原生替代方案。你通过 CSS 标记可拖动和不可拖动区域，由 WebView2 决定哪些像素属于标题区域，并在命中测试时由 Wails 向 WebView2 查询原生区域。
+`NonClientRegionSupport`是 Wails `--wails-draggable`跟踪机制的轻量级原生替代方案。你可以使用 CSS 标记可拖动和不可拖动区域，由 WebView2 决定哪些像素属于标题区域，Wails 则在进行命中测试时向 WebView2 查询原生区域。
 
-这就是此模式目前的全部功能范围。它不会让自定义的最小化、最大化或关闭按钮像 Windows 原生标题栏按钮一样工作，也不会为自定义最大化按钮启用 Windows 11贴靠助手/贴靠布局。如果你只需要简单的原生应用拖动，而不需要`--wails-draggable`的额外机制，请使用此模式。
+这就是此模式目前的全部功能范围。它不会让自定义最小化、最大化或关闭按钮表现得像 Windows 原生标题按钮，也不会让自定义最大化按钮支持 Windows 11 Snap Assist / Snap Layouts。如果只需实现简单的原生应用拖动，不需要`--wails-draggable`的额外机制，请使用此模式。
 
-`WebView2CompositionHosting`用于实现具有原生行为的自定义标题栏按钮。Wails 会跟踪以`--wails-non-client-region`标记的 DOM 矩形区域，将其映射到`HTMINBUTTON`、`HTMAXBUTTON`和`HTCLOSE`等 Windows 命中测试值，并将鼠标输入转发回由合成托管的 WebView2 表面。这样，自定义最大化按钮既能保留你选择的任意视觉设计，又能参与 Windows 11的贴靠助手和贴靠布局。
+`WebView2CompositionHosting`用于实现具备原生行为的自定义标题按钮。Wails 会跟踪以`--wails-non-client-region`标记的 DOM 矩形，将它们映射到`HTMINBUTTON`、`HTMAXBUTTON`和`HTCLOSE`等 Windows 命中测试值，并将鼠标输入转发回由合成机制托管的 WebView2 表面。这样，自定义最大化按钮便可在保留任意视觉设计的同时，参与 Windows 11 Snap Assist / Snap Layouts。
 
-换句话说：`NonClientRegionSupport`是 WebView2 原生的 CSS 区域支持。`WebView2CompositionHosting`则表示由 Wails 负责宿主拥有的合成和自定义非客户区命中测试。
+换句话说，`NonClientRegionSupport`是 WebView2 原生的 CSS 区域支持；`WebView2CompositionHosting`则由 Wails 负责宿主所有的合成和自定义非客户区命中测试。
 
 ### WebView2 app-region
 
@@ -270,16 +270,16 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-如果你只需要原生标题栏拖动，并通过常规前端点击处理标题栏控件，请使用此模式。
+如果只需要原生标题区域拖动，并且标题栏控件通过普通的前端点击处理，请使用此模式。
 
-此模式的限制在于它受 WebView2 自身的非客户区支持所约束。在当前的 WebView2 版本中，这意味着仅支持可拖动和不可拖动区域。它并非用于对具有不同原生最小化、最大化和关闭角色的完全自定义前端标题栏按钮进行建模。
+此模式受 WebView2 自身非客户区支持范围的限制。在当前的 WebView2 版本中，这意味着仅支持拖动和禁止拖动区域。它并非用于对具有不同原生最小化、最大化和关闭角色的完全自定义前端标题按钮进行建模。
 
-### 具有原生行为的自定义标题栏按钮
+### 具备原生行为的自定义标题按钮
 
-对于应像系统标题栏按钮一样工作的自定义最小化、最大化和关闭按钮，请启用合成托管：
+若要让自定义最小化、最大化和关闭按钮表现得像系统标题按钮，请启用合成托管：
 
 @note{type="caution" title="实验性功能"}
-`WebView2CompositionHosting`使用基于 DirectComposition 的 WebView2 合成控制器托管。启用前，请参阅[选择模式](#heading-7)。
+`WebView2CompositionHosting`使用采用 DirectComposition 的 WebView2 合成控制器托管。启用前，请参阅[选择模式](#heading-7)。
 
 @end
 
@@ -292,7 +292,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-然后使用`--wails-non-client-region`标记每个前端区域：
+然后使用`--wails-non-client-region`标记各个前端区域：
 
 ```html
 <div class="titlebar">
@@ -338,17 +338,17 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 支持的`--wails-non-client-region`值：
 
 - `caption` - 可拖动的标题栏区域
-- `minimize` - 原生最小化按钮的命中目标
-- `maximize` - 原生最大化按钮的命中目标，包括 Windows 11贴靠助手/贴靠布局的悬停行为
-- `close` - 原生关闭按钮的命中目标
+- `minimize` - 原生最小化按钮的命中区域
+- `maximize` - 原生最大化按钮的命中区域，包括 Windows 11 贴靠助手/贴靠布局的悬停行为
+- `close` - 原生关闭按钮的命中区域
 
-Wails 运行时会监测 DOM、样式、尺寸、滚动和视口的变化，然后将区域快照发送到原生窗口。区域几何尺寸以 CSS 像素为单位测量，并转换为物理像素，以供 Windows 进行命中测试。
+Wails 运行时会监听 DOM、样式、尺寸、滚动和视口的变化，然后将区域快照发送到原生窗口。区域几何尺寸以 CSS 像素为单位测量，并转换为物理像素，供 Windows 进行命中测试。
 
-视觉设计完全由你决定。这些区域只会告诉 Windows 每个矩形的含义；按钮的形状、图标、颜色、间距、悬停样式和布局仍由前端提供。
+视觉设计完全由你决定。这些区域仅用于告知 Windows 每个矩形区域的含义；按钮形状、图标、颜色、间距、悬停样式和布局仍由前端定义。
 
-### 同时使用两种模式
+### 组合使用两种方式
 
-如果希望同一窗口同时支持 WebView2 `app-region`和由 Wails 管理的标题栏按钮区域，可以同时启用这两个选项：
+如果希望在同一窗口中同时支持 WebView2 `app-region` 和由 Wails 管理的标题栏按钮区域，可以同时启用这两个选项：
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -362,7 +362,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 ## 系统按钮
 
-### 实现关闭/最小化/最大化
+### 实现关闭、最小化和最大化
 
 **Go 端：**
 
@@ -398,7 +398,7 @@ document.querySelector('.maximize').addEventListener('click', Maximise)
 document.querySelector('.close').addEventListener('click', Close)
 ```
 
-**也可以使用运行时方法：**
+**或者使用运行时方法：**
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -410,7 +410,7 @@ document.querySelector('.close').addEventListener('click', () => Window.Close())
 
 ### 切换最大化状态
 
-跟踪最大化状态以更新按钮图标：
+跟踪最大化状态，以更新按钮图标：
 
 ```javascript
 import { Window } from '@wailsio/runtime'
@@ -485,8 +485,8 @@ body {
 
 - `all` - 从所有边缘调整大小
 - `top`、`bottom`、`left`、`right` - 指定边缘
-- `top-left`、`top-right`、`bottom-left`、`bottom-right` - 各个角
-- `none` - 禁止调整大小
+- `top-left`、`top-right`、`bottom-left`、`bottom-right` - 窗口角
+- `none` - 不允许调整大小
 
 ### 调整大小手柄示例
 
@@ -513,7 +513,7 @@ body {
 }
 ```
 
-## 特定于平台的行为
+## 平台特定行为
 
 @tabs{sync-key="platform"}
 [Windows]
@@ -550,9 +550,9 @@ Windows: application.WindowsWindow{
 window.SnapAssist()
 ```
 
-这会通过 Windows 热键路径触发贴靠布局。对于需要原生悬停贴靠布局的自定义 HTML 最大化按钮，请改用[Windows 上的原生非客户区](#windows-)。
+这会通过 Windows 快捷键路径触发贴靠布局。若要为自定义 HTML 最大化按钮提供原生的悬停贴靠布局，请改用[Windows 上的原生非客户区](#windows-)。
 
-**自定义标题栏高度：** Windows 会自动从 CSS 中检测拖动区域。
+<strong>自定义标题栏高度：</strong>Windows 会自动从 CSS 中检测拖动区域。
 
 [macOS]
 **macOS 无边框窗口：**
@@ -573,10 +573,10 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 
 - 原生全屏支持
 - 交通灯按钮（可选）
-- Vibrancy视觉效果
+- 生动效果
 - 透明标题栏
 
-**完全隐藏标题栏**（请使用`application`包导出的预设变体——不存在`TitleBarStyle`字段或`MacTitleBarStyleHidden`常量）：
+**完全隐藏标题栏**（使用 `application` 包导出的预设变体——不存在 `TitleBarStyle` 字段或 `MacTitleBarStyleHidden` 常量）：
 
 ```go
 Mac: application.MacWindow{
@@ -584,9 +584,9 @@ Mac: application.MacWindow{
 },
 ```
 
-其他预设包括`MacTitleBarDefault`、`MacTitleBarHiddenInset`和`MacTitleBarHiddenInsetUnified`。
+其他预设包括 `MacTitleBarDefault`、`MacTitleBarHiddenInset` 和 `MacTitleBarHiddenInsetUnified`。
 
-**不可见标题栏：** 隐藏标题栏的同时仍允许拖动。仅当窗口为无边框窗口或使用`AppearsTransparent`时才会生效：
+<strong>不可见标题栏：</strong>隐藏标题栏的同时仍允许拖动。仅当窗口无边框或使用 `AppearsTransparent` 时才会生效：
 
 ```go
 Mac: application.MacWindow{
@@ -603,11 +603,11 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 })
 ```
 
-**特性：**
+**功能：**
 
-- 基本的无边框支持
+- 基本无边框支持
 - CSS 拖动区域
-- 因桌面环境而异
+- 具体行为因桌面环境而异
 
 **桌面环境说明：**
 
@@ -616,13 +616,13 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 - <strong>XFCE：</strong>基本支持
 - <strong>平铺式窗口管理器：</strong>支持有限
 
-**需要合成器：** 透明效果需要合成器（大多数现代桌面环境都配有合成器）。
+<strong>需要合成器：</strong>透明效果需要合成器（大多数现代桌面环境都配有合成器）。
 
 @end
 
-## 常用模式
+## 常见模式
 
-### 模式1：现代标题栏
+### 模式 1：现代标题栏
 
 ```html
 <div class="modern-titlebar">
@@ -690,7 +690,7 @@ window := app.Window.NewWithOptions(application.WebviewWindowOptions{
 }
 ```
 
-### 模式2：启动画面
+### 模式 2：启动画面
 
 ```go
 splash := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -723,7 +723,7 @@ body {
 }
 ```
 
-### 模式3：圆角窗口
+### 模式 3：圆角窗口
 
 ```go
 window := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -756,7 +756,7 @@ body {
 }
 ```
 
-### 模式4：叠加窗口
+### 模式 4：叠加窗口
 
 ```go
 overlay := app.Window.NewWithOptions(application.WebviewWindowOptions{
@@ -784,7 +784,7 @@ body {
 
 ## 完整示例
 
-下面是一个可用于生产环境的无边框窗口：
+以下是一个可用于生产环境的无边框窗口：
 
 **Go：**
 
@@ -981,20 +981,20 @@ updateMaximiseButton()
 
 ### ✅ 应该做
 
-- **提供可拖动区域**——用户需要移动窗口
-- **实现系统按钮**——关闭、最小化和最大化
-- **设置最小尺寸**——避免布局变得无法使用
-- **在所有平台上测试**——行为因平台而异
-- **使用 CSS 定义拖动区域**——灵活且易于维护
-- **提供视觉反馈**——为按钮添加悬停状态
+- **提供可拖动区域** - 用户需要移动窗口
+- **实现系统按钮** - 包括关闭、最小化和最大化
+- **设置最小尺寸** - 防止布局变得无法使用
+- **在所有平台上测试** - 行为因平台而异
+- **使用 CSS 定义拖动区域** - 灵活且易于维护
+- **提供视觉反馈** - 为按钮设置悬停状态
 
-### ❌ 不要做
+### ❌ 不应该做
 
-- **不要忘记添加调整大小手柄**——如果窗口可调整大小
-- **不要让整个窗口都可拖动**——这会阻止交互
-- **不要忘记将按钮设为不可拖动**——否则按钮将无法使用
-- **不要使用过小的拖动区域**——难以拖住
-- **不要忽略平台差异**——请充分测试
+- **不要忘记调整大小手柄** - 如果窗口允许调整大小
+- **不要让整个窗口都可拖动** - 这会妨碍交互
+- **不要忘记为按钮设置不可拖动区域** - 否则按钮将无法使用
+- **不要使用过小的拖动区域** - 难以拖住
+- **不要忽视平台差异** - 应充分测试
 
 ## 故障排除
 
@@ -1010,7 +1010,7 @@ updateMaximiseButton()
 }
 ```
 
-### 按钮无法使用
+### 按钮不起作用
 
 <strong>原因：</strong>按钮位于可拖动区域内
 
@@ -1064,4 +1064,4 @@ body {
 
 ---
 
-<strong>有问题？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[无边框窗口示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[无边框窗口示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/frameless)。

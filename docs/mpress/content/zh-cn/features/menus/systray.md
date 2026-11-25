@@ -7,13 +7,13 @@ sourcePath: "features/menus/systray.md"
 
 ## 系统托盘菜单
 
-Wails 提供可在所有平台上使用的<strong>统一系统托盘 API</strong>。您可以创建带菜单的托盘图标、附加窗口并处理点击操作，从而让后台应用程序、服务和快速访问实用工具具备平台原生行为。
+Wails 提供可在所有平台上使用的**统一系统托盘 API**。你可以创建带菜单的托盘图标、附加窗口并处理点击事件，从而为后台应用程序、服务和快速访问实用工具提供符合平台原生习惯的行为。
 
 ![从 macOS 菜单栏打开的 Wails 系统托盘菜单](/assets/screenshots/systray-menu-macos.png)
 
-在 macOS 上，Wails 系统托盘项会显示在菜单栏中，并打开原生菜单。该示例包含禁用项、复选项、单选项、子菜单和操作项。
+在 macOS 上，Wails 系统托盘项会显示在菜单栏中，并打开原生菜单。该示例包含禁用项、复选项、单选项、子菜单项和操作项。
 
-## 快速入门
+## 快速开始
 
 ```go
 package main
@@ -107,17 +107,17 @@ func main() {
 
 ### 模板图标（macOS）
 
-模板图标会自动适应浅色或深色模式：
+模板图标会自动适配浅色/深色模式：
 
 ```go
 systray.SetTemplateIcon(iconBytes)
 ```
 
-**模板图标指南：**
+**模板图标准则：**
 
-- 仅使用黑色和无色（透明）
+- 仅使用黑色和透明色
 - 在深色模式下，黑色会变为白色
-- 为文件名添加`Template`后缀：`iconTemplate.png`
+- 文件名应包含`Template`后缀：`iconTemplate.png`
 - [设计指南](https://bjango.com/articles/designingmenubarextras/)
 
 ## 添加菜单
@@ -149,11 +149,11 @@ menu.Add("Quit").OnClick(func(ctx *application.Context) {
 systray.SetMenu(menu)
 ```
 
-有关<strong>所有菜单项类型</strong>，请参阅[菜单参考](/features/menus/reference/)。
+有关**所有菜单项类型**的信息，请参阅[菜单参考](/features/menus/reference/)。
 
 ## 附加窗口
 
-将窗口附加到托盘图标，以便自动显示或隐藏窗口：
+将窗口附加到托盘图标，以自动显示或隐藏窗口：
 
 ```go
 // Create window
@@ -191,13 +191,13 @@ systray.AttachWindow(window)
 systray.WindowOffset(5)
 ```
 
-`HideOnFocusLost`适用于 Windows、macOS 和采用点击聚焦方式的 Linux 桌面上的托盘弹出窗口。Wails 会在采用焦点跟随鼠标方式的 Linux 环境（包括常见的 Hyprland、Sway 和 i3 配置）中禁用该行为，否则鼠标离开弹出窗口时，窗口可能会在用户能够操作之前隐藏。`HideOnEscape`在这些环境中仍然可用。
+`HideOnFocusLost`适用于 Windows、macOS 以及通过点击获取焦点的 Linux 桌面上的托盘弹出窗口。在采用焦点跟随鼠标的 Linux 环境（包括常见的 Hyprland、Sway 和 i3 配置）中，Wails 会禁用该行为，否则鼠标离开弹出窗口时，它可能会在用户能够操作之前隐藏。`HideOnEscape`在这些环境中仍然可用。
 
-上述左键和右键单击行为是智能默认设置。显式设置`OnClick`或`OnRightClick`处理程序会替代相应的默认行为。有关平台检查和边界情况，请参阅[手动系统托盘测试套件](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray)和[系统托盘压力测试示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress)。
+上述左键和右键单击行为是智能默认行为。显式设置`OnClick`或`OnRightClick`处理程序会替代相应的默认行为。有关平台检查和边界情况，请参阅[手动系统托盘测试套件](https://github.com/wailsapp/wails/tree/v3.0.0/v3/test/manual/systray)和[系统托盘压力测试示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-stress)。
 
 ## 点击处理程序
 
-处理托盘图标点击操作：
+处理托盘图标点击事件：
 
 ```go
 systray := app.SystemTray.New()
@@ -278,13 +278,13 @@ pauseMenuItem.OnClick(func(ctx *application.Context) {
 ```
 
 @note{type="caution" title="始终调用 Update()"}
-更改菜单状态后，**调用`menu.Update()`**。请参阅[菜单参考](/features/menus/reference/#enabled-state)。
+更改菜单状态后，**请调用`menu.Update()`**。请参阅[菜单参考](/features/menus/reference/#enabled-state)。
 
 @end
 
-### 重建菜单
+### 重新构建菜单
 
-对于重大更改，请重新构建整个菜单：
+如需进行重大更改，请重新构建整个菜单：
 
 ```go
 func rebuildTrayMenu(status string) {
@@ -338,10 +338,10 @@ systray.SetIconPosition(application.NSImageRight)
 
 **最佳实践：**
 
-- 使用模板图标（黑色 + 透明）
+- 使用模板图标（黑色 + 透明色）
 - 保持标签简短（3-5个字符）
-- Retina 显示屏使用 18x18 至 22x22 像素
-- 同时在浅色和深色模式下测试
+- Retina 显示屏使用18x18 至 22x22 像素
+- 同时在浅色和深色模式下进行测试
 
 [Windows]
 **通知区域集成：**
@@ -366,23 +366,23 @@ systray.Hide()  // Hide tray icon
 
 **工具提示限制：**
 
-- 最多 127 个 UTF-16 字符
+- 最多127个 UTF-16字符
 - 较长的工具提示将被截断
 - 保持简洁以获得最佳体验
 
-**平台功能：**
+**平台特性：**
 
-- Windows 资源管理器重启后，托盘图标仍会保留
-- Show() 和 Hide() 方法功能完整
-- 妥善的生命周期管理
+- Windows 资源管理器重启后，托盘图标仍然存在
+- Show()和Hide()方法功能完整
+- 正确管理生命周期
 
 **最佳实践：**
 
-- 高 DPI 显示屏使用 32x32 像素
-- 工具提示应少于 127 个字符
-- 在不同 Windows 版本上测试
-- 考虑通知区域溢出区
-- 使用 Show/Hide 按条件控制托盘图标的可见性
+- 在高 DPI 显示器上使用32x32
+- 工具提示应少于127个字符
+- 在不同 Windows 版本上进行测试
+- 考虑通知区域溢出的情况
+- 使用Show/Hide有条件地控制托盘图标的可见性
 
 [Linux]
 **系统托盘集成：**
@@ -396,17 +396,17 @@ systray.SetLabel("My App")
 
 **桌面环境支持：**
 
-- **GNOME**：顶部栏（需要扩展）
+- **GNOME**：顶部栏（需安装扩展）
 - **KDE Plasma**：系统托盘
 - **XFCE**：通知区域
-- **其他**：视具体情况而定
+- **其他**：各不相同
 
 **最佳实践：**
 
-- 使用 22x22 或 24x24 像素
+- 使用22x22或24x24像素
 - SVG 图标的缩放效果更好
-- 在目标桌面环境上测试
-- 为不受支持的桌面环境提供回退方案
+- 在目标桌面环境上进行测试
+- 为不受支持的桌面环境提供降级方案
 
 @end
 
@@ -568,7 +568,7 @@ systray.Hide()
 systray.Show()
 ```
 
-没有`IsVisible()`获取方法；如有需要，请在应用程序自身的状态中跟踪可见性。
+没有`IsVisible()`取值方法——如果需要，请在应用程序自身的状态中跟踪可见性。
 
 **平台支持：**
 
@@ -581,10 +581,10 @@ systray.Show()
 **使用场景：**
 
 - 根据用户偏好暂时隐藏托盘图标
-- 无界面模式，仅在需要时显示托盘图标
+- 采用无界面模式，仅在需要时显示托盘图标
 - 根据应用程序状态切换可见性
 
-**示例——按条件控制托盘图标的可见性：**
+**示例——有条件地控制托盘可见性：**
 
 ```go
 func (t *TrayApp) setTrayVisibility(visible bool) {
@@ -628,21 +628,21 @@ app := application.New(application.Options{
 ### ✅ 应该做
 
 - **在 macOS 上使用模板图标**——可适配深色模式
-- **保持标签简短**——最多 3-5 个字符
-- **在 Windows 上提供工具提示**——帮助用户识别你的应用
-- **在所有平台上测试**——行为因平台而异
-- **正确处理点击事件**——左键单击执行主要操作，右键单击打开菜单
+- **保持标签简短**——最多3-5个字符
+- **在 Windows 上提供工具提示**——帮助用户识别你的应用程序
+- **在所有平台上进行测试**——行为因平台而异
+- **妥善处理点击事件**——左键点击执行主要操作，右键点击打开菜单
 - **根据状态更新图标**——视觉反馈很重要
-- **关闭时销毁系统托盘**——释放资源
+- **关闭时销毁托盘图标**——释放资源
 
-### ❌ 不要这样做
+### ❌ 不应该做
 
-- **不要使用过大的图标**——遵循平台规范
+- **不要使用大尺寸图标**——遵循平台指南
 - **不要使用过长的标签**——标签会被截断
 - **不要忽略深色模式**——在 Windows 和 macOS 的深色模式下进行测试
-- **不要阻塞点击处理程序**——确保处理程序快速执行
-- **不要忘记调用 menu.Update()**——应在更改菜单状态后调用
-- **不要假定系统支持托盘**——某些 Linux 桌面环境不支持系统托盘
+- **不要阻塞点击处理程序**——让它们快速完成
+- **不要忘记调用menu.Update()**——更改菜单状态后调用
+- **不要假定系统托盘受支持**——某些 Linux 桌面环境并不支持
 
 ## 故障排除
 
@@ -650,13 +650,13 @@ app := application.New(application.Options{
 
 **可能的原因：**
 
-1. 不支持该图标格式
+1. 图标格式不受支持
 2. 图标尺寸过大或过小
-3. 系统不支持托盘（Linux）
+3. 不支持系统托盘（Linux）
 
 **解决方案：**
 
-没有 `SystemTraySupported()` 辅助函数；请改为创建托盘、检查平台，并在不受支持时进行优雅降级：
+没有`SystemTraySupported()`辅助函数；请改为创建托盘、检查平台，并进行平稳降级：
 
 ```go
 // Probe support: on Linux without a notification-area extension, the tray
@@ -681,7 +681,7 @@ systray.SetTemplateIcon(iconBytes)
 
 ### 菜单未更新
 
-<strong>原因：</strong>忘记调用 `menu.Update()`
+<strong>原因：</strong>忘记调用`menu.Update()`
 
 **解决方案：**
 
@@ -699,8 +699,8 @@ menu.Update()  // Add this!
 [了解更多 →](/features/menus/reference/)
 
 ---
-☰ 应用菜单
-创建应用菜单栏。
+☰ 应用程序菜单
+创建应用程序菜单栏。
 
 [了解更多 →](/features/menus/application/)
 
@@ -712,7 +712,7 @@ menu.Update()  // Add this!
 
 ---
 📖 系统托盘示例
-探索一个完整的系统托盘应用。
+探索一个完整的系统托盘应用程序。
 
 [了解更多 →](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)
 
@@ -720,4 +720,4 @@ menu.Update()  // Add this!
 
 ---
 
-<strong>有疑问？</strong>请在 [Discord](https://discord.gg/JDdSxwjhGf) 中提问，或查看[系统托盘示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)。
+<strong>有疑问？</strong>请在[Discord](https://discord.gg/JDdSxwjhGf)中提问，或查看[系统托盘示例](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples/systray-basic)。

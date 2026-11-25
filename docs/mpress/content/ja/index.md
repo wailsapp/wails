@@ -1,9 +1,9 @@
 ---
 title: "Go でデスクトップアプリを構築"
 description: "Go と Web 技術を使用したネイティブデスクトップアプリケーション"
-banner: {"content": "Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 <a href=\"https://v2.wails.io\">v2 のドキュメントをお探しですか？</a>\n"}
+banner: {"content": "Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。\u003ca href=\"https://v2.wails.io\"\u003ev2 のドキュメントをお探しですか？\u003c/a\u003e\n"}
 template: "splash"
-hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"はじめる","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"チュートリアルを見る","variant":"secondary"}],"image":{"alt":"Wails のロゴ","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go と最新の Web 技術を使用して、美しく高性能なアプリケーションを構築できます。1 つのコードベース。3 つのプラットフォーム。ブラウザー不要。*"}
+hero: {"actions":[{"icon":"right-arrow","link":"/quick-start/installation","text":"はじめる","variant":"primary"},{"icon":"open-book","link":"/tutorials/03-notes-vanilla","text":"チュートリアルを見る","variant":"secondary"}],"image":{"alt":"Wails のロゴ","dark":"/assets/wails-logo-dark.svg","light":"/assets/wails-logo-light.svg"},"tagline":"Go と最新の Web 技術を使用して、美しく高性能なアプリケーションを構築できます。1 つのコードベース。3 つのプラットフォーム。ブラウザーは不要です。*"}
 sourcePath: "index.md"
 ---
 
@@ -75,7 +75,7 @@ sourcePath: "index.md"
 
 </style>
 
-<span class="browser-footnote" data-browser-footnote>* どうしても使いたい場合を除く</span>
+<span class="browser-footnote" data-browser-footnote>* 本当に使いたい場合を除きます</span>
 <script>
 (() => {
   const words = ['Desktop', 'Server', 'Mobile'];
@@ -134,18 +134,18 @@ cd myapp && wails3 dev
 
 **アプリケーションが起動しました**。ホットリロードと型安全な Go-to-JS バインディングが有効になっています。
 
-`wails3 setup`で問題が発生していますか？[手動インストールガイド](/quick-start/installation/)を参照してください。
+`wails3 setup` で問題が発生した場合は、[手動インストールガイド](/quick-start/installation/)を参照してください。
 
-## デスクトップアプリがそのままモバイルアプリに
+## デスクトップアプリは、そのままモバイルアプリになります
 
 @terminal{frame="macos" prompt="none"}
 wails3 task ios:run      # run your existing app on iOS Simulator
 wails3 task android:run  # run your existing app on Android Emulator
 @end
 
-**Go コードの変更は一切不要です。** 同じ`main.go`、同じサービス、同じフロントエンドを、Wails が iOS および Android 向けに自動的にコンパイルします。プラットフォーム固有の機能（触覚フィードバック、ネイティブダイアログ、セーフエリア）も必要に応じて利用できますが、リリースに必須ではありません。
+<strong>Go コードを変更する必要はありません。</strong>同じ `main.go`、同じサービス、同じフロントエンドを、Wails が iOS と Android 向けに自動的にコンパイルします。プラットフォーム固有の機能（触覚フィードバック、ネイティブダイアログ、セーフエリア）も必要に応じて利用できますが、リリースに必須ではありません。
 
-[モバイル向けドキュメント →](/guides/mobile/)
+[モバイル版ドキュメント →](/guides/mobile/)
 
 ---
 
@@ -153,50 +153,50 @@ wails3 task android:run  # run your existing app on Android Emulator
 
 @cards{cols="2"}
 🚀 ユーザーが実感できるパフォーマンス
-- バイナリサイズは約15MB（Electron は150MB）
-- ベースラインメモリ使用量は約10MB（比較対象は100MB 以上）
-- 起動時間は&lt;0.5秒（比較対象は2-3秒）
+- バイナリサイズは約 15MB（Electron は 150MB）
+- ベースラインメモリ使用量は約 10MB（比較対象は 100MB 以上）
+- 起動時間は &lt;0.5 秒（比較対象は 2-3 秒）
 - OS の WebView を使用したネイティブレンダリング
-- ブラウザーを同梱するオーバーヘッドなし
+- ブラウザー同梱によるオーバーヘッドなし
 
 ---
 ⚙ 開発者体験
 - すべてのプラットフォームに対応する単一の Go コードベース
 - React、Vue、Svelte など、あらゆる Web フレームワークに対応
 - 開発中のホットリロード
-- 自動生成されたバインディングにより、Javascript から Go を簡単に呼び出し可能
-- インメモリ IPC。ネットワークポートは使用しません
+- Go を Javascript から簡単に呼び出せる自動生成バインディング
+- インメモリ IPC。ネットワークポートは不要
 
 ---
 ✓ デスクトップ対応
 - ライフサイクルを備えた複数ウィンドウ
 - ネイティブメニューとシステムトレイ
-- 各プラットフォームのネイティブなファイルダイアログ
+- プラットフォームネイティブのファイルダイアログ
 - システム連携とショートカット
 - コード署名およびパッケージングツール
 
 ---
 ▣ デスクトップ＆モバイル
 - Windows、macOS、Linux、iOS、Android
-- 同じコードベースを使用し、書き直しは一切不要
+- 同じコードベースで、書き直しは不要
 - すべてのプラットフォームでネイティブ WebView を使用
-- 開いているポートも localhost サーバーもありません
+- ポートの開放も localhost サーバーも不要
 - 必要に応じてプラットフォーム固有の機能を利用可能
 
 @end
 
 ## 次のステップ
 
-次は、[完全なアプリケーションを構築する](/tutorials/03-notes-vanilla/)、[サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を見る、または[API リファレンス](/reference/application/)を確認してください。v2 から移行する場合は、[アップグレードガイド](/migration/v2-to-v3/)を参照してください。
+次は、[完全なアプリケーションを構築する](/tutorials/03-notes-vanilla/)か、[サンプル](https://github.com/wailsapp/wails/tree/v3.0.0/v3/examples)を参照するか、[API リファレンス](/reference/application/)を確認してください。v2 から移行する場合は、[アップグレードガイド](/migration/v2-to-v3/)を参照してください。
 
 @note{type="info" title="Wails v3.0.0"}
-Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。 Android と iOS のサポートは引き続き実験的であり、安定版デスクトップの互換性保証の対象外です。
+Wails v3.0.0 は、Windows、macOS、Linux 向けデスクトップアプリケーションの安定版です。Android と iOS のサポートは引き続き実験的であり、安定版デスクトップの互換性保証の対象外です。
 
 @end
 
 @cards{cols="1"}
-♥ Wails の開発を支援
-Wails は、開発者が開発者のために作る、無料のオープンソースソフトウェアです。Wails が優れたアプリケーションの構築に役立っている場合は、継続的な開発への支援をご検討ください。
+♥ Wails の開発を支援する
+Wails は、開発者が開発者のために構築している、無料のオープンソースソフトウェアです。Wails が優れたアプリケーションの構築に役立っているなら、継続的な開発への支援をご検討ください。
 
 スポンサーからの支援は、プロジェクトの維持、ドキュメントの改善、そしてコミュニティ全体に役立つ新機能の開発に活用されます。
 
