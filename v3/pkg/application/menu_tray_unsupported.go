@@ -1,4 +1,4 @@
-//go:build server || (openharmony && cgo)
+//go:build openharmony && cgo && !server
 
 package application
 
