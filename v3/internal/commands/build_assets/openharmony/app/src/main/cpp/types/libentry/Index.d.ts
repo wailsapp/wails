@@ -24,3 +24,14 @@ export const runOnMainThread: (id: number) => boolean;
 export const dialogResult: (id: number, buttonIndex: number) => void;
 export const filePickerResult: (id: number, path: string) => void;
 export const filePickerDone: (id: number) => void;
+
+export const abilityStarted: () => void;
+export const abilityResumed: () => void;
+export const abilityPaused: () => void;
+export const abilityStopped: () => void;
+export const lowMemory: () => void;
+export const emitSystemEvent: (name: string, payload: string) => void;
+export const emitEvent: (name: string, payload: string) => void;
+export const pageStarted: (url: string) => void;
+export const pageFinished: (url: string) => void;
+export const shutdown: () => void;

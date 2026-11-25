@@ -1,6 +1,10 @@
 import * as native from 'libentry.so';
 import { webview } from '@kit.ArkWeb';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { display, promptAction } from '@kit.ArkUI';
+import { pasteboard } from '@kit.BasicServicesKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { getContext } from '../common/WailsContext';
 
 const ORIGIN: string = 'https://wails.localhost/';
 
@@ -10,6 +14,39 @@ interface ScriptCommand {
 
 interface MainThreadCommand {
   id: number;
+}
+
+interface LogArgs {
+  level?: string;
+  message?: string;
+}
+
+interface DialogButton {
+  label: string;
+}
+
+interface DialogOptions {
+  title: string;
+  message: string;
+  buttons: DialogButton[];
+}
+
+interface DialogArgs {
+  id: number;
+  options: string;
+}
+
+interface ThemeConfig {
+  colorMode?: number;
+}
+
+interface ThemeContext {
+  config?: ThemeConfig;
+}
+
+interface PromptButton {
+  text: string;
+  color: string;
 }
 
 // The Go app can outlive a single stage, so the bridge belongs to the process,
@@ -152,7 +189,61 @@ struct Index {
         return;
       }
       if (name === 'getScreenInfoJson') {
-        this.reply(id, '{}');
+        const current = display.getDefaultDisplaySync();
+        this.reply(id, JSON.stringify({
+          widthPx: current.width,
+          heightPx: current.height,
+          density: current.densityPixels,
+          insetTop: 0,
+          insetBottom: 0,
+          insetLeft: 0,
+          insetRight: 0
+        }));
+        return;
+      }
+      if (name === 'isDarkMode') {
+        const context = getContext() as ThemeContext;
+        const dark: boolean = context.config?.colorMode === 0;
+        this.reply(id, JSON.stringify({ dark: dark }));
+        return;
+      }
+      if (name === 'getClipboardText') {
+        const text = pasteboard.getSystemPasteboard().getDataSync().getPrimaryText();
+        this.reply(id, JSON.stringify({ text: text }));
+        return;
+      }
+      if (name === 'log') {
+        const args = JSON.parse(payload) as LogArgs;
+        hilog.info(0x0, 'WailsM3', '[%{public}s] %{public}s', args.level ?? 'INFO', args.message ?? '');
+        this.reply(id, '');
+        return;
+      }
+      if (name === 'showMessageDialog') {
+        const args = JSON.parse(payload) as DialogArgs;
+        const options = JSON.parse(args.options) as DialogOptions;
+        const buttons = (options.buttons ?? []).slice(0, 3);
+        if (buttons.length === 0) {
+          native.dialogResult(args.id ?? 0, -1);
+          this.reply(id, '');
+          return;
+        }
+        const styled: promptAction.Button[] = buttons.map((button: DialogButton): promptAction.Button => {
+          const styledButton: PromptButton = { text: button.label, color: '#000000' };
+          return styledButton as promptAction.Button;
+        });
+        promptAction.showDialog({
+          title: options.title,
+          message: options.message,
+          buttons: styled
+        }).then((result: promptAction.ShowDialogSuccessResponse): void => {
+          native.dialogResult(args.id ?? 0,
+            result.index >= 0 && result.index < buttons.length ? result.index : -1);
+          this.reply(id, '');
+        }).catch((error: BusinessError): void => {
+          hilog.error(0x0, 'WailsM3', 'Dialog failed: %{public}s', error.message);
+          native.dialogResult(args.id ?? 0, -1);
+          this.reply(id, '');
+        });
         return;
       }
       if (name === 'runOnMainThread') {
@@ -267,14 +358,16 @@ struct Index {
           .onInterceptRequest((event: OnInterceptRequestEvent): WebResourceResponse => {
             return this.resource(event === undefined ? '' : event.request.getRequestUrl());
           })
-          .onPageBegin((): void => {
+          .onPageBegin((event: OnPageBeginEvent): void => {
             this.proxy.session = '';
+            native.pageStarted(event === undefined ? ORIGIN : event.url);
           })
           .onErrorReceive((event: OnErrorReceiveEvent): void => {
             hilog.error(0x0, 'WailsM3', 'Web load error: %{public}s', event.error.getErrorInfo());
           })
-          .onPageEnd((): void => {
+          .onPageEnd((event: OnPageEndEvent): void => {
             hilog.info(0x0, 'WailsM3', 'Local-origin frontend loaded');
+            native.pageFinished(event === undefined ? ORIGIN : event.url);
           })
       } else {
         Text(this.status).fontSize(20)

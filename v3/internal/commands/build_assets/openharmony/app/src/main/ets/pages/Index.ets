@@ -234,11 +234,13 @@ struct Index {
           .onInterceptRequest((event: OnInterceptRequestEvent): WebResourceResponse => {
             return this.resource(event === undefined ? '' : event.request.getRequestUrl());
           })
-          .onPageBegin((): void => {
+          .onPageBegin((event: OnPageBeginEvent): void => {
             hilog.info(DOMAIN, TAG, 'Page loading');
+            native.pageStarted(event === undefined ? ORIGIN : event.url);
           })
-          .onPageEnd((): void => {
+          .onPageEnd((event: OnPageEndEvent): void => {
             hilog.info(DOMAIN, TAG, 'Local-origin frontend loaded');
+            native.pageFinished(event === undefined ? ORIGIN : event.url);
           })
           .onErrorReceive((event: OnErrorReceiveEvent): void => {
             hilog.error(DOMAIN, TAG, 'Web load error: %{public}s', event.error.getErrorInfo());

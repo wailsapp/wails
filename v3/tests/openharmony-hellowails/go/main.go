@@ -147,4 +147,43 @@ func WailsMessage(message *C.char) {
 //export WailsRunMain
 func WailsRunMain(id C.uint) { application.WailsOhNativeMainThreadCallback(uint(id)) }
 
+//export WailsDialogResult
+func WailsDialogResult(id C.uint, buttonIndex C.int) {
+	application.WailsOhNativeDialogCallback(uint(id), int(buttonIndex))
+}
+
+//export WailsAbilityStarted
+func WailsAbilityStarted() { application.WailsOhNativeOnStart() }
+
+//export WailsAbilityResumed
+func WailsAbilityResumed() { application.WailsOhNativeOnResume() }
+
+//export WailsAbilityPaused
+func WailsAbilityPaused() { application.WailsOhNativeOnPause() }
+
+//export WailsAbilityStopped
+func WailsAbilityStopped() { application.WailsOhNativeOnStop() }
+
+//export WailsLowMemory
+func WailsLowMemory() { application.WailsOhNativeOnLowMemory() }
+
+//export WailsEmitSystemEvent
+func WailsEmitSystemEvent(name *C.char, payload *C.char) {
+	application.WailsOhNativeEmitSystemEvent(C.GoString(name), C.GoString(payload))
+}
+
+//export WailsEmitEvent
+func WailsEmitEvent(name *C.char, payload *C.char) {
+	application.WailsOhNativeEmitEvent(C.GoString(name), C.GoString(payload))
+}
+
+//export WailsPageStarted
+func WailsPageStarted(url *C.char) { application.WailsOhNativeOnPageStarted(C.GoString(url)) }
+
+//export WailsPageFinished
+func WailsPageFinished(url *C.char) { application.WailsOhNativeOnPageFinished(C.GoString(url)) }
+
+//export WailsShutdown
+func WailsShutdown() { application.WailsOhNativeShutdown() }
+
 func main() {}

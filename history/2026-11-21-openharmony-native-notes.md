@@ -255,6 +255,24 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 复验：CLI 编译通过；`wails3 build -targets openharmony/amd64 -formats hap` 成功（11.9 MiB）。三项 P1 均已修，但设备侧仍未验（`hdc list targets` 空），不宣称端到端 PASS。其他审查发现（屏幕/剪贴板/日志字段不匹配、生命周期事件无调用方、测试标签遗漏等）尚未修复。
 
+
+## 13. 平台 API 对照的第二轮修复与支持边界（2026-11-25）
+
+并行审查后把“接了但错”和“能力未实现”分开。已修的确定性错误共六类：剪贴板读取把 `{"text":...}` 直接当文本返回（现在 Go 解包）；`getScreens` 收到的字段名不匹配导致永远走假尺寸（现在 ArkTS 返回 `widthPx/heightPx/inset*`，不再伪造 393x873）；`isDarkMode` 只认裸 `true` 而 ArkTS 回 JSON（现在按 `{dark}` 解包并读取 ability config）；日志 Go 发 `msg` 而 ArkTS 读 `message`（现在字段统一，日志带 level）；消息对话框只显示主按钮与硬编码 Cancel（现在最多三个真实按钮，索引直接回传，越界/取消为 -1）；生命周期与页面事件导出无人调用（现在 NAPI 注册 `abilityStarted/Resumed/Paused/Stopped/lowMemory/pageStarted/pageFinished/emitEvent/emitSystemEvent/shutdown`，EntryAbility 与 Web 组件在真实回调中调用）。读取剪贴板需要 `ohos.permission.READ_PASTEBOARD`，模板与 M3 工程已声明带 reason/usedScene 的 user_grant 权限。
+
+**为什么仍有不支持项**：这些不是“忘了加一行 case”，而是阶段范围与平台能力的边界。
+
+| 类别 | 例子 | 不实现的原因 |
+|---|---|---|
+| 需要硬件/账号/后台服务 | 定位、拍照/录像、前台服务、安全存储 | 模拟器没有对应硬件或业务服务；需要独立权限、凭据与生命周期管理，已超出“本地 origin + 绑定 + 事件”的验收范围 |
+| 需要系统设置或更深的 UI 钩子 | 手电筒、亮度、方向、状态栏、通知、语音、运动/接近、键盘监听、屏保、保持唤醒 | 现有 shell 只提供 ArkWeb 宿主与桥；这些 API 要么是 user_grant 系统设置，要么需要独立后台任务，当前仅回 ACK 避免卡住调用方，不等于实现成功 |
+| 设备信息/编辑扩展 getter | `getAppInfoJson`、`getSafeAreaJson`、剪贴板编辑、存储/电源/网络详情 | 沿用默认 display/device 桩，Web 文本编辑没有 IME/菜单钩子；没有真实数据来源时返回假值是更坏的选择 |
+| 系统事件接收器 | 电量、网络、主题、锁屏 | Go 侧已有事件类型与 `WailsOhNativeEmitSystemEvent` 入口，但 ArkTS 侧未注册对应系统观察者；生命周期与页面事件已经接通，不能把系统事件也算已通过 |
+
+这条边界必须写进交付说明：ACK 与未接 case 是**未实现**，不是成功策略。舞台/前后台/页面事件是真实回调驱动，初始 `AbilityCreated` 仍由 Go 启动处发出。
+
+复验：CLI 当前源码编译通过；用当前 CLI 生成的产品化工程 `hvigorw assembleHap` 成功（HAP 含三个 x86_64 so，模板 ArkTS 无错误）。M3 的 `c-shared` 严格 `--no-undefined` 链接通过；`hvigorw assembleHap` 成功，HAP 中含 x86_64 `libentry.so` 与 `libhomecast_go.so`，bundle 仍为 `com.wails.nativehello`。`hdc list targets` 为空且 `tconn 127.0.0.1:5555` 连接失败，因此这一轮**没有设备 PASS**，不宣称 M3 端到端通过。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。

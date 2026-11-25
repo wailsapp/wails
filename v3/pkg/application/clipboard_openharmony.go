@@ -23,5 +23,11 @@ func (c *openharmonyClipboardImpl) text() (string, bool) {
 	if !ok || res == "" {
 		return "", false
 	}
-	return res, true
+	var result struct {
+		Text string `json:"text"`
+	}
+	if err := json.Unmarshal([]byte(res), &result); err != nil {
+		return "", false
+	}
+	return result.Text, true
 }

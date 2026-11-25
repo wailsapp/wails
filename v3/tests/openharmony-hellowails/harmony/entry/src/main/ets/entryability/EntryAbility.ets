@@ -1,6 +1,8 @@
 import { UIAbility, Want } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import * as native from 'libentry.so';
+import { setContext } from '../common/WailsContext';
 
 // EntryAbility hosts the Wails page. KeeperAbility renders nothing; it exists
 // so lifecycle tests can destroy a stage without taking the process with it.
@@ -9,6 +11,7 @@ export default class EntryAbility extends UIAbility {
   private closeStage: boolean = false;
 
   onCreate(want: Want): void {
+    setContext(this.context);
     this.name = want.abilityName ?? '';
     this.closeStage = want.parameters?.['closeStage'] === true;
     const mode: string | undefined = want.parameters?.['wailsLifecycle'] as string | undefined;
@@ -32,13 +35,24 @@ export default class EntryAbility extends UIAbility {
       }, 4000);
     }
     stage.loadContent('pages/Index');
+    native.abilityStarted();
+  }
+
+  onForeground(): void {
+    native.abilityResumed();
+  }
+
+  onBackground(): void {
+    native.abilityPaused();
   }
 
   onWindowStageDestroy(): void {
+    native.abilityStopped();
     hilog.info(0x0, 'WailsM3', 'Stage destroy %{public}s', this.name);
   }
 
   onDestroy(): void {
     hilog.info(0x0, 'WailsM3', 'Ability destroy %{public}s', this.name);
+    native.shutdown();
   }
 }

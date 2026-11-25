@@ -8,6 +8,7 @@
 import { UIAbility, Want } from '@kit.AbilityKit';
 import { window } from '@kit.ArkUI';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import * as native from 'libentry.so';
 
 import { setContext } from '../common/WailsContext';
 
@@ -22,13 +23,23 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(stage: window.WindowStage): void {
     hilog.info(DOMAIN, TAG, 'Stage create');
     stage.loadContent('pages/Index');
+    native.abilityStarted();
+  }
+
+  onForeground(): void {
+    native.abilityResumed();
+  }
+
+  onBackground(): void {
+    native.abilityPaused();
   }
 
   onWindowStageDestroy(): void {
+    native.abilityStopped();
     hilog.info(DOMAIN, TAG, 'Stage destroy');
   }
 
   onDestroy(): void {
     hilog.info(DOMAIN, TAG, 'Ability destroy');
+    native.shutdown();
   }
-}

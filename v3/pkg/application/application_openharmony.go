@@ -46,7 +46,19 @@ func (a *openharmonyApp) hide() { ohBridgeVoid("hide", "{}") }
 
 func (a *openharmonyApp) show() { ohBridgeVoid("show", "{}") }
 
-func (a *openharmonyApp) isDarkMode() bool { return ohBridgeBool("isDarkMode", "{}") }
+func (a *openharmonyApp) isDarkMode() bool {
+	res, ok := ohBridgeString("isDarkMode", "{}")
+	if !ok || res == "" {
+		return false
+	}
+	var result struct {
+		Dark bool `json:"dark"`
+	}
+	if err := json.Unmarshal([]byte(res), &result); err != nil {
+		return false
+	}
+	return result.Dark
+}
 
 func (a *openharmonyApp) isWindows() bool { return false }
 

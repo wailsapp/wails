@@ -57,8 +57,8 @@ func (h *openharmonyConsoleHandler) Handle(_ context.Context, r slog.Record) err
 	r.Attrs(func(a slog.Attr) bool { writeAttr(a); return true })
 
 	ohBridgeVoid("log", string(mustJSON(map[string]string{
-		"level": r.Level.String(),
-		"msg":   b.String(),
+		"level":   r.Level.String(),
+		"message": b.String(),
 	})))
 	return nil
 }

@@ -12,5 +12,10 @@
       "name": "EntryAbility_label",
       "value": "Wails Native Hello"
     }
+    ,
+    {
+      "name": "read_pasteboard_reason",
+      "value": "Read clipboard text for Wails clipboard APIs"
+    }
   ]
 }

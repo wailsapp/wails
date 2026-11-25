@@ -150,8 +150,27 @@ func WailsOhNativeEmitEvent(name string, jsonStr string) {
 	emitNativeEventToJS(name, jsonStr)
 }
 
+// WailsOhNativeOnPageStarted forwards the typed WebViewPageStarted window event
+// once the ArkWeb begins loading (mirrors nativeOnPageStarted on Android).
+//
+//export WailsOhNativeOnPageStarted
+func WailsOhNativeOnPageStarted(url string) {
+	openharmonyDebugLogf("[NAPI] page started: %s", url)
+	globalAppLock.RLock()
+	app := globalApp
+	globalAppLock.RUnlock()
+	if app == nil {
+		return
+	}
+	if windowID := openharmonyFirstWindowID(app); windowID != 0 {
+		windowEvents <- &windowEvent{
+			WindowID: windowID,
+			EventID:  uint(events.Openharmony.WebViewPageStarted),
+		}
+	}
+}
+
 // WailsOhNativeOnPageFinished forwards the typed WebViewPageFinished window
-// event once the ArkWeb finishes loading (mirrors nativeOnPageFinished).
 //
 //export WailsOhNativeOnPageFinished
 func WailsOhNativeOnPageFinished(url string) {

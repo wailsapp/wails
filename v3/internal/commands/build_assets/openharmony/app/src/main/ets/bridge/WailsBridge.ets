@@ -96,12 +96,15 @@ interface DeviceInfoResult {
   sdkInt: number;
 }
 
-/** The screen information answer. */
+/** Screen information in the shape expected by pkg/application/screen_openharmony.go. */
 interface ScreenInfoResult {
-  width?: number;
-  height?: number;
+  widthPx?: number;
+  heightPx?: number;
   density?: number;
-  rotation?: number;
+  insetTop?: number;
+  insetBottom?: number;
+  insetLeft?: number;
+  insetRight?: number;
 }
 
 /** The clipboard answer. */
@@ -167,7 +170,7 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
       wailsBridgeResult(callId, '');
       return;
     case 'isDarkMode':
-      replyJSON(callId, { dark: false } as DarkModeResult);
+      replyJSON(callId, { dark: currentColorMode() } as DarkModeResult);
       return;
 
     // --- scripting ----------------------------------------------------
@@ -181,7 +184,7 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
 
     // --- logging ------------------------------------------------------
     case 'log':
-      hilog.info(DOMAIN, TAG, '%{public}s', args.message ?? '');
+      hilog.info(DOMAIN, TAG, '%{public}s', `[${args.level ?? 'INFO'}] ${args.message ?? ''}`);
       wailsBridgeResult(callId, '');
       return;
 
@@ -267,18 +270,30 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
 // Command implementations
 // ---------------------------------------------------------------------------
 
+function currentColorMode(): boolean {
+  // ConfigurationConstant.ColorMode.COLOR_MODE_DARK === 0.
+  const context: object = getContext();
+  if ('config' in context && context.config && typeof context.config === 'object' && 'colorMode' in context.config) {
+    return context.config.colorMode === 0;
+  }
+  return false;
+}
+
 function screenInfo(): ScreenInfoResult {
   try {
     const current = display.getDefaultDisplaySync();
     return {
-      width: current.width,
-      height: current.height,
+      widthPx: current.width,
+      heightPx: current.height,
       density: current.densityPixels,
-      rotation: current.rotation
-    } as ScreenInfoResult;
+      insetTop: 0,
+      insetBottom: 0,
+      insetLeft: 0,
+      insetRight: 0
+    };
   } catch (e) {
     hilog.error(DOMAIN, TAG, 'screen info unavailable');
-    return {} as ScreenInfoResult;
+    return {};
   }
 }
 
@@ -337,25 +352,20 @@ function showMessageDialog(args: BridgeArgs): void {
     hilog.error(DOMAIN, TAG, 'showMessageDialog: invalid options ignored');
   }
 
-  const buttons = options.buttons ?? [];
+  const buttons = (options.buttons ?? []).slice(0, 3);
   if (buttons.length === 0) {
     native.dialogResult(callbackID, -1);
     return;
   }
 
-  const primary = buttons.find((b: DialogButton) => b.isDefault) ?? buttons[0];
-  const index = buttons.indexOf(primary);
-
   try {
     promptAction.showDialog({
       title: options.title,
       message: options.message,
-      buttons: [
-        { text: primary.label, color: '#000000' },
-        { text: 'Cancel', color: '#000000' }
-      ]
+      buttons: buttons.map((button: DialogButton) => ({ text: button.label, color: '#000000' }))
     }).then((result: promptAction.ShowDialogSuccessResponse): void => {
-      native.dialogResult(callbackID, result.index === 0 ? index : -1);
+      const index = result.index;
+      native.dialogResult(callbackID, index >= 0 && index < buttons.length ? index : -1);
     }).catch((error: BusinessError): void => {
       hilog.error(DOMAIN, TAG, 'showMessageDialog failed: %{public}s', error.message);
       native.dialogResult(callbackID, -1);

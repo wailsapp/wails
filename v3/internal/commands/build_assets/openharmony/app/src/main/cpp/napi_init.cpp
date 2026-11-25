@@ -170,6 +170,78 @@ napi_value FilePickerDone(napi_env env, napi_callback_info info) {
     return Undefined(env);
 }
 
+// The OpenHarmony lifecycle and event exports are notifications only: they
+// never block ArkTS and never return a value to the caller.
+napi_value AbilityStarted(napi_env env, napi_callback_info) {
+    WailsAbilityStarted();
+    return Undefined(env);
+}
+
+napi_value AbilityResumed(napi_env env, napi_callback_info) {
+    WailsAbilityResumed();
+    return Undefined(env);
+}
+
+napi_value AbilityPaused(napi_env env, napi_callback_info) {
+    WailsAbilityPaused();
+    return Undefined(env);
+}
+
+napi_value AbilityStopped(napi_env env, napi_callback_info) {
+    WailsAbilityStopped();
+    return Undefined(env);
+}
+
+napi_value LowMemory(napi_env env, napi_callback_info) {
+    WailsLowMemory();
+    return Undefined(env);
+}
+
+napi_value EmitSystemEvent(napi_env env, napi_callback_info info) {
+    napi_value args[2];
+    size_t argc = 2;
+    std::string name, payload;
+    if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) == napi_ok && argc == 2 &&
+        String(env, args[0], name) && String(env, args[1], payload)) {
+        WailsEmitSystemEvent(&name[0], &payload[0]);
+    }
+    return Undefined(env);
+}
+
+napi_value EmitEvent(napi_env env, napi_callback_info info) {
+    napi_value args[2];
+    size_t argc = 2;
+    std::string name, payload;
+    if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) == napi_ok && argc == 2 &&
+        String(env, args[0], name) && String(env, args[1], payload)) {
+        WailsEmitEvent(&name[0], &payload[0]);
+    }
+    return Undefined(env);
+}
+
+napi_value PageStarted(napi_env env, napi_callback_info info) {
+    napi_value arg;
+    size_t argc = 1;
+    std::string url;
+    if (napi_get_cb_info(env, info, &argc, &arg, nullptr, nullptr) == napi_ok && argc == 1 &&
+        String(env, arg, url)) WailsPageStarted(&url[0]);
+    return Undefined(env);
+}
+
+napi_value PageFinished(napi_env env, napi_callback_info info) {
+    napi_value arg;
+    size_t argc = 1;
+    std::string url;
+    if (napi_get_cb_info(env, info, &argc, &arg, nullptr, nullptr) == napi_ok && argc == 1 &&
+        String(env, arg, url)) WailsPageFinished(&url[0]);
+    return Undefined(env);
+}
+
+napi_value Shutdown(napi_env env, napi_callback_info) {
+    WailsShutdown();
+    return Undefined(env);
+}
+
 napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor methods[] = {
         {"open", nullptr, Open, nullptr, nullptr, nullptr, napi_default, nullptr},
@@ -183,7 +255,17 @@ napi_value Init(napi_env env, napi_value exports) {
         {"runOnMainThread", nullptr, RunOnMainThread, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"dialogResult", nullptr, DialogResult, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"filePickerResult", nullptr, FilePickerResult, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"filePickerDone", nullptr, FilePickerDone, nullptr, nullptr, nullptr, napi_default, nullptr}
+        {"filePickerDone", nullptr, FilePickerDone, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"abilityStarted", nullptr, AbilityStarted, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"abilityResumed", nullptr, AbilityResumed, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"abilityPaused", nullptr, AbilityPaused, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"abilityStopped", nullptr, AbilityStopped, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"lowMemory", nullptr, LowMemory, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"emitSystemEvent", nullptr, EmitSystemEvent, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"emitEvent", nullptr, EmitEvent, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"pageStarted", nullptr, PageStarted, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"pageFinished", nullptr, PageFinished, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"shutdown", nullptr, Shutdown, nullptr, nullptr, nullptr, napi_default, nullptr}
     };
     return napi_define_properties(env, exports, sizeof(methods) / sizeof(methods[0]), methods) == napi_ok
         ? exports : nullptr;
