@@ -1,4 +1,4 @@
-//go:build linux && !android && !openharmony && (cgo || purego)
+//go:build linux && !android && (cgo || purego)
 
 package webview
 

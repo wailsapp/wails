@@ -1,4 +1,4 @@
-//go:build linux && cgo && gtk3 && wailsintegration && !android && !openharmony && !server
+//go:build linux && cgo && gtk3 && wailsintegration && !android && !server
 
 package application
 

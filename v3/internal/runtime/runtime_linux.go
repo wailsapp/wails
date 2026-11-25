@@ -1,4 +1,4 @@
-//go:build linux && !android && !openharmony
+//go:build linux && !android
 
 package runtime
 

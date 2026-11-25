@@ -1,4 +1,4 @@
-//go:build linux && cgo && !android && !openharmony
+//go:build linux && cgo && !android
 
 package webview
 

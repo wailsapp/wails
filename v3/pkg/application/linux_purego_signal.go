@@ -1,4 +1,4 @@
-//go:build linux && purego && !android && !openharmony && !server
+//go:build linux && purego && !android && !server
 
 package application
 
