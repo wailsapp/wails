@@ -21,3 +21,6 @@ export const asset: (path: string) => Asset | null;
 export const request: (id: string, payload: string) => boolean;
 export const message: (message: string) => void;
 export const runOnMainThread: (id: number) => boolean;
+export const dialogResult: (id: number, buttonIndex: number) => void;
+export const filePickerResult: (id: number, path: string) => void;
+export const filePickerDone: (id: number) => void;

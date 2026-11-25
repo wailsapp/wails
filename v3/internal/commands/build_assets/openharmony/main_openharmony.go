@@ -107,5 +107,20 @@ func WailsMessage(message *C.char) {
 //export WailsRunMain
 func WailsRunMain(id C.uint) { application.WailsOhNativeMainThreadCallback(uint(id)) }
 
+//export WailsDialogResult
+func WailsDialogResult(id C.uint, buttonIndex C.int) {
+	application.WailsOhNativeDialogCallback(uint(id), int(buttonIndex))
+}
+
+//export WailsFilePickerResult
+func WailsFilePickerResult(id C.uint, path *C.char) {
+	application.WailsOhNativeFilePickerResult(uint(id), C.GoString(path))
+}
+
+//export WailsFilePickerDone
+func WailsFilePickerDone(id C.uint) {
+	application.WailsOhNativeFilePickerDone(uint(id))
+}
+
 //export WailsStart
 func WailsStart() { application.WailsOhNativeStartMain() }

@@ -109,15 +109,6 @@ interface ClipboardResult {
   text: string;
 }
 
-/** The message dialog answer. */
-interface DialogResult {
-  buttonIndex: number;
-}
-
-/** The file picker answer. */
-interface PickerResult {
-  paths: string[];
-}
 
 function parseArgs(payload: string): BridgeArgs {
   if (payload === '') {
@@ -223,10 +214,10 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
 
     // --- dialogs ------------------------------------------------------
     case 'showMessageDialog':
-      showMessageDialog(callId, args);
+      showMessageDialog(args);
       return;
     case 'showFilePicker':
-      showFilePicker(callId, args);
+      showFilePicker(args);
       return;
 
     // --- toasts and sharing -------------------------------------------
@@ -326,7 +317,7 @@ function showToast(message: string): void {
  * The button index is the index into the options array, or -1 when the dialog
  * was dismissed without choosing.
  */
-function showMessageDialog(callId: number, args: BridgeArgs): void {
+function showMessageDialog(args: BridgeArgs): void {
   interface DialogButton {
     label: string;
     isCancel: boolean;
@@ -338,6 +329,7 @@ function showMessageDialog(callId: number, args: BridgeArgs): void {
     buttons: DialogButton[];
   }
 
+  const callbackID = args.id ?? 0;
   let options: DialogOptions = { title: '', message: '', buttons: [] };
   try {
     options = JSON.parse(args.options ?? '{}') as DialogOptions;
@@ -347,7 +339,7 @@ function showMessageDialog(callId: number, args: BridgeArgs): void {
 
   const buttons = options.buttons ?? [];
   if (buttons.length === 0) {
-    wailsBridgeResult(callId, '');
+    native.dialogResult(callbackID, -1);
     return;
   }
 
@@ -363,15 +355,14 @@ function showMessageDialog(callId: number, args: BridgeArgs): void {
         { text: 'Cancel', color: '#000000' }
       ]
     }).then((result: promptAction.ShowDialogSuccessResponse): void => {
-      const answer: DialogResult = { buttonIndex: result.index === 0 ? index : -1 };
-      wailsBridgeResult(callId, JSON.stringify(answer));
+      native.dialogResult(callbackID, result.index === 0 ? index : -1);
     }).catch((error: BusinessError): void => {
       hilog.error(DOMAIN, TAG, 'showMessageDialog failed: %{public}s', error.message);
-      wailsBridgeResult(callId, '');
+      native.dialogResult(callbackID, -1);
     });
   } catch (e) {
     hilog.error(DOMAIN, TAG, 'showMessageDialog failed: %{public}s', JSON.stringify(e));
-    wailsBridgeResult(callId, '');
+    native.dialogResult(callbackID, -1);
   }
 }
 
@@ -382,10 +373,11 @@ function showMessageDialog(callId: number, args: BridgeArgs): void {
  * the selected URI is copied into the app's cache directory and the copied
  * path is what the Go backend receives.
  */
-function showFilePicker(callId: number, args: BridgeArgs): void {
+function showFilePicker(args: BridgeArgs): void {
   interface PickerOptions {
     multiple: boolean;
   }
+  const callbackID = args.id ?? 0;
   let options: PickerOptions = { multiple: false };
   try {
     options = JSON.parse(args.options ?? '{}') as PickerOptions;
@@ -401,22 +393,22 @@ function showFilePicker(callId: number, args: BridgeArgs): void {
     };
     documentViewPicker.select(pickerOptions).then((result: string[]): void => {
       if (result.length === 0) {
-        wailsBridgeResult(callId, '');
+        native.filePickerDone(callbackID);
         return;
       }
       const uris = options.multiple ? result : [result[0]];
-      copyUrisToCache(callId, uris);
+      copyUrisToCache(callbackID, uris);
     }).catch((error: BusinessError): void => {
       hilog.error(DOMAIN, TAG, 'showFilePicker failed: %{public}s', error.message);
-      wailsBridgeResult(callId, '');
+      native.filePickerDone(callbackID);
     });
   } catch (e) {
     hilog.error(DOMAIN, TAG, 'showFilePicker failed: %{public}s', JSON.stringify(e));
-    wailsBridgeResult(callId, '');
+    native.filePickerDone(callbackID);
   }
 }
 
-function copyUrisToCache(callId: number, uris: string[]): void {
+function copyUrisToCache(callbackID: number, uris: string[]): void {
   const cacheDir = getContext().cacheDir;
   const paths: string[] = [];
   for (const uri of uris) {
@@ -432,8 +424,10 @@ function copyUrisToCache(callId: number, uris: string[]): void {
       hilog.error(DOMAIN, TAG, 'copyUrisToCache failed: %{public}s', JSON.stringify(e));
     }
   }
-  const answer: PickerResult = { paths: paths };
-  wailsBridgeResult(callId, JSON.stringify(answer));
+  for (const path of paths) {
+    native.filePickerResult(callbackID, path);
+  }
+  native.filePickerDone(callbackID);
 }
 
 function share(payload: string): void {

@@ -28,6 +28,13 @@ napi_value Boolean(napi_env env, bool value) {
     return result;
 }
 
+napi_value Undefined(napi_env env) {
+    napi_value result = nullptr;
+    napi_get_undefined(env, &result);
+    return result;
+}
+
+
 bool String(napi_env env, napi_value value, std::string &result) {
     napi_valuetype type;
     size_t length = 0;
@@ -126,6 +133,43 @@ napi_value RunOnMainThread(napi_env env, napi_callback_info info) {
     return Boolean(env, true);
 }
 
+// DialogResult delivers the selected button index for a message dialog.
+napi_value DialogResult(napi_env env, napi_callback_info info) {
+    napi_value args[2];
+    size_t argc = 2;
+    uint32_t id = 0;
+    int32_t index = -1;
+    if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) == napi_ok && argc == 2 &&
+        napi_get_value_uint32(env, args[0], &id) == napi_ok &&
+        napi_get_value_int32(env, args[1], &index) == napi_ok) {
+        WailsDialogResult(id, static_cast<int>(index));
+    }
+    return Undefined(env);
+}
+
+// FilePickerResult delivers one selected path for an open-file dialog.
+napi_value FilePickerResult(napi_env env, napi_callback_info info) {
+    napi_value args[2];
+    size_t argc = 2;
+    uint32_t id = 0;
+    std::string path;
+    if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) == napi_ok && argc == 2 &&
+        napi_get_value_uint32(env, args[0], &id) == napi_ok && String(env, args[1], path)) {
+        WailsFilePickerResult(id, &path[0]);
+    }
+    return Undefined(env);
+}
+
+// FilePickerDone closes the pending open-file dialog.
+napi_value FilePickerDone(napi_env env, napi_callback_info info) {
+    napi_value arg;
+    size_t argc = 1;
+    uint32_t id = 0;
+    if (napi_get_cb_info(env, info, &argc, &arg, nullptr, nullptr) == napi_ok && argc == 1 &&
+        napi_get_value_uint32(env, arg, &id) == napi_ok) WailsFilePickerDone(id);
+    return Undefined(env);
+}
+
 napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor methods[] = {
         {"open", nullptr, Open, nullptr, nullptr, nullptr, napi_default, nullptr},
@@ -136,7 +180,10 @@ napi_value Init(napi_env env, napi_value exports) {
         {"asset", nullptr, Asset, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"request", nullptr, Request, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"message", nullptr, Message, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"runOnMainThread", nullptr, RunOnMainThread, nullptr, nullptr, nullptr, napi_default, nullptr}
+        {"runOnMainThread", nullptr, RunOnMainThread, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"dialogResult", nullptr, DialogResult, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"filePickerResult", nullptr, FilePickerResult, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"filePickerDone", nullptr, FilePickerDone, nullptr, nullptr, nullptr, napi_default, nullptr}
     };
     return napi_define_properties(env, exports, sizeof(methods) / sizeof(methods[0]), methods) == napi_ok
         ? exports : nullptr;
