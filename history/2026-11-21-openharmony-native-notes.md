@@ -218,6 +218,23 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 **用处**：对鸿蒙 native 验收无用；对 fork 与上游保持一致、Linux 构建与绑定生成有用。**用户确认后已于 2026-11-25 从 HEAD 恢复这 6 个文件**：行数回到 1177/214/25/74/704/39，`gofmt -e` 全部通过，`git status` 已干净；工作树为 CRLF，所以原始字节哈希与上游 LF 不同，但 git blob 与上游 master 一致。
 
+## 10. fork 与上游关系审计（2026-11-25）
+
+`git fetch origin master` 后对照：`origin/master`（`wailsapp/wails`）tip 为 `10e8887ca`，merge-base 为 `afa709fa4`（2026-11-01）。fork 的 `openharmony` **领先 56 个提交、落后 21 个提交**。
+
+领先侧 56 个提交中，34 个是 OpenHarmony / HarmonyOS 功能与验证，约 20 个是文档/测试记录，1 个是版本发布提交 `4b454e443`（`chore(v3): bump to v3.1.0 and update changelog`，作者显示为 github-actions[bot]，但**不在上游**，上游当前是 `v3.2.0-nightly.20261123`）。落后侧 21 个提交大多是 bot 图片/翻译/版本号更新，其中两个是真实修复：`d08a5ae64 fix(wake): sync timestamp_server description with published field reference`、`2fc0d6053 test(v3): retry dialog key presses in the purego parity probe`。
+
+文件差异（merge-base → fork）：新增 137、修改 150、删除 0；无 tracked-but-ignored 文件；新增物里只有 12 个小 PNG 图标（模板资源），**没有 HAP / `.so` / `.dll` / `local.properties` / 构建缓存 / 生成头被误提交**。150 个修改中 **111 个只改了 build tag**（给 Linux/GTK 后端加 `!openharmony`，单行改动），其余 39 个有实际逻辑改动，绝大多数是 OH/HarmonyOS 平台接入。
+
+**需要决策或注意的点**
+
+1. **版本与 changelog 漂移**：`4b454e443` 是 fork 独有提交，导致 fork 报 `v3.1.0`、上游报 `v3.2.0-nightly.20261123`；`docs/mpress/content/changelog.md`、两个 runtime `package*.json`、`version.txt` 因此与上游分叉。若目标是“上游 + 纯增量平台”，这个提交属于不该动的；若是刻意固定 fork 版本则保留。
+2. **build tag 散布面大**：111 个上游文件为 `-tags server` 时代的 OHOS 构建加了 `!openharmony`；native 路径下 `GOOS=openharmony` 本来就不匹配 `linux`，多数是冗余。与上游重叠的 5 个菜单/托盘文件（`menu_linux.go`、`menu_linux_gtk3.go`、`menuitem_linux_gtk3.go`、`systemtray_linux.go` 及测试）上游也有逻辑改动，未来 rebase/merge 会冲突。
+3. **跨后端共享逻辑改动**：`application_server.go` 删除 server 模式内建 menu/tray 空实现，新增 `menu_tray_unsupported.go`（build tag `server || (openharmony && cgo)`）。这是为 c-shared 链接做的必要改动，但影响 server 模式，需回归测试；历史只验证过 server 编译。
+4. **双方都改过的 12 个文件**：除上面版本/文档 4 个与菜单/托盘 5 个外，还有 `signing_schema_metadata.go`、`schema_contract_test.go`、`wails-yaml-fields.md`，合并上游时逐个核对。
+
+**结论**：新增的 OpenHarmony/HarmonyOS 文件、文档、CI 注册测试、schema 字段都属于预期范围；没有误删、没有垃圾入库、工作树干净。真正需要拍板的是版本 bump、build-tag 散布面以及跨后端 menu/tray 重构；落后 21 个提交中的两个真实修复应择机合入。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
