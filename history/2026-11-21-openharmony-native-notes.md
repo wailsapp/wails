@@ -273,6 +273,8 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 复验：CLI 当前源码编译通过；用当前 CLI 生成的产品化工程 `hvigorw assembleHap` 成功（HAP 含三个 x86_64 so，模板 ArkTS 无错误）。M3 的 `c-shared` 严格 `--no-undefined` 链接通过；`hvigorw assembleHap` 成功，HAP 中含 x86_64 `libentry.so` 与 `libhomecast_go.so`，bundle 仍为 `com.wails.nativehello`。`hdc list targets` 为空且 `tconn 127.0.0.1:5555` 连接失败，因此这一轮**没有设备 PASS**，不宣称 M3 端到端通过。
 
+**精确计数（2026-11-25，静态源码口径）**：主线必须实现的平台接口是 **138 个**（platformApp 17、webviewWindowImpl 83、systemTray 15、menuItem 8、clipboard 2、dialog 3、menu 1、lock 3、autostart 3、globalShortcut 3）。资料包评估文档里的“139 个 no-op”不成立：`application_server.go` 实际 127 个方法定义、其中 119 个是 stub；138 是接口总数，加上被排除的内部 `setupCommonEvents` 才是 139。OpenHarmony 后端对这 138 个接口实现了 **130 个**（8 个 menuItem 方法完全没有 OH 实现），但其中只有 **29 个是真正功能性实现**（app 11、window 14、clipboard 2、dialog 2），**101 个是 no-op/常量/错误桩**。桥命令另算：Go 发出 **53** 个不同命令，ArkTS 有 **30** 个 case，其中 **11** 个真实实现、**19** 个 ACK/桩、**23** 个完全无 case；NAPI 注册 22 个导出，ArkTS 实际调用 18 个。结论：核心链路可用，完整平台 API 远未覆盖；以上计数为源码事实，不等于设备 PASS。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
