@@ -117,6 +117,99 @@ export function getTransport(): RuntimeTransport | null {
     return customTransport;
 }
 
+interface OpenHarmonyHost {
+    invoke(message: string): unknown;
+    request(session: string, id: string, payload: string): boolean;
+}
+
+// libentry.so injects these globals into the ArkWeb document.
+interface OpenHarmonyWindow extends Window {
+    wailsOpenHarmony?: OpenHarmonyHost;
+    wailsOpenHarmonySession?: string;
+    wailsOpenHarmonyResolve?: (id: string, payload: string) => void;
+    wails?: { invoke?: (message: string) => unknown; [key: string]: unknown };
+}
+
+interface PendingOpenHarmonyCall {
+    resolve: (value: unknown) => void;
+    reject: (reason: unknown) => void;
+    timer: number;
+}
+
+// The Go side emits this envelope with ok/text/data/error fields.
+interface RuntimeReply {
+    ok?: boolean;
+    text?: unknown;
+    data?: unknown;
+    error?: string;
+}
+
+let detectedOpenHarmonyTransport: RuntimeTransport | null | undefined;
+
+/**
+ * Build a transport backed by the ArkTS bridge injected by the OpenHarmony
+ * shell. The shell cannot read POST bodies from WebResourceRequest on API 26,
+ * so runtime calls go through its JS proxy instead of the default fetch.
+ * Returns null on every other host.
+ */
+function getOpenHarmonyTransport(): RuntimeTransport | null {
+    if (detectedOpenHarmonyTransport !== undefined) return detectedOpenHarmonyTransport;
+    detectedOpenHarmonyTransport = null;
+    if (typeof window === 'undefined') return null;
+
+    const hostWindow = window as OpenHarmonyWindow;
+    const host = hostWindow.wailsOpenHarmony;
+    if (!host || typeof host.invoke !== 'function' || typeof host.request !== 'function') return null;
+
+    const pending = new Map<string, PendingOpenHarmonyCall>();
+    const session = window.crypto?.randomUUID?.() ?? nanoid();
+    let nextID = 0;
+
+    // Replies are resolved into the document that started the call by
+    // checking this session and invoking the matching resolver.
+    hostWindow.wailsOpenHarmonySession = session;
+    hostWindow.wailsOpenHarmonyResolve = (id: string, payload: string): void => {
+        const call = pending.get(id);
+        if (!call) return;
+        pending.delete(id);
+        window.clearTimeout(call.timer);
+        try {
+            const parsed: unknown = JSON.parse(payload);
+            if (typeof parsed !== 'object' || parsed === null) throw new Error('Invalid runtime reply');
+            const reply = parsed as RuntimeReply;
+            if (!reply.ok) throw new Error(reply.error ?? 'OpenHarmony runtime call failed');
+            call.resolve(reply.text ?? reply.data);
+        } catch (error) {
+            call.reject(error);
+        }
+    };
+
+    // Frontends that call window.wails.invoke directly need the same bridge.
+    if (!hostWindow.wails) hostWindow.wails = {};
+    if (!hostWindow.wails.invoke) hostWindow.wails.invoke = host.invoke.bind(host);
+
+    detectedOpenHarmonyTransport = {
+        call(objectID, method, windowName, args) {
+            const id = String(++nextID);
+            const payload = JSON.stringify({ object: objectID, method, windowName, args, clientId });
+            const { promise, resolve, reject } = Promise.withResolvers<unknown>();
+            const timer = window.setTimeout(() => {
+                pending.delete(id);
+                reject(new Error('OpenHarmony runtime call timed out'));
+            }, 15000);
+            pending.set(id, { resolve, reject, timer });
+            if (!host.request(session, id, payload)) {
+                pending.delete(id);
+                window.clearTimeout(timer);
+                reject(new Error('OpenHarmony bridge unavailable'));
+            }
+            return promise;
+        },
+    };
+    return detectedOpenHarmonyTransport;
+}
+
+
 /**
  * Creates a new runtime caller with specified ID.
  *
@@ -131,9 +224,15 @@ export function newRuntimeCaller(object: number, windowName: string = '') {
 }
 
 async function runtimeCallWithID(objectID: number, method: number, windowName: string, args: any): Promise<any> {
-    // Use custom transport if available
+    // An explicit custom transport always wins. On OpenHarmony the injected
+    // ArkTS bridge is the default because POST request bodies are not exposed
+    // by onInterceptRequest.
     if (customTransport) {
         return customTransport.call(objectID, method, windowName, args);
+    }
+    const openHarmony = getOpenHarmonyTransport();
+    if (openHarmony) {
+        return openHarmony.call(objectID, method, windowName, args);
     }
 
     // Default HTTP fetch transport

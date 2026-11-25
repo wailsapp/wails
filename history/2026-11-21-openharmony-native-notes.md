@@ -247,12 +247,13 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 ## 12. 原生后端缺陷复查与首批修复（2026-11-25）
 
-完整 diff 审查后确认并修复两项 P1：
+完整 diff 审查后确认并修复三项 P1：
 
 1. **对话框/文件选择器回调断链**：Go 以 `callID=0` 发送 `showMessageDialog/showFilePicker`，ArkTS 的 `wailsBridgeResult` 对 0 直接丢弃；三个 Go 回调虽导出但未注册。现在 `main_openharmony.go` 增加 `WailsDialogResult/WailsFilePickerResult/WailsFilePickerDone`，`napi_init.cpp` 注册 `dialogResult/filePickerResult/filePickerDone`，`WailsBridge.ets` 改用 `args.id` 走这些原生回调，不再走 `callId=0` 回包。
 2. **事件生成器不认识 openharmony**：`tasks/events/generate.go` 增加 `openharmony` 分支与 TS 事件段；`events.txt` 为 OHOS 13 条和末尾 5 条 common 事件钉住 ID（1300-1312 / 1287-1291），重新生成后 `events.go` 的 ID 与手写版本完全一致，`event_types.ts` 补齐 Openharmony 段。
+3. **标准前端 transport（用户选"改上游 runtime"方案）**：`@wailsio/runtime/src/runtime.ts` 检测 `window.wailsOpenHarmony`，用 `wailsOpenHarmonySession/Resolve` + `host.request` 作为 OpenHarmony 默认 transport；显式 `setTransport` 仍优先。`bundledassets/runtime.js` 与 `runtime.debug.js` 已用 Vite 重新生成。新增 `openharmony_transport.test.js`，全套 1209 个 vitest 通过。
 
-复验：CLI 编译通过；`wails3 build -targets openharmony/amd64 -formats hap` 成功（11.9 MiB）。仍未解决的一项 P1：API 26 的 `onInterceptRequest` 没有读取 POST body 的接口，标准 Wails runtime 默认走 `POST /wails/runtime`，因此官方前端模板的绑定调用仍会超时；M3 手写前端靠自建 transport 绕过，不能代表通用前端可用。该项需在"HTML 注入 bootstrap"与"改上游 runtime 原生支持 OHOS transport"之间选方案。其他审查发现（屏幕/剪贴板/日志字段不匹配、生命周期事件无调用方、测试标签遗漏等）尚未修复。
+复验：CLI 编译通过；`wails3 build -targets openharmony/amd64 -formats hap` 成功（11.9 MiB）。三项 P1 均已修，但设备侧仍未验（`hdc list targets` 空），不宣称端到端 PASS。其他审查发现（屏幕/剪贴板/日志字段不匹配、生命周期事件无调用方、测试标签遗漏等）尚未修复。
 
 ## 参考资料
 
