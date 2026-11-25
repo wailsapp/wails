@@ -260,12 +260,12 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 并行审查后把“接了但错”和“能力未实现”分开。已修的确定性错误共六类：剪贴板读取把 `{"text":...}` 直接当文本返回（现在 Go 解包）；`getScreens` 收到的字段名不匹配导致永远走假尺寸（现在 ArkTS 返回 `widthPx/heightPx/inset*`，不再伪造 393x873）；`isDarkMode` 只认裸 `true` 而 ArkTS 回 JSON（现在按 `{dark}` 解包并读取 ability config）；日志 Go 发 `msg` 而 ArkTS 读 `message`（现在字段统一，日志带 level）；消息对话框只显示主按钮与硬编码 Cancel（现在最多三个真实按钮，索引直接回传，越界/取消为 -1）；生命周期与页面事件导出无人调用（现在 NAPI 注册 `abilityStarted/Resumed/Paused/Stopped/lowMemory/pageStarted/pageFinished/emitEvent/emitSystemEvent/shutdown`，EntryAbility 与 Web 组件在真实回调中调用）。读取剪贴板需要 `ohos.permission.READ_PASTEBOARD`，模板与 M3 工程已声明带 reason/usedScene 的 user_grant 权限。
 
-**为什么仍有不支持项**：这些不是“忘了加一行 case”，而是阶段范围与平台能力的边界。
+**为什么仍有不支持项**：这些不是“忘了加 case”，而是阶段范围。多数能力在 OpenHarmony 侧有对应 `@ohos` API（见资料包评估文档 A 类），属于**未实现/未验**，不是实现不了；只有系统托盘、自定义窗口 chrome、桌面式多窗口、打印等 B 类才是平台天然不支持。本轮模拟器缺的是验收条件，不是 API 本身。
 
 | 类别 | 例子 | 不实现的原因 |
 |---|---|---|
-| 需要硬件/账号/后台服务 | 定位、拍照/录像、前台服务、安全存储 | 模拟器没有对应硬件或业务服务；需要独立权限、凭据与生命周期管理，已超出“本地 origin + 绑定 + 事件”的验收范围 |
-| 需要系统设置或更深的 UI 钩子 | 手电筒、亮度、方向、状态栏、通知、语音、运动/接近、键盘监听、屏保、保持唤醒 | 现有 shell 只提供 ArkWeb 宿主与桥；这些 API 要么是 user_grant 系统设置，要么需要独立后台任务，当前仅回 ACK 避免卡住调用方，不等于实现成功 |
+| 需要独立权限/硬件/后台服务 | 定位、拍照/录像、前台服务、安全存储 | OpenHarmony 有对应 API；本轮模拟器不提供相应硬件或服务，无法端到端验收。当前属于“未实现 + 未验”，不是“实现不了” |
+| 需要系统设置或更深的 UI 钩子 | 手电筒、亮度、方向、状态栏、通知、语音、运动/接近、键盘监听、屏保、保持唤醒 | 有对应系统 API，但需要 user_grant 或独立后台任务；本轮未实现，只回 ACK 避免卡住调用方，不等于实现成功 |
 | 设备信息/编辑扩展 getter | `getAppInfoJson`、`getSafeAreaJson`、剪贴板编辑、存储/电源/网络详情 | 沿用默认 display/device 桩，Web 文本编辑没有 IME/菜单钩子；没有真实数据来源时返回假值是更坏的选择 |
 | 系统事件接收器 | 电量、网络、主题、锁屏 | Go 侧已有事件类型与 `WailsOhNativeEmitSystemEvent` 入口，但 ArkTS 侧未注册对应系统观察者；生命周期与页面事件已经接通，不能把系统事件也算已通过 |
 
