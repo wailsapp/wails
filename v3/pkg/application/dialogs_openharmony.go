@@ -156,12 +156,36 @@ func openharmonyFilePickerDone(callbackID uint) {
 
 // Save dialogs
 
-type openharmonySaveFileDialog struct{}
+type openharmonySaveFileDialog struct {
+	dialog *SaveFileDialogStruct
+}
 
-func newSaveFileDialogImpl(_ *SaveFileDialogStruct) saveFileDialogImpl {
-	return &openharmonySaveFileDialog{}
+func newSaveFileDialogImpl(d *SaveFileDialogStruct) saveFileDialogImpl {
+	return &openharmonySaveFileDialog{dialog: d}
 }
 
 func (d *openharmonySaveFileDialog) show() (chan string, error) {
-	return nil, fmt.Errorf("save file dialogs are not supported on OHOS: write the file inside the app sandbox instead")
+	results := make(chan string, 1)
+
+	openharmonyFileDialogsLock.Lock()
+	id := d.dialog.id
+	openharmonyFileResponses[id] = results
+	openharmonyFileDialogsLock.Unlock()
+
+	filters := make([]string, 0, len(d.dialog.filters))
+	for _, filter := range d.dialog.filters {
+		filters = append(filters, filter.Pattern)
+	}
+	optionsJSON, _ := json.Marshal(struct {
+		Title    string   `json:"title"`
+		Filename string   `json:"filename"`
+		Filters  []string `json:"filters"`
+	}{
+		Title:    d.dialog.title,
+		Filename: d.dialog.filename,
+		Filters:  filters,
+	})
+
+	ohBridgeVoidIntString("saveFilePicker", int(id), string(optionsJSON))
+	return results, nil
 }

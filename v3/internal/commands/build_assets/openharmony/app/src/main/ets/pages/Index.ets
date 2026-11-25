@@ -14,17 +14,13 @@
 import * as native from 'libentry.so';
 import { webview } from '@kit.ArkWeb';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { BusinessError } from '@kit.BasicServicesKit';
 
-import { setPageDispatcher, setWebController, dispatchBridge } from '../bridge/WailsBridge';
+import { setPageDispatcher, setWebController, setCurrentURL, dispatchBridge } from '../bridge/WailsBridge';
 
 const DOMAIN: number = 0x0000;
 const TAG: string = 'Wails';
 const ORIGIN: string = 'https://wails.localhost/';
 
-interface ScriptCommand {
-  script: string;
-}
 
 /**
  * Process-wide bridge state.
@@ -86,47 +82,15 @@ struct Index {
     this.dispatch(id, name, payload);
   };
 
-  private reply(id: number, value: string): void {
-    if (id > 0 && this.active) {
-      native.result(id, value);
-    }
-  }
-
   /**
-   * Route one Go -> ArkTS command.
-   *
-   * Commands that need the Web view (script execution, asset access) are
-   * handled here; everything else is forwarded to the system bridge.
+   * Route one Go -> ArkTS command. The bridge owns every command so the
+   * template and the device-test shell run the same implementations.
    */
   private dispatch(id: number, name: string, payload: string): void {
     if (!this.active) {
       return;
     }
-    try {
-      if (name === 'executeJavaScript') {
-        const command = JSON.parse(payload) as ScriptCommand;
-        this.controller.runJavaScript(command.script).then((value: string): void => {
-          this.reply(id, value);
-        }).catch((error: BusinessError): void => {
-          hilog.error(DOMAIN, TAG, 'JavaScript error: %{public}s', error.message);
-          this.reply(id, '');
-        });
-        return;
-      }
-      if (name === 'getScreenInfoJson') {
-        this.reply(id, '{}');
-        return;
-      }
-      if (name === 'runOnMainThread') {
-        this.reply(id, '');
-        return;
-      }
-      hilog.debug(DOMAIN, TAG, 'forwarding %{public}s to the system bridge', name);
-      this.reply(id, '');
-    } catch (error) {
-      hilog.error(DOMAIN, TAG, 'Dispatcher error: %{public}s', String(error));
-      this.reply(id, '');
-    }
+    dispatchBridge(id, name, payload);
   }
 
   aboutToAppear(): void {
@@ -217,6 +181,7 @@ struct Index {
           .domStorageAccess(true)
           .fileAccess(false)
           .allowWindowOpenMethod(false)
+          .zoomAccess(true)
           .javaScriptProxy({
             object: this.proxy,
             name: 'wailsOpenHarmony',
@@ -225,6 +190,7 @@ struct Index {
           })
           .onControllerAttached((): void => {
             setWebController(this.controller);
+            setCurrentURL(ORIGIN);
             hilog.info(DOMAIN, TAG, 'Controller attached; loading local origin');
             this.controller.loadUrl(ORIGIN);
           })
@@ -236,6 +202,7 @@ struct Index {
           })
           .onPageBegin((event: OnPageBeginEvent): void => {
             hilog.info(DOMAIN, TAG, 'Page loading');
+            setCurrentURL(event === undefined ? ORIGIN : event.url);
             native.pageStarted(event === undefined ? ORIGIN : event.url);
           })
           .onPageEnd((event: OnPageEndEvent): void => {

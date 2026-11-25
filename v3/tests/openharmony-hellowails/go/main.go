@@ -38,6 +38,22 @@ func (*GreetService) LifecycleProbe(phase string) string {
 	return phase
 }
 
+type NativeProbe struct{}
+
+// AccentColor exercises the ArkTS resource-manager bridge with a real reply.
+func (*NativeProbe) AccentColor() string { return application.Get().Env.GetAccentColor() }
+
+// AppInfo exercises an OpenHarmony info getter with a real reply.
+func (*NativeProbe) AppInfo() string { return application.Openharmony.AppInfoJSON() }
+
+// SecureRoundTrip exercises asset storage through the ArkTS bridge.
+func (*NativeProbe) SecureRoundTrip() string {
+	application.Openharmony.SecureSet("m3-native-key", "m3-native-value")
+	value, _ := application.Openharmony.SecureGet("m3-native-key")
+	application.Openharmony.SecureDelete("m3-native-key")
+	return value
+}
+
 //export WailsBridgeOpen
 func WailsBridgeOpen(env, info unsafe.Pointer) unsafe.Pointer {
 	return application.WailsOhNativeInit(env, info)
@@ -63,7 +79,7 @@ func WailsStart() {
 		app := application.New(application.Options{
 			Name:     "Native HelloWails",
 			Assets:   application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
-			Services: []application.Service{application.NewService(&GreetService{})},
+			Services: []application.Service{application.NewService(&GreetService{}), application.NewService(&NativeProbe{})},
 		})
 		window = app.Window.NewWithOptions(application.WebviewWindowOptions{Name: "main"})
 		go func() {
@@ -151,6 +167,14 @@ func WailsRunMain(id C.uint) { application.WailsOhNativeMainThreadCallback(uint(
 func WailsDialogResult(id C.uint, buttonIndex C.int) {
 	application.WailsOhNativeDialogCallback(uint(id), int(buttonIndex))
 }
+
+//export WailsFilePickerResult
+func WailsFilePickerResult(id C.uint, path *C.char) {
+	application.WailsOhNativeFilePickerResult(uint(id), C.GoString(path))
+}
+
+//export WailsFilePickerDone
+func WailsFilePickerDone(id C.uint) { application.WailsOhNativeFilePickerDone(uint(id)) }
 
 //export WailsAbilityStarted
 func WailsAbilityStarted() { application.WailsOhNativeOnStart() }

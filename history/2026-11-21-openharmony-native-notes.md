@@ -260,20 +260,51 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 并行审查后把“接了但错”和“能力未实现”分开。已修的确定性错误共六类：剪贴板读取把 `{"text":...}` 直接当文本返回（现在 Go 解包）；`getScreens` 收到的字段名不匹配导致永远走假尺寸（现在 ArkTS 返回 `widthPx/heightPx/inset*`，不再伪造 393x873）；`isDarkMode` 只认裸 `true` 而 ArkTS 回 JSON（现在按 `{dark}` 解包并读取 ability config）；日志 Go 发 `msg` 而 ArkTS 读 `message`（现在字段统一，日志带 level）；消息对话框只显示主按钮与硬编码 Cancel（现在最多三个真实按钮，索引直接回传，越界/取消为 -1）；生命周期与页面事件导出无人调用（现在 NAPI 注册 `abilityStarted/Resumed/Paused/Stopped/lowMemory/pageStarted/pageFinished/emitEvent/emitSystemEvent/shutdown`，EntryAbility 与 Web 组件在真实回调中调用）。读取剪贴板需要 `ohos.permission.READ_PASTEBOARD`，模板与 M3 工程已声明带 reason/usedScene 的 user_grant 权限。
 
-**为什么仍有不支持项**：这些不是“忘了加 case”，而是阶段范围。多数能力在 OpenHarmony 侧有对应 `@ohos` API（见资料包评估文档 A 类），属于**未实现/未验**，不是实现不了；只有系统托盘、自定义窗口 chrome、桌面式多窗口、打印等 B 类才是平台天然不支持。本轮模拟器缺的是验收条件，不是 API 本身。
+**当前支持状态（2026-11-25 同日补测后；完整边界与复现命令见第 14 节）**：本轮第二轮修复时下表把定位/拍照/前台服务/安全存储、系统设置类、扩展 getter 与系统事件接收器归为“未实现/未验、只回 ACK”；同一天后续已在 Go+ArkTS 接成真实实现，x86_64 模拟器给出 `M3 API PASS`。下表只保留**仍不支持/近似**与**未做设备验证**的边界，不再把已实现能力写成未实现。
 
-| 类别 | 例子 | 不实现的原因 |
+| 类别 | 例子 | 当前边界 |
 |---|---|---|
-| 需要独立权限/硬件/后台服务 | 定位、拍照/录像、前台服务、安全存储 | OpenHarmony 有对应 API；本轮模拟器不提供相应硬件或服务，无法端到端验收。当前属于“未实现 + 未验”，不是“实现不了” |
-| 需要系统设置或更深的 UI 钩子 | 手电筒、亮度、方向、状态栏、通知、语音、运动/接近、键盘监听、屏保、保持唤醒 | 有对应系统 API，但需要 user_grant 或独立后台任务；本轮未实现，只回 ACK 避免卡住调用方，不等于实现成功 |
-| 设备信息/编辑扩展 getter | `getAppInfoJson`、`getSafeAreaJson`、剪贴板编辑、存储/电源/网络详情 | 沿用默认 display/device 桩，Web 文本编辑没有 IME/菜单钩子；没有真实数据来源时返回假值是更坏的选择 |
-| 系统事件接收器 | 电量、网络、主题、锁屏 | Go 侧已有事件类型与 `WailsOhNativeEmitSystemEvent` 入口，但 ArkTS 侧未注册对应系统观察者；生命周期与页面事件已经接通，不能把系统事件也算已通过 |
+| 明确不支持或近似回复（已实现显式回复） | setAlwaysOnTop、setIcon、share、statusBar、notification、haptic、auth、motion、proximity、keyboard、screenProtect、torch、speak；hide=最小化、zoomReset 设 1.0 但回 unsupported | 不伪装成功，ACK/近似不等于实现 |
+| 已实现但硬件/权限路径未设备验证 | 定位、拍照、前台服务、安全存储 | 权限已声明并 user_grant 申请；未验硬件路径，不宣称设备 PASS |
+| 设备约束 | setTitle 已派发 | 模拟器以 `This window state is abnormal` 拒绝，非实现失败 |
+| 平台天然不支持（B 类） | 系统托盘、自定义 chrome、桌面多窗口、打印 | 保持“OHOS 不支持清单” |
 
-这条边界必须写进交付说明：ACK 与未接 case 是**未实现**，不是成功策略。舞台/前后台/页面事件是真实回调驱动，初始 `AbilityCreated` 仍由 Go 启动处发出。
+舞台/前后台/页面事件为真实回调驱动，初始 `AbilityCreated` 仍由 Go 启动处发出；ACK 与未接 case 不能报成功。
 
 复验：CLI 当前源码编译通过；用当前 CLI 生成的产品化工程 `hvigorw assembleHap` 成功（HAP 含三个 x86_64 so，模板 ArkTS 无错误）。M3 的 `c-shared` 严格 `--no-undefined` 链接通过；`hvigorw assembleHap` 成功，HAP 中含 x86_64 `libentry.so` 与 `libhomecast_go.so`，bundle 仍为 `com.wails.nativehello`。当晚模拟器上线后补做设备验收：先卸载六个旧测试包（`com.demo.hmdemo`、`com.homecast.music`、`com.wails.harmonydemo`、`com.wails.hello`、`com.wails.nativebridgeprobe`、`com.wails.ohe2e`），仅保留 `com.wails.nativehello`；首次冷启动复现 `appfreeze`，清日志重试 PID `10979` 拿到 `M3 PASS`。随后 `smoke.py` 重建安装并跑 refresh/rebuild/stage 三例，PID `11790`/`14673`/`15095` 全部 `M3 PASS` + `M4 PASS`，会话 ID 在重载/重建后变化，复用请求 ID 回包指向新文档。**设备 PASS 成立**，但仅限这台 x86_64 OpenHarmony 模拟器。
 
-**精确计数（2026-11-25，静态源码口径）**：主线必须实现的平台接口是 **138 个**（platformApp 17、webviewWindowImpl 83、systemTray 15、menuItem 8、clipboard 2、dialog 3、menu 1、lock 3、autostart 3、globalShortcut 3）。资料包评估文档里的“139 个 no-op”不成立：`application_server.go` 实际 127 个方法定义、其中 119 个是 stub；138 是接口总数，加上被排除的内部 `setupCommonEvents` 才是 139。OpenHarmony 后端对这 138 个接口实现了 **130 个**（8 个 menuItem 方法完全没有 OH 实现），但其中只有 **29 个是真正功能性实现**（app 11、window 14、clipboard 2、dialog 2），**101 个是 no-op/常量/错误桩**。桥命令另算：Go 发出 **53** 个不同命令，ArkTS 有 **30** 个 case，其中 **11** 个真实实现、**19** 个 ACK/桩、**23** 个完全无 case；NAPI 注册 22 个导出，ArkTS 实际调用 18 个。结论：核心链路已有设备 PASS，但只覆盖这些真实实现；101 个桩、23 个无 case 命令与 4 个未调用 NAPI 导出不在 PASS 范围内。
+**精确计数（第二轮修复时点的静态快照，非当前状态；当前实现与设备验收见第 14 节）**：主线必须实现的平台接口是 **138 个**（platformApp 17、webviewWindowImpl 83、systemTray 15、menuItem 8、clipboard 2、dialog 3、menu 1、lock 3、autostart 3、globalShortcut 3）。资料包评估文档里的“139 个 no-op”不成立：`application_server.go` 实际 127 个方法定义、其中 119 个是 stub；138 是接口总数，加上被排除的内部 `setupCommonEvents` 才是 139。OpenHarmony 后端对这 138 个接口实现了 **130 个**（8 个 menuItem 方法完全没有 OH 实现），但其中只有 **29 个是真正功能性实现**（app 11、window 14、clipboard 2、dialog 2），**101 个是 no-op/常量/错误桩**。桥命令另算：Go 发出 **53** 个不同命令，ArkTS 有 **30** 个 case，其中 **11** 个真实实现、**19** 个 ACK/桩、**23** 个完全无 case；NAPI 注册 22 个导出，ArkTS 实际调用 18 个。结论：核心链路已有设备 PASS，但只覆盖这些真实实现；101 个桩、23 个无 case 命令与 4 个未调用 NAPI 导出不在 PASS 范围内。
+
+## 14. A 类/移动 API 的实现与设备验收（2026-11-25，x86_64 模拟器 API 26）
+
+第 13 节是“实现前”分类；同一天后续在 Go+ArkTS 把下列能力接成真实实现，不再只是 ACK：
+
+- 窗口 A 类命令：setTitle / setSize / setPosition / setBounds / center / fullscreen / unfullscreen / minimise / unminimise / maximise / unmaximise / close / focus / show / hide / setResizable / setBackgroundColour。
+- 缩放：setZoom / getZoom / zoomIn / zoomOut / zoomReset；页面内容：setURL / reload / forceReload / setHTML；剪贴板/编辑命令、info getter、对话框与 saveFilePicker。
+- 移动系统能力：定位、拍照、安全存储、前台服务；系统事件：电量、网络、主题、屏幕（Go 侧事件类型 + `WailsOhNativeEmitSystemEvent` 入口，ArkTS 侧系统观察者已注册）。
+- 权限已声明、带字符串 reason 并在运行时 user_grant 申请：`APPROXIMATELY_LOCATION`、`LOCATION`、`CAMERA`、`GET_NETWORK_INFO`、`KEEP_BACKGROUND_RUNNING`。
+
+**设备证据**：PID `9199` 日志 `M3 PASS: local HTML/JS/CSS, Greet and Go event` 与 `M3 API PASS zoom=1->1.1 accent=#0a59f7 secure=m3-native-value`。Go 包构建、M3 `c-shared --no-undefined` 链接、`hvigor assembleHap` 均通过（仍有平台能力/废弃 API 警告）；ArkWeb 仅用本地 origin，`netstat` 无应用自启的本地 TCP 监听。
+
+**两个真实 bug 已修**：`wails_oh_id_arg` 原要求 `argc==1`，但 NAPI 回调的 `argc` 是实际参数个数（此处为 2），导致所有桥回包被丢弃，现改为 `argc>0`；`getZoom` 改用 Go 侧镜像 `zoomLevel`，因为阻塞式桥调用不能跑在 ArkTS 主线程，控制器缩放仍由 ArkTS 持有。
+
+**精确边界（显式回复“不支持/近似”，不伪装成功）**：setAlwaysOnTop、setIcon、share、statusBar、notification、haptic、auth、motion、proximity、keyboard、screenProtect、torch、speak 为不支持/近似回复；`hide` 实为最小化（非真隐藏）；`zoomReset` 回显式 unsupported 但把缩放设为 1.0。模拟器上 `setTitle` 已派发，但被以 `This window state is abnormal` 拒绝（设备约束，非实现失败）。
+
+**未做设备验证**：arm64 真机、商用 HarmonyOS、多窗口，以及 camera/location/foreground service 的硬件与权限路径、完整 B 类桌面 API（托盘/菜单/chrome/打印等）。这些路径已实现但未在硬件上验，不宣称设备 PASS。
+
+复现 API 探针（工程 `v3/tests/openharmony-hellowails/`，bundle `com.wails.nativehello`；环境为 x86_64 OpenHarmony Go `go1.27.4-hmos-devel` + OHOS Clang `--target=x86_64-linux-ohos`，HDC 目标 `127.0.0.1:5555`）：
+
+```bash
+cd v3/tests/openharmony-hellowails/go
+go build -mod=mod -buildmode=c-shared -ldflags=-extldflags=-Wl,--no-undefined -o ../harmony/entry/src/main/cpp/libs/x86_64/libhomecast_go.so .
+cp libhomecast_go.h ../harmony/entry/src/main/cpp/include/
+cd ../harmony
+hvigorw.bat assembleHap --no-daemon
+hdc -t 127.0.0.1:5555 install entry/build/default/outputs/default/entry-default-unsigned.hap
+hdc -t 127.0.0.1:5555 shell aa start -b com.wails.nativehello -a EntryAbility --ps wailsLifecycle api
+hdc -t 127.0.0.1:5555 shell hilog -x -T WailsM3
+# 期望：M3 PASS 与 M3 API PASS zoom=1->1.1 accent=#0a59f7 secure=m3-native-value
+```
 
 ## 参考资料
 

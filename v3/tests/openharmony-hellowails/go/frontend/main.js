@@ -82,6 +82,29 @@ Object.defineProperty(window, 'wailsOpenHarmonySession', { value: session });
 if (!host.ready(session)) throw new Error('ArkWeb document session rejected');
 await greet();
 
+if (probe === 'api') {
+    try {
+        const zoomBefore = await runtime.Window.GetZoom();
+        await runtime.Window.SetTitle('M3 NATIVE CHECK');
+        await runtime.Window.SetBackgroundColour(20, 34, 52, 255);
+        await runtime.Window.ZoomIn();
+        const zoomAfter = await runtime.Window.GetZoom();
+        await runtime.Window.ZoomReset();
+        const appInfo = await runtime.Call.ByName('main.NativeProbe.AppInfo');
+        const accent = await runtime.Call.ByName('main.NativeProbe.AccentColor');
+        const secure = await runtime.Call.ByName('main.NativeProbe.SecureRoundTrip');
+        if (!(zoomAfter > zoomBefore)) {
+            throw new Error(`zoom ${zoomBefore} -> ${zoomAfter}`);
+        }
+        if (!accent || !appInfo || secure !== 'm3-native-value') {
+            throw new Error(`accent=${accent}, appInfo=${appInfo}, secure=${secure}`);
+        }
+        host.report(`M3 API PASS zoom=${zoomBefore}->${zoomAfter} accent=${accent} secure=${secure}`);
+    } catch (error) {
+        host.report(`M3 API FAIL: ${error}`);
+    }
+}
+
 if (probe === 'refresh' || probe === 'rebuild' || probe === 'stage') {
     host.report(`M4 ${probe} ${phase} session=${session} id=lifecycle-reused-id`);
     reuseID = true;

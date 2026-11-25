@@ -91,7 +91,7 @@ static char *wails_oh_get_string(napi_env env, napi_value value) {
 static int wails_oh_id_arg(napi_env env, napi_callback_info info, uint32_t *out) {
     size_t argc = 1;
     napi_value arg;
-    return napi_get_cb_info(env, info, &argc, &arg, NULL, NULL) == napi_ok && argc == 1 &&
+    return napi_get_cb_info(env, info, &argc, &arg, NULL, NULL) == napi_ok && argc > 0 &&
         napi_get_value_uint32(env, arg, out) == napi_ok;
 }
 

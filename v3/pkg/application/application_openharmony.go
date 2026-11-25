@@ -2,7 +2,10 @@
 
 package application
 
-import "encoding/json"
+import (
+	"encoding/base64"
+	"encoding/json"
+)
 
 // openharmonyApp mirrors androidApp: the OHOS lifecycle is driven by the ArkTS
 // ability, which owns the JS thread and the ArkWeb component. Go provides the
@@ -38,7 +41,19 @@ func (a *openharmonyApp) name() string { return a.parent.options.Name }
 
 func (a *openharmonyApp) GetFlags(_ Options) map[string]any { return nil }
 
-func (a *openharmonyApp) getAccentColor() string { return "" }
+func (a *openharmonyApp) getAccentColor() string {
+	res, ok := ohBridgeString("getAccentColor", "{}")
+	if !ok || res == "" {
+		return ""
+	}
+	var result struct {
+		Color string `json:"color"`
+	}
+	if err := json.Unmarshal([]byte(res), &result); err != nil {
+		return ""
+	}
+	return result.Color
+}
 
 func (a *openharmonyApp) getCurrentWindowID() uint { return 0 }
 
@@ -64,7 +79,12 @@ func (a *openharmonyApp) isWindows() bool { return false }
 
 func (a *openharmonyApp) on(eventID uint) { registerOpenharmonyListener(eventID) }
 
-func (a *openharmonyApp) setIcon(_ []byte) {}
+func (a *openharmonyApp) setIcon(icon []byte) {
+	payload, _ := json.Marshal(struct {
+		Icon string `json:"icon"`
+	}{Icon: base64.StdEncoding.EncodeToString(icon)})
+	ohBridgeVoid("setIcon", string(payload))
+}
 
 func (a *openharmonyApp) showAboutDialog(name, description string, _ []byte) {
 	payload, _ := json.Marshal(struct {

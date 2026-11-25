@@ -122,6 +122,29 @@ napi_value DialogResult(napi_env env, napi_callback_info info) {
     return Undefined(env);
 }
 
+// FilePickerResult delivers one selected path for a file dialog.
+napi_value FilePickerResult(napi_env env, napi_callback_info info) {
+    napi_value args[2];
+    size_t argc = 2;
+    uint32_t id = 0;
+    std::string path;
+    if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) == napi_ok && argc == 2 &&
+        napi_get_value_uint32(env, args[0], &id) == napi_ok && String(env, args[1], path)) {
+        WailsFilePickerResult(id, &path[0]);
+    }
+    return Undefined(env);
+}
+
+// FilePickerDone closes the pending file dialog.
+napi_value FilePickerDone(napi_env env, napi_callback_info info) {
+    napi_value arg;
+    size_t argc = 1;
+    uint32_t id = 0;
+    if (napi_get_cb_info(env, info, &argc, &arg, nullptr, nullptr) == napi_ok && argc == 1 &&
+        napi_get_value_uint32(env, arg, &id) == napi_ok) WailsFilePickerDone(id);
+    return Undefined(env);
+}
+
 napi_value AbilityStarted(napi_env env, napi_callback_info) { WailsAbilityStarted(); return Undefined(env); }
 napi_value AbilityResumed(napi_env env, napi_callback_info) { WailsAbilityResumed(); return Undefined(env); }
 napi_value AbilityPaused(napi_env env, napi_callback_info) { WailsAbilityPaused(); return Undefined(env); }
@@ -182,6 +205,8 @@ napi_value Init(napi_env env, napi_value exports) {
         {"message", nullptr, Message, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"runOnMainThread", nullptr, RunOnMainThread, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"dialogResult", nullptr, DialogResult, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"filePickerResult", nullptr, FilePickerResult, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"filePickerDone", nullptr, FilePickerDone, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"abilityStarted", nullptr, AbilityStarted, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"abilityResumed", nullptr, AbilityResumed, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"abilityPaused", nullptr, AbilityPaused, nullptr, nullptr, nullptr, napi_default, nullptr},

@@ -16,6 +16,22 @@
     {
       "name": "read_pasteboard_reason",
       "value": "读取剪贴板文本以支撑 Wails 剪贴板 API"
+    },
+    {
+      "name": "location_reason",
+      "value": "为 Wails 应用提供单次定位服务"
+    },
+    {
+      "name": "camera_reason",
+      "value": "响应 Wails 应用的拍照或录像请求"
+    },
+    {
+      "name": "network_reason",
+      "value": "向 Wails 应用上报网络连接变化"
+    },
+    {
+      "name": "background_reason",
+      "value": "在 Wails 应用有后台任务时保持其运行"
     }
   ]
 }

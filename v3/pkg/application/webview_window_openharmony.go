@@ -4,6 +4,7 @@ package application
 
 import (
 	"fmt"
+	"math"
 	"unsafe"
 )
 
@@ -12,17 +13,18 @@ import (
 // either fixed (mobile fullscreen) or delegated to the shell, exactly like
 // androidWebviewWindow. Only execJS crosses the bridge.
 type openharmonyWebviewWindow struct {
-	windowID uint32 // Wails window ID for tracking
-	parent   *WebviewWindow
+	windowID  uint32 // Wails window ID for tracking
+	parent    *WebviewWindow
+	zoomLevel float64 // mirrored from the ArkTS WebviewController zoom cache
 }
 
 func newWindowImpl(parent *WebviewWindow) *openharmonyWebviewWindow {
-	return &openharmonyWebviewWindow{parent: parent}
+	return &openharmonyWebviewWindow{parent: parent, zoomLevel: 1.0}
 }
 
-func (w *openharmonyWebviewWindow) center() {}
+func (w *openharmonyWebviewWindow) center() { ohBridgeVoid("center", "{}") }
 
-func (w *openharmonyWebviewWindow) close() {}
+func (w *openharmonyWebviewWindow) close() { ohBridgeVoid("close", "{}") }
 
 func (w *openharmonyWebviewWindow) destroy() { w.parent.markAsDestroyed() }
 
@@ -33,11 +35,11 @@ func (w *openharmonyWebviewWindow) execJS(js string) {
 
 func (w *openharmonyWebviewWindow) flash(_ bool) {}
 
-func (w *openharmonyWebviewWindow) focus() {}
+func (w *openharmonyWebviewWindow) focus() { ohBridgeVoid("focus", "{}") }
 
-func (w *openharmonyWebviewWindow) forceReload() {}
+func (w *openharmonyWebviewWindow) forceReload() { ohBridgeVoid("forceReload", "{}") }
 
-func (w *openharmonyWebviewWindow) fullscreen() {}
+func (w *openharmonyWebviewWindow) fullscreen() { ohBridgeVoid("fullscreen", "{}") }
 
 func (w *openharmonyWebviewWindow) getScreen() (*Screen, error) {
 	screens, err := getScreens()
@@ -50,7 +52,9 @@ func (w *openharmonyWebviewWindow) getScreen() (*Screen, error) {
 	return screens[0], nil
 }
 
-func (w *openharmonyWebviewWindow) getZoom() float64 { return 1.0 }
+func (w *openharmonyWebviewWindow) getZoom() float64 {
+	return w.zoomLevel
+}
 
 func (w *openharmonyWebviewWindow) handleDragAndDropMessage(_ string) {}
 
@@ -61,7 +65,7 @@ func (w *openharmonyWebviewWindow) height() int {
 	return h
 }
 
-func (w *openharmonyWebviewWindow) hide() {}
+func (w *openharmonyWebviewWindow) hide() { ohBridgeVoid("hide", "{}") }
 
 func (w *openharmonyWebviewWindow) isAlwaysOnTop() bool { return false }
 
@@ -81,9 +85,9 @@ func (w *openharmonyWebviewWindow) isNormal() bool { return false }
 
 func (w *openharmonyWebviewWindow) isVisible() bool { return true }
 
-func (w *openharmonyWebviewWindow) maximise() {}
+func (w *openharmonyWebviewWindow) maximise() { ohBridgeVoid("maximise", "{}") }
 
-func (w *openharmonyWebviewWindow) minimise() {}
+func (w *openharmonyWebviewWindow) minimise() { ohBridgeVoid("minimise", "{}") }
 
 func (w *openharmonyWebviewWindow) openContextMenu(_ *Menu, _ *ContextMenuData) {}
 
@@ -91,7 +95,7 @@ func (w *openharmonyWebviewWindow) openDevTools() {}
 
 func (w *openharmonyWebviewWindow) print() error { return nil }
 
-func (w *openharmonyWebviewWindow) reload() {}
+func (w *openharmonyWebviewWindow) reload() { ohBridgeVoid("reload", "{}") }
 
 func (w *openharmonyWebviewWindow) relativePosition() (int, int) { return 0, 0 }
 
@@ -101,9 +105,18 @@ func (w *openharmonyWebviewWindow) restore() {}
 
 func (w *openharmonyWebviewWindow) setAbsolutePosition(_ int, _ int) {}
 
-func (w *openharmonyWebviewWindow) setAlwaysOnTop(_ bool) {}
+func (w *openharmonyWebviewWindow) setAlwaysOnTop(value bool) {
+	ohBridgeVoid("setAlwaysOnTop", string(mustJSON(map[string]any{"value": value})))
+}
 
-func (w *openharmonyWebviewWindow) setBackgroundColour(_ RGBA) {}
+func (w *openharmonyWebviewWindow) setBackgroundColour(colour RGBA) {
+	ohBridgeVoid("setBackgroundColour", string(mustJSON(map[string]any{
+		"r": colour.Red,
+		"g": colour.Green,
+		"b": colour.Blue,
+		"a": colour.Alpha,
+	})))
+}
 
 func (w *openharmonyWebviewWindow) setEnabled(_ bool) {}
 
@@ -117,15 +130,24 @@ func (w *openharmonyWebviewWindow) setMinSize(_ int, _ int) {}
 
 func (w *openharmonyWebviewWindow) setRelativePosition(_ int, _ int) {}
 
-func (w *openharmonyWebviewWindow) setResizable(_ bool) {}
+func (w *openharmonyWebviewWindow) setResizable(value bool) {
+	ohBridgeVoid("setResizable", string(mustJSON(map[string]any{"value": value})))
+}
 
-func (w *openharmonyWebviewWindow) setSize(_ int, _ int) {}
+func (w *openharmonyWebviewWindow) setSize(width, height int) {
+	ohBridgeVoid("setSize", string(mustJSON(map[string]any{"width": width, "height": height})))
+}
 
-func (w *openharmonyWebviewWindow) setTitle(_ string) {}
+func (w *openharmonyWebviewWindow) setTitle(title string) {
+	ohBridgeVoid("setTitle", jsonStringField("title", title))
+}
 
-func (w *openharmonyWebviewWindow) setZoom(_ float64) {}
+func (w *openharmonyWebviewWindow) setZoom(zoom float64) {
+	w.zoomLevel = zoom
+	ohBridgeVoid("setZoom", string(mustJSON(map[string]any{"zoom": zoom})))
+}
 
-func (w *openharmonyWebviewWindow) show() {}
+func (w *openharmonyWebviewWindow) show() { ohBridgeVoid("show", "{}") }
 
 func (w *openharmonyWebviewWindow) size() (int, int) {
 	if s, err := w.getScreen(); err == nil && s != nil {
@@ -136,11 +158,11 @@ func (w *openharmonyWebviewWindow) size() (int, int) {
 
 func (w *openharmonyWebviewWindow) toggleDevTools() {}
 
-func (w *openharmonyWebviewWindow) unfullscreen() {}
+func (w *openharmonyWebviewWindow) unfullscreen() { ohBridgeVoid("unfullscreen", "{}") }
 
-func (w *openharmonyWebviewWindow) unmaximise() {}
+func (w *openharmonyWebviewWindow) unmaximise() { ohBridgeVoid("unmaximise", "{}") }
 
-func (w *openharmonyWebviewWindow) unminimise() {}
+func (w *openharmonyWebviewWindow) unminimise() { ohBridgeVoid("unminimise", "{}") }
 
 func (w *openharmonyWebviewWindow) width() int {
 	wi, _ := w.size()
@@ -149,11 +171,20 @@ func (w *openharmonyWebviewWindow) width() int {
 
 func (w *openharmonyWebviewWindow) zoom() {}
 
-func (w *openharmonyWebviewWindow) zoomIn() {}
+func (w *openharmonyWebviewWindow) zoomIn() {
+	w.zoomLevel += 0.1
+	ohBridgeVoid("zoomIn", "{}")
+}
 
-func (w *openharmonyWebviewWindow) zoomOut() {}
+func (w *openharmonyWebviewWindow) zoomOut() {
+	w.zoomLevel = math.Max(0.1, w.zoomLevel-0.1)
+	ohBridgeVoid("zoomOut", "{}")
+}
 
-func (w *openharmonyWebviewWindow) zoomReset() {}
+func (w *openharmonyWebviewWindow) zoomReset() {
+	w.zoomLevel = 1.0
+	ohBridgeVoid("zoomReset", "{}")
+}
 
 func (w *openharmonyWebviewWindow) setParent(_ *WebviewWindow) error { return nil }
 
@@ -231,7 +262,14 @@ func (w *openharmonyWebviewWindow) position() (int, int) { return 0, 0 }
 
 func (w *openharmonyWebviewWindow) physicalBounds() Rect { return Rect{} }
 
-func (w *openharmonyWebviewWindow) setBounds(_ Rect) {}
+func (w *openharmonyWebviewWindow) setBounds(bounds Rect) {
+	ohBridgeVoid("setBounds", string(mustJSON(map[string]any{
+		"x":      bounds.X,
+		"y":      bounds.Y,
+		"width":  bounds.Width,
+		"height": bounds.Height,
+	})))
+}
 
 func (w *openharmonyWebviewWindow) setMinimiseButtonState(_ ButtonState) {}
 
@@ -243,18 +281,22 @@ func (w *openharmonyWebviewWindow) setContentProtection(_ bool) {}
 
 func (w *openharmonyWebviewWindow) setNonClientHitTestRegions(_ []nonClientHitTestRegion) {}
 
-func (w *openharmonyWebviewWindow) setHTML(_ string) {}
+func (w *openharmonyWebviewWindow) setHTML(html string) {
+	ohBridgeVoid("setHTML", jsonStringField("html", html))
+}
 
 func (w *openharmonyWebviewWindow) setMenu(_ *Menu) {}
 
 func (w *openharmonyWebviewWindow) setPhysicalBounds(_ Rect) {}
 
-func (w *openharmonyWebviewWindow) setPosition(_ int, _ int) {}
+func (w *openharmonyWebviewWindow) setPosition(x, y int) {
+	ohBridgeVoid("setPosition", string(mustJSON(map[string]any{"x": x, "y": y})))
+}
 
 func (w *openharmonyWebviewWindow) centerOnScreen(_ *Screen) {}
 
-func (w *openharmonyWebviewWindow) setURL(_ string) {
-	// Navigation is driven by the ArkTS ability (loadApplication)
+func (w *openharmonyWebviewWindow) setURL(url string) {
+	ohBridgeVoid("setURL", jsonStringField("url", url))
 }
 
 func (w *openharmonyWebviewWindow) showMenuBar() {}

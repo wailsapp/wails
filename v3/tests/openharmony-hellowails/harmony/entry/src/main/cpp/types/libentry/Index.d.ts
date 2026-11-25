@@ -26,4 +26,6 @@ export const pageStarted: (url: string) => void;
 export const pageFinished: (url: string) => void;
 export const shutdown: () => void;
 
+export const filePickerResult: (id: number, path: string) => void;
+export const filePickerDone: (id: number) => void;
 export const dialogResult: (id: number, buttonIndex: number) => void;

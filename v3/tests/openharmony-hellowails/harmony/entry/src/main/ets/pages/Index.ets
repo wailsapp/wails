@@ -1,10 +1,11 @@
 import * as native from 'libentry.so';
 import { webview } from '@kit.ArkWeb';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { display, promptAction } from '@kit.ArkUI';
-import { pasteboard } from '@kit.BasicServicesKit';
-import { BusinessError } from '@kit.BasicServicesKit';
-import { getContext } from '../common/WailsContext';
+import {
+  dispatchBridge as dispatchSystemBridge,
+  setWebController as setBridgeWebController,
+  setCurrentURL
+} from '../bridge/WailsBridge';
 
 const ORIGIN: string = 'https://wails.localhost/';
 
@@ -16,38 +17,6 @@ interface MainThreadCommand {
   id: number;
 }
 
-interface LogArgs {
-  level?: string;
-  message?: string;
-}
-
-interface DialogButton {
-  label: string;
-}
-
-interface DialogOptions {
-  title: string;
-  message: string;
-  buttons: DialogButton[];
-}
-
-interface DialogArgs {
-  id: number;
-  options: string;
-}
-
-interface ThemeConfig {
-  colorMode?: number;
-}
-
-interface ThemeContext {
-  config?: ThemeConfig;
-}
-
-interface PromptButton {
-  text: string;
-  color: string;
-}
 
 // The Go app can outlive a single stage, so the bridge belongs to the process,
 // not to a page. Pages attach their Web dispatcher and clear it on exit; the
@@ -151,11 +120,14 @@ struct Index {
     this.rebuildTimer = setTimeout((): void => {
       this.rebuildTimer = -1;
       this.controller = new webview.WebviewController();
+      setBridgeWebController(this.controller);
+      setCurrentURL(ORIGIN);
       this.runtimeReady = true;
     }, 200);
   }
   private timer: number = -1;
   private active: boolean = false;
+  private bridgeInvoked: boolean = false;
   private dispatchWeb: native.Dispatcher = (id: number, name: string, payload: string): void => {
     this.dispatch(id, name, payload);
   };
@@ -188,75 +160,18 @@ struct Index {
         });
         return;
       }
-      if (name === 'getScreenInfoJson') {
-        const current = display.getDefaultDisplaySync();
-        this.reply(id, JSON.stringify({
-          widthPx: current.width,
-          heightPx: current.height,
-          density: current.densityPixels,
-          insetTop: 0,
-          insetBottom: 0,
-          insetLeft: 0,
-          insetRight: 0
-        }));
-        return;
-      }
-      if (name === 'isDarkMode') {
-        const context = getContext() as ThemeContext;
-        const dark: boolean = context.config?.colorMode === 0;
-        this.reply(id, JSON.stringify({ dark: dark }));
-        return;
-      }
-      if (name === 'getClipboardText') {
-        const text = pasteboard.getSystemPasteboard().getDataSync().getPrimaryText();
-        this.reply(id, JSON.stringify({ text: text }));
-        return;
-      }
-      if (name === 'log') {
-        const args = JSON.parse(payload) as LogArgs;
-        hilog.info(0x0, 'WailsM3', '[%{public}s] %{public}s', args.level ?? 'INFO', args.message ?? '');
-        this.reply(id, '');
-        return;
-      }
-      if (name === 'showMessageDialog') {
-        const args = JSON.parse(payload) as DialogArgs;
-        const options = JSON.parse(args.options) as DialogOptions;
-        const buttons = (options.buttons ?? []).slice(0, 3);
-        if (buttons.length === 0) {
-          native.dialogResult(args.id ?? 0, -1);
-          this.reply(id, '');
-          return;
-        }
-        const styled: promptAction.Button[] = buttons.map((button: DialogButton): promptAction.Button => {
-          const styledButton: PromptButton = { text: button.label, color: '#000000' };
-          return styledButton as promptAction.Button;
-        });
-        promptAction.showDialog({
-          title: options.title,
-          message: options.message,
-          buttons: styled
-        }).then((result: promptAction.ShowDialogSuccessResponse): void => {
-          native.dialogResult(args.id ?? 0,
-            result.index >= 0 && result.index < buttons.length ? result.index : -1);
-          this.reply(id, '');
-        }).catch((error: BusinessError): void => {
-          hilog.error(0x0, 'WailsM3', 'Dialog failed: %{public}s', error.message);
-          native.dialogResult(args.id ?? 0, -1);
-          this.reply(id, '');
-        });
-        return;
-      }
-      if (name === 'runOnMainThread') {
-        const command = JSON.parse(payload) as MainThreadCommand;
-        native.runOnMainThread(command.id);
-        this.reply(id, '');
-        return;
-      }
-      hilog.error(0x0, 'WailsM3', 'Unsupported dispatcher method: %{public}s', name);
-      this.reply(id, '');
+      // All other commands run through the same bridge as the app template.
+      this.bridgeInvoked = true;
+      dispatchSystemBridge(id, name, payload);
+      this.bridgeInvoked = false;
     } catch (error) {
       hilog.error(0x0, 'WailsM3', 'Dispatcher error: %{public}s', String(error));
-      this.reply(id, '');
+      // The shared bridge reports its own failures; only reply here when the
+      // exception happened before the bridge was invoked.
+      if (id > 0 && !this.bridgeInvoked) {
+        this.reply(id, `error: dispatcher failed: ${String(error)}`);
+      }
+      this.bridgeInvoked = false;
     }
   }
 
@@ -297,6 +212,7 @@ struct Index {
       this.timer = -1;
     }
     this.runtimeReady = false;
+    setBridgeWebController(null);
     const state: BridgeState = bridgeState();
     if (state.dispatch === this.dispatchWeb) {
       state.dispatch = null;
@@ -342,6 +258,7 @@ struct Index {
           .domStorageAccess(true)
           .fileAccess(false)
           .allowWindowOpenMethod(false)
+          .zoomAccess(true)
           .javaScriptProxy({
             object: this.proxy,
             name: 'wailsOpenHarmony',
@@ -349,6 +266,8 @@ struct Index {
             controller: this.controller
           })
           .onControllerAttached((): void => {
+            setBridgeWebController(this.controller);
+            setCurrentURL(this.entryURL());
             hilog.info(0x0, 'WailsM3', 'Controller attached; loading local origin');
             this.controller.loadUrl(this.entryURL());
           })
@@ -360,6 +279,7 @@ struct Index {
           })
           .onPageBegin((event: OnPageBeginEvent): void => {
             this.proxy.session = '';
+            setCurrentURL(event === undefined ? ORIGIN : event.url);
             native.pageStarted(event === undefined ? ORIGIN : event.url);
           })
           .onErrorReceive((event: OnErrorReceiveEvent): void => {
