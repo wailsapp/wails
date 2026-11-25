@@ -280,7 +280,7 @@ function unsupported(callId: number, name: string, detail: string): void {
 
 function failed(callId: number, name: string, detail: string): void {
   const message: string = `error: ${name}: ${detail}`;
-  hilog.error(DOMAIN, TAG, '%{public}s', message);
+  native.emitEvent('ohos:error', JSON.stringify({ name: name, detail: detail }));
   wailsBridgeResult(callId, message);
 }
 
@@ -1352,7 +1352,7 @@ function playHaptic(callId: number, args: BridgeArgs, payload: string): void {
 }
 
 interface AuthReply {
-  success: boolean;
+  ok: boolean;
   error?: string;
 }
 
@@ -1366,7 +1366,7 @@ function authenticate(callId: number, args: BridgeArgs, payload: string): void {
     reason = 'Authenticate';
   }
   const finish = (reply: AuthReply): void => {
-    native.emitEvent('common:auth', JSON.stringify(reply));
+    native.emitEvent('common:biometric', JSON.stringify(reply));
     if (callId > 0) {
       native.result(callId, JSON.stringify(reply));
     }
@@ -1382,16 +1382,16 @@ function authenticate(callId: number, args: BridgeArgs, payload: string): void {
     const callback: userAuth.IAuthCallback = {
       onResult: (result: userAuth.UserAuthResult): void => {
         if (result.result === userAuth.UserAuthResultCode.SUCCESS) {
-          finish({ success: true });
+          finish({ ok: true });
         } else {
-          finish({ success: false, error: `authentication failed (${result.result})` });
+          finish({ ok: false, error: `authentication failed (${result.result})` });
         }
       }
     };
     instance.on('result', callback);
     instance.start();
   } catch (error) {
-    finish({ success: false, error: JSON.stringify(error) });
+    finish({ ok: false, error: JSON.stringify(error) });
   }
 }
 
@@ -1458,13 +1458,17 @@ function setKeyboardWatch(callId: number, args: BridgeArgs): void {
     if (enabled) {
       if (imeCallback === null) {
         const callback: (property: inputMethod.InputMethodProperty, subtype: InputMethodSubtype) => void =
-          (property: inputMethod.InputMethodProperty, subtype: InputMethodSubtype): void => {
-            native.emitEvent('common:keyboard', JSON.stringify({
-              name: property.name,
-              id: property.id,
-              label: property.label ?? '',
-              subtype: subtype.name
-            }));
+          (): void => {
+            // Match the cross-platform contract: common:keyboard {visible, height}.
+            let visible: boolean = false;
+            let height: number = 0;
+            const win: window.Window | null = getMainWindow();
+            if (win !== null) {
+              const area: window.AvoidArea = win.getWindowAvoidArea(window.AvoidAreaType.TYPE_KEYBOARD);
+              visible = area.visible;
+              height = area.bottomRect.height;
+            }
+            native.emitEvent('common:keyboard', JSON.stringify({ visible: visible, height: height }));
           };
         setting.on('imeChange', callback);
         imeCallback = callback;
@@ -1512,11 +1516,13 @@ function setTorch(callId: number, args: BridgeArgs): void {
 /** Print a short text document by handing a sandbox file to the print UI. */
 function printDocument(callId: number): void {
   let answered: boolean = false;
-  const finish = (message: string): void => {
-    if (!answered) {
-      answered = true;
-      wailsBridgeResult(callId, message);
+  const finish = (ok: boolean, detail: string): void => {
+    if (answered) {
+      return;
     }
+    answered = true;
+    native.emitEvent('ohos:print', JSON.stringify({ ok: ok, detail: detail }));
+    wailsBridgeResult(callId, ok ? '' : `error: print: ${detail}`);
   };
   try {
     const path: string = `${getContext().cacheDir}/wails_print.txt`;
@@ -1525,18 +1531,14 @@ function printDocument(callId: number): void {
     fileIo.closeSync(file.fd);
     const uri: string = fileUri.getUriFromPath(path);
     print.print([uri], getContext()).then((task: print.PrintTask): void => {
-      task.on('succeed', (): void => finish(''));
-      task.on('fail', (): void => finish('error: print: the print task failed'));
-      task.on('cancel', (): void => {
-        unsupported(callId, 'print', 'the print task was cancelled');
-        answered = true;
-      });
+      task.on('succeed', (): void => finish(true, ''));
+      task.on('fail', (): void => finish(false, 'the print task failed'));
+      task.on('cancel', (): void => finish(false, 'the print task was cancelled'));
     }).catch((error: BusinessError): void => {
-      failed(callId, 'print', error.message);
-      answered = true;
+      finish(false, error.message);
     });
   } catch (error) {
-    failed(callId, 'print', JSON.stringify(error));
+    finish(false, JSON.stringify(error));
   }
 }
 

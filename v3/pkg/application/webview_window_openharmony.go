@@ -151,8 +151,12 @@ func (w *openharmonyWebviewWindow) openContextMenu(_ *Menu, _ *ContextMenuData) 
 func (w *openharmonyWebviewWindow) openDevTools() { ohBridgeVoid("openDevTools", "{}") }
 
 func (w *openharmonyWebviewWindow) print() error {
-	result, ok := ohBridgeString("print", "{}")
-	return bridgeReplyError("print", result, ok)
+	// print opens a system UI whose completion is user-driven; waiting on the
+	// 5s bridge reply races the print task. Dispatch and report via event.
+	if !ohBridgePost(0, "print", "{}") {
+		return bridgeReplyError("print", "", false)
+	}
+	return nil
 }
 
 func (w *openharmonyWebviewWindow) reload() { ohBridgeVoid("reload", "{}") }

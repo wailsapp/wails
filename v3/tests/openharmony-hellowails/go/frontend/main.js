@@ -114,8 +114,11 @@ if (probe === 'all') {
         const calls = await runtime.Call.ByName('main.NativeProbe.FullAPI');
         await new Promise((resolve) => setTimeout(resolve, 1500));
         off?.();
-        const expected = ['print', 'zoomReset', 'setContentProtection', 'openDevTools',
+        const expected = ['zoomReset', 'setContentProtection', 'openDevTools',
             'handleKeyEvent', 'speak', 'stopSpeak', 'share', 'setScreenProtect'];
+        if (!calls.includes('print')) {
+            throw new Error('print was not dispatched');
+        }
         const missing = expected.filter((name) => !calls.includes(`${name}:error=`) && !unsupported.includes(name));
         if (missing.length) {
             throw new Error(`missing explicit unsupported: ${missing.join(',')}`);
