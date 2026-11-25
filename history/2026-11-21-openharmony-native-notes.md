@@ -235,6 +235,16 @@ demo 的 `wails.yaml` 设了 `frontend.disabled: true`：前端 dist 与 binding
 
 **结论**：新增的 OpenHarmony/HarmonyOS 文件、文档、CI 注册测试、schema 字段都属于预期范围；没有误删、没有垃圾入库、工作树干净。真正需要拍板的是版本 bump、build-tag 散布面以及跨后端 menu/tray 重构；落后 21 个提交中的两个真实修复应择机合入。
 
+## 11. 与上游完全对齐的执行结果（2026-11-25）
+
+按“完全对齐官方、尽量回退不重要改动”执行：
+
+1. `origin/master`（`10e8887ca`）已合并进 `openharmony`，**无冲突**；`git merge-base --is-ancestor origin/master HEAD` 返回 0，版本回到上游的 `v3.2.0-nightly.20261123`。fork 独有的版本 bump `4b454e443` 已 `git revert`。
+2. 一度回退了 f23bee819 加在 109 个上游 Linux 文件上的 `!openharmony` build tag；实测 Go 的 `GOOS=openharmony` 会**同时启用 `linux` tag**（见 GOROOT `src/go/build/build.go:1968`），这些排除是 OHOS c-shared 链接的必要条件，否则连续出现 `pkg-config` 缺失、`baseURL` 重定义、`gtk/gtk.h` 缺失。因此全部恢复，并补了 `linux_cgo.c` 的排除；其中 5 个上游也改过的菜单/托盘文件保留上游逻辑，仅叠加 build tag。
+3. `application_server.go` 已恢复上游原样；鸿蒙 stub 文件 `menu_tray_unsupported.go` 的约束收窄为 `openharmony && cgo && !server`，server 模式仍用上游自带 stub，消除重复定义风险。
+4. 验证：CLI 编译通过；`go build -tags server ./pkg/application ./internal/commands ./cmd/wails3` 通过；`wails3 build -targets openharmony/amd64 -formats hap` 成功产出 11.9 MiB HAP。设备侧当时 `hdc list targets` 为空（模拟器未连接），**未做设备 PASS 验收**，不宣称端到端通过。
+5. 对齐后 fork 领先上游 31 个提交（含本次回退/恢复/合并提交），落后 0；工作树干净。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
