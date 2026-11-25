@@ -67,6 +67,9 @@
           "when": "inuse"
         }
       },
+      { "name": "ohos.permission.VIBRATE" },
+      { "name": "ohos.permission.ACCELEROMETER" },
+      { "name": "ohos.permission.PRINT" },
       {
         "name": "ohos.permission.GET_NETWORK_INFO",
         "reason": "$string:network_reason",

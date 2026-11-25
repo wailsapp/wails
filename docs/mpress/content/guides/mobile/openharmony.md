@@ -125,6 +125,9 @@ Only the **DevEco Studio x86_64 emulator (OpenHarmony 7.0.0.107, API 26)** has b
 | Physical arm64 device / HarmonyOS 3.0 compatibility | ❌ Not verified |
 | Multiple windows | ❌ Not verified — a single Web window only |
 | Full mobile API surface (`application.Mobile` / `IOS` / `Android`) | ❌ Not verified on OpenHarmony |
+| Native API surface on `openharmony/amd64` | ✅ Emulator probe exercised 45 calls; `M3 FULLAPI PASS calls=45 unsupported=11` |
+| Explicit unsupported paths | ✅ Return errors to callers or emit `ohos:unsupported`; never silent ACK |
+| HMS-only capabilities (share, TTS, tray) | ❌ No public OpenHarmony API; explicit unsupported on `openharmony`, potential only on `harmonyos` target |
 | ArkWeb document and host rebuild, network isolation | ✅ In the dedicated native test project; not re-run through the productized pipeline |
 | Signed HAP (`openharmony.signing.*`) | ⚠️ `signingConfigs` injection unit test passes (`TestInjectOpenHarmonySigningConfig`); ❌ no real DevEco signing credentials locally — signed-HAP build/install not verified |
 

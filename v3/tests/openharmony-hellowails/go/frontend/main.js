@@ -105,6 +105,27 @@ if (probe === 'api') {
     }
 }
 
+if (probe === 'all') {
+    try {
+        const unsupported = [];
+        const off = runtime.Events.On('ohos:unsupported', (event) => {
+            unsupported.push(event.data?.name ?? 'unknown');
+        });
+        const calls = await runtime.Call.ByName('main.NativeProbe.FullAPI');
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        off?.();
+        const expected = ['print', 'zoomReset', 'setContentProtection', 'openDevTools',
+            'handleKeyEvent', 'speak', 'stopSpeak', 'share', 'setScreenProtect'];
+        const missing = expected.filter((name) => !calls.includes(`${name}:error=`) && !unsupported.includes(name));
+        if (missing.length) {
+            throw new Error(`missing explicit unsupported: ${missing.join(',')}`);
+        }
+        host.report(`M3 FULLAPI PASS calls=${calls.split(',').length} unsupported=${unsupported.length}`);
+    } catch (error) {
+        host.report(`M3 FULLAPI FAIL: ${error}`);
+    }
+}
+
 if (probe === 'refresh' || probe === 'rebuild' || probe === 'stage') {
     host.report(`M4 ${probe} ${phase} session=${session} id=lifecycle-reused-id`);
     reuseID = true;

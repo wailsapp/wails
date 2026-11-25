@@ -54,6 +54,116 @@ func (*NativeProbe) SecureRoundTrip() string {
 	return value
 }
 
+// FullAPI exercises the complete OpenHarmony backend surface. Result-bearing
+// calls return their error so the page can verify explicit failures instead of
+// silent success. Void calls emit ohos:unsupported events from ArkTS when the
+// platform has no implementation.
+func (*NativeProbe) FullAPI() string {
+	var calls []string
+	call := func(name string) { calls = append(calls, name) }
+
+	if window != nil {
+		window.SetTitle("M3 Full API")
+		call("setTitle")
+		window.SetSize(1024, 768)
+		call("setSize")
+		window.SetPosition(20, 20)
+		call("setPosition")
+		window.SetBounds(application.Rect{X: 20, Y: 20, Width: 1024, Height: 768})
+		call("setBounds")
+		window.Center()
+		call("center")
+		window.SetBackgroundColour(application.NewRGBA(10, 20, 30, 255))
+		call("setBackgroundColour")
+		window.SetResizable(true)
+		call("setResizable")
+		window.SetMinSize(320, 240)
+		call("setMinSize")
+		window.SetMaxSize(1600, 1200)
+		call("setMaxSize")
+		window.SetFrameless(false)
+		call("setFrameless")
+		window.SetRelativePosition(0, 0)
+		call("setRelativePosition")
+		window.SetEnabled(true)
+		call("setEnabled")
+		window.SetIgnoreMouseEvents(false)
+		call("setIgnoreMouseEvents")
+		window.SetMinimiseButtonState(application.ButtonEnabled)
+		call("setMinimiseButtonState")
+		window.SetMaximiseButtonState(application.ButtonEnabled)
+		call("setMaximiseButtonState")
+		window.SetCloseButtonState(application.ButtonEnabled)
+		call("setCloseButtonState")
+		window.Focus()
+		call("focus")
+		window.Show()
+		call("show")
+		window.SetZoom(1)
+		call("setZoom")
+		window.ZoomIn()
+		call("zoomIn")
+		window.ZoomOut()
+		call("zoomOut")
+		window.ZoomReset()
+		call("zoomReset")
+		// Reload/ForceReload are intentionally skipped: they destroy the JS
+		// context that is awaiting this call.
+		window.ExecJS("void 0")
+		call("executeJavaScript")
+		window.ShowMenuBar()
+		call("showMenuBar")
+		window.HideMenuBar()
+		call("hideMenuBar")
+		window.ToggleMenuBar()
+		call("toggleMenuBar")
+		window.SnapAssist()
+		call("snapAssist")
+		window.SetContentProtection(false)
+		call("setContentProtection")
+		window.OpenDevTools()
+		call("openDevTools")
+		window.HandleKeyEvent("Escape")
+		call("handleKeyEvent")
+		window.Flash(false)
+		call("flash")
+		if err := window.Print(); err == nil {
+			call("print:NO_ERROR")
+		} else {
+			call("print:error=" + err.Error())
+		}
+		// startDrag/startResize are unexported webviewWindowImpl methods; the
+		// result-bearing error path is exercised through Print() above.
+	}
+	application.Openharmony.SetStatusBar(`{"visible":true}`)
+	call("setStatusBar")
+	application.Openharmony.Notify(`{"title":"M3","text":"full API"}`)
+	call("postNotification")
+	application.Openharmony.Haptic("medium")
+	call("haptic")
+	application.Openharmony.SetMotion(`{"enabled":true}`)
+	call("setMotion")
+	application.Openharmony.SetMotion(`{"enabled":false}`)
+	call("setMotion:off")
+	application.Openharmony.SetProximity(`{"enabled":true}`)
+	call("setProximity")
+	application.Openharmony.SetProximity(`{"enabled":false}`)
+	call("setProximity:off")
+	application.Openharmony.SetKeyboardWatch(true)
+	call("setKeyboardWatch")
+	application.Openharmony.SetKeyboardWatch(false)
+	call("setKeyboardWatch:off")
+	application.Openharmony.Speak("hello")
+	call("speak")
+	application.Openharmony.StopSpeak()
+	call("stopSpeak")
+	application.Openharmony.Share(`{"text":"M3"}`)
+	call("share")
+	application.Openharmony.SetScreenProtect(false)
+	call("setScreenProtect")
+	return strings.Join(calls, ",")
+}
+
 //export WailsBridgeOpen
 func WailsBridgeOpen(env, info unsafe.Pointer) unsafe.Pointer {
 	return application.WailsOhNativeInit(env, info)

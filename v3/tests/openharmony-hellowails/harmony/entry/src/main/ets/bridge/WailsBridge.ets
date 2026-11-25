@@ -17,10 +17,14 @@
 
 import * as native from 'libentry.so';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { BusinessError, batteryInfo, commonEventManager } from '@kit.BasicServicesKit';
+import { BusinessError, batteryInfo, commonEventManager, print } from '@kit.BasicServicesKit';
 import { promptAction, display, window } from '@kit.ArkUI';
+import { notificationManager } from '@kit.NotificationKit';
+import { sensor, vibrator } from '@kit.SensorServiceKit';
+import { userAuth } from '@kit.UserAuthenticationKit';
+import { inputMethod, InputMethodSubtype } from '@kit.IMEKit';
 import { pasteboard } from '@kit.BasicServicesKit';
-import { picker, fileIo, statfs } from '@kit.CoreFileKit';
+import { picker, fileIo, statfs, fileUri } from '@kit.CoreFileKit';
 import { webview } from '@kit.ArkWeb';
 import { abilityAccessCtrl, wantAgent, WantAgent, Permissions, PermissionRequestResult } from '@kit.AbilityKit';
 import { geoLocationManager } from '@kit.LocationKit';
@@ -57,6 +61,13 @@ let currentURL: string = ORIGIN;
 
 /** ArkWeb has no getZoom(); keep the factor we last applied. */
 let currentZoom: number = 1.0;
+
+// Size limits are enforced by the bridge because the OpenHarmony window API
+// has no setMinSize/setMaxSize; zero means "unset" on either axis.
+let minWidth: number = 0;
+let minHeight: number = 0;
+let maxWidth: number = 0;
+let maxHeight: number = 0;
 
 export function setPageDispatcher(dispatcher: Dispatcher | null): void {
   pageDispatcher = dispatcher;
@@ -95,11 +106,20 @@ interface BridgeArgs {
   text?: string;
   name?: string;
   description?: string;
-  url?: string;
   title?: string;
   html?: string;
   icon?: string;
+  url?: string;
   key?: string;
+  type?: string;
+  reason?: string;
+  enabled?: number | boolean;
+  visible?: number | boolean;
+  theme?: string;
+  accelerator?: string;
+  minimise?: number | boolean;
+  maximise?: number | boolean;
+  close?: number | boolean;
   value?: number | boolean;
   width?: number;
   height?: number;
@@ -115,6 +135,8 @@ interface BridgeArgs {
   options?: string;
   orientation?: string;
   duration?: number;
+  border?: string;
+  body?: string;
 }
 
 interface DarkModeResult {
@@ -211,6 +233,25 @@ function flag(value: number | boolean | undefined): boolean {
 function numberArg(value: number | undefined, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
+/** Apply the bridge-enforced min/max size limits to a resize request. */
+function clampSize(width: number, height: number): number[] {
+  let w: number = width;
+  let h: number = height;
+  if (minWidth > 0) {
+    w = Math.max(w, minWidth);
+  }
+  if (maxWidth > 0) {
+    w = Math.min(w, maxWidth);
+  }
+  if (minHeight > 0) {
+    h = Math.max(h, minHeight);
+  }
+  if (maxHeight > 0) {
+    h = Math.min(h, maxHeight);
+  }
+  return [Math.round(w), Math.round(h)];
+}
+
 
 function clampByte(value: number): number {
   return Math.max(0, Math.min(255, Math.round(value)));
@@ -233,6 +274,7 @@ function replyJSON(callId: number, value: Object): void {
 function unsupported(callId: number, name: string, detail: string): void {
   const message: string = `unsupported: ${name} ${detail}`;
   hilog.info(DOMAIN, TAG, '%{public}s', message);
+  native.emitEvent('ohos:unsupported', JSON.stringify({ name: name, detail: detail }));
   wailsBridgeResult(callId, message);
 }
 
@@ -416,10 +458,12 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
       windowPromise(callId, name, (win: window.Window): Promise<void> =>
         win.setWindowTitle(args.title ?? ''));
       return;
-    case 'setSize':
+    case 'setSize': {
+      const size: number[] = clampSize(numberArg(args.width, 0), numberArg(args.height, 0));
       windowPromise(callId, name, (win: window.Window): Promise<void> =>
-        win.resize(Math.round(numberArg(args.width, 0)), Math.round(numberArg(args.height, 0))));
+        win.resize(size[0], size[1]));
       return;
+    }
     case 'setPosition':
       windowPromise(callId, name, (win: window.Window): Promise<void> =>
         win.moveWindowTo(Math.round(numberArg(args.x, 0)), Math.round(numberArg(args.y, 0))));
@@ -427,10 +471,9 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
     case 'setBounds': {
       const x: number = Math.round(numberArg(args.x, 0));
       const y: number = Math.round(numberArg(args.y, 0));
-      const width: number = Math.round(numberArg(args.width, 0));
-      const height: number = Math.round(numberArg(args.height, 0));
+      const size: number[] = clampSize(numberArg(args.width, 0), numberArg(args.height, 0));
       windowPromise(callId, name, (win: window.Window): Promise<void> =>
-        win.moveWindowTo(x, y).then((): Promise<void> => win.resize(width, height)));
+        win.moveWindowTo(x, y).then((): Promise<void> => win.resize(size[0], size[1])));
       return;
     }
     case 'center': {
@@ -500,6 +543,87 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
     case 'setIcon':
       unsupported(callId, name, 'the OpenHarmony window API does not expose an application icon setter');
       return;
+    case 'setMinSize':
+      minWidth = Math.max(0, Math.round(numberArg(args.width, 0)));
+      minHeight = Math.max(0, Math.round(numberArg(args.height, 0)));
+      if (maxWidth > 0 && minWidth > maxWidth) {
+        maxWidth = minWidth;
+      }
+      if (maxHeight > 0 && minHeight > maxHeight) {
+        maxHeight = minHeight;
+      }
+      wailsBridgeResult(callId, '');
+      return;
+    case 'setMaxSize':
+      maxWidth = Math.max(0, Math.round(numberArg(args.width, 0)));
+      maxHeight = Math.max(0, Math.round(numberArg(args.height, 0)));
+      if (minWidth > 0 && maxWidth > 0 && maxWidth < minWidth) {
+        maxWidth = minWidth;
+      }
+      if (minHeight > 0 && maxHeight > 0 && maxHeight < minHeight) {
+        maxHeight = minHeight;
+      }
+      wailsBridgeResult(callId, '');
+      return;
+    case 'setFrameless': {
+      const frameless: boolean = flag(args.value);
+      const bars: Array<'status' | 'navigation'> = ['status', 'navigation'];
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.setWindowLayoutFullScreen(frameless).then((): Promise<void> =>
+          win.setWindowSystemBarEnable(frameless ? [] : bars)));
+      return;
+    }
+    case 'setPhysicalBounds': {
+      const x: number = Math.round(numberArg(args.x, 0));
+      const y: number = Math.round(numberArg(args.y, 0));
+      const size: number[] = clampSize(numberArg(args.width, 0), numberArg(args.height, 0));
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.moveWindowToGlobal(x, y).then((): Promise<void> => win.resize(size[0], size[1])));
+      return;
+    }
+    case 'setRelativePosition':
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.moveWindowTo(Math.round(numberArg(args.x, 0)), Math.round(numberArg(args.y, 0))));
+      return;
+    case 'centerOnScreen': {
+      const screen: display.Display = display.getDefaultDisplaySync();
+      windowPromise(callId, name, (win: window.Window): Promise<void> => {
+        const rect = win.getWindowProperties().windowRect;
+        return win.moveWindowTo(Math.max(0, Math.floor((screen.width - rect.width) / 2)),
+          Math.max(0, Math.floor((screen.height - rect.height) / 2)));
+      });
+      return;
+    }
+    case 'setEnabled':
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.setWindowTouchable(flag(args.value)));
+      return;
+    case 'setIgnoreMouseEvents':
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.setWindowTouchable(!flag(args.value)));
+      return;
+    case 'setButtonStates':
+      windowSync(callId, name, (win: window.Window): void =>
+        win.setWindowTitleButtonVisible(flag(args.maximise), flag(args.minimise), flag(args.close)));
+      return;
+    case 'snapAssist':
+      windowPromise(callId, name, (win: window.Window): Promise<void> =>
+        win.enableLandscapeMultiWindow());
+      return;
+    case 'attachModal': {
+      const modal: boolean = flag(args.value);
+      try {
+        getContext().windowStage.setWindowModal(modal).then((): void => {
+          wailsBridgeResult(callId, '');
+        }).catch((error: BusinessError): void => {
+          failed(callId, name, error.message);
+        });
+      } catch (error) {
+        failed(callId, name, JSON.stringify(error));
+      }
+      return;
+    }
+
 
     // --- zoom and navigation -----------------------------------------
     case 'setZoom': {
@@ -706,18 +830,78 @@ export function dispatchBridge(callId: number, name: string, payload: string): v
       secureDelete(callId, args.key ?? '');
       return;
     case 'share':
+      unsupported(callId, name, 'sharing is HMS-only; the OpenHarmony shell has no share sheet');
+      return;
     case 'setStatusBar':
+      setStatusBar(callId, args, payload);
+      return;
     case 'postNotification':
+      postNotification(callId, args);
+      return;
     case 'haptic':
+      playHaptic(callId, args, payload);
+      return;
     case 'authenticate':
+      authenticate(callId, args, payload);
+      return;
     case 'setMotion':
+      setMotionWatch(callId, args);
+      return;
     case 'setProximity':
+      setProximityWatch(callId, args);
+      return;
     case 'setKeyboardWatch':
+      setKeyboardWatch(callId, args);
+      return;
     case 'setScreenProtect':
+      unsupported(callId, name, 'screen protection is HMS-only; no public OpenHarmony API');
+      return;
     case 'setTorch':
+      setTorch(callId, args);
+      return;
     case 'speak':
+      unsupported(callId, name, 'text-to-speech is HMS-only; no public OpenHarmony shell API');
+      return;
     case 'stopSpeak':
-      unsupported(callId, name, 'is not exposed by the OpenHarmony shell');
+      unsupported(callId, name, 'text-to-speech is HMS-only; no public OpenHarmony shell API');
+      return;
+
+    // --- result-bearing desktop actions ------------------------------
+    case 'print':
+      printDocument(callId);
+      return;
+    case 'startDrag':
+      unsupported(callId, name, 'native drag is not available in the OpenHarmony shell');
+      return;
+    case 'startResize':
+      unsupported(callId, name, 'native resize initiation is not available in the OpenHarmony shell');
+      return;
+    case 'startMove':
+      unsupported(callId, name, 'native window moving is driven by the system, not by an API');
+      return;
+    case 'openDevTools':
+      unsupported(callId, name, 'ArkWeb has no devtools opener in the shell');
+      return;
+    case 'handleKeyEvent':
+      unsupported(callId, name, 'synthetic key events are not exposed by the OpenHarmony window API');
+      return;
+    case 'setContentProtection':
+      unsupported(callId, name, 'content protection is HMS-only; no public OpenHarmony API');
+      return;
+    case 'setWindowMenu':
+      unsupported(callId, name, 'the OpenHarmony shell has no native window menu API');
+      return;
+    case 'setMenuBar':
+      unsupported(callId, name, 'the OpenHarmony shell has no native menu bar API');
+      return;
+    case 'setNonClientHitTestRegions':
+      unsupported(callId, name, 'the OpenHarmony window API has no non-client hit test regions');
+      return;
+    case 'setTheme':
+      unsupported(callId, name, 'the OpenHarmony window API has no public theme setter');
+      return;
+    case 'setOpacity':
+      unsupported(callId, name, 'the OpenHarmony window API does not expose opacity');
       return;
 
     default:
@@ -1067,6 +1251,295 @@ function openURL(url: string): void {
 // ---------------------------------------------------------------------------
 // Mobile capabilities
 // ---------------------------------------------------------------------------
+
+/** Show or hide the status bar; the layout follows the system bars. */
+function setStatusBar(callId: number, args: BridgeArgs, payload: string): void {
+  let visible: boolean;
+  if (args.visible !== undefined) {
+    visible = flag(args.visible);
+  } else if (args.value !== undefined) {
+    visible = flag(args.value);
+  } else if (args.id !== undefined) {
+    visible = flag(args.id);
+  } else {
+    visible = payload === '1' || payload === 'true';
+  }
+  const statusBar: Array<'status' | 'navigation'> = ['status'];
+  const hidden: Array<'status' | 'navigation'> = [];
+  windowPromise(callId, 'setStatusBar', (win: window.Window): Promise<void> =>
+    win.setWindowSystemBarEnable(visible ? statusBar : hidden).then((): Promise<void> =>
+      win.setWindowLayoutFullScreen(!visible)));
+}
+
+/** Publish a basic-text local notification, asking for consent first. */
+function postNotification(callId: number, args: BridgeArgs): void {
+  const title: string = args.title ?? 'Wails';
+  const text: string = args.text ?? args.body ?? args.description ?? '';
+  if (title === '' || text === '') {
+    failed(callId, 'postNotification', 'title and text are required');
+    return;
+  }
+  const request: notificationManager.NotificationRequest = {
+    id: 1,
+    content: {
+      notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+      normal: { title: title, text: text }
+    },
+    notificationSlotType: notificationManager.SlotType.SERVICE_INFORMATION
+  };
+  const publish = (): void => {
+    try {
+      notificationManager.publish(request).then((): void => {
+        wailsBridgeResult(callId, '');
+      }).catch((error: BusinessError): void => {
+        failed(callId, 'postNotification', error.message);
+      });
+    } catch (error) {
+      failed(callId, 'postNotification', JSON.stringify(error));
+    }
+  };
+  try {
+    notificationManager.requestEnableNotification(getContext()).then(publish).catch((error: BusinessError): void => {
+      // Notification consent may already be granted; still attempt to publish.
+      hilog.info(DOMAIN, TAG, 'notification consent request: %{public}s', error.message);
+      publish();
+    });
+  } catch (error) {
+    failed(callId, 'postNotification', JSON.stringify(error));
+  }
+}
+
+/** Map the portable haptic names onto the system preset effect ids. */
+function hapticEffectId(type: string): string {
+  switch (type) {
+    case 'success':
+      return vibrator.HapticFeedback.EFFECT_NOTICE_SUCCESS;
+    case 'error':
+      return vibrator.HapticFeedback.EFFECT_NOTICE_FAILURE;
+    case 'warning':
+      return vibrator.HapticFeedback.EFFECT_NOTICE_WARNING;
+    case 'impact-heavy':
+    case 'rigid':
+      return vibrator.HapticFeedback.EFFECT_HARD;
+    case 'selection':
+    case 'impact-light':
+    case 'soft':
+      return vibrator.HapticFeedback.EFFECT_SOFT;
+    default:
+      return vibrator.HapticFeedback.EFFECT_SOFT;
+  }
+}
+
+function playHaptic(callId: number, args: BridgeArgs, payload: string): void {
+  let type: string = args.type ?? '';
+  if (type === '' && payload !== '' && !payload.startsWith('{')) {
+    type = payload.replace(/^"|"$/g, '');
+  }
+  if (type === 'impact-medium' || type === 'medium') {
+    type = 'impact-heavy';
+  }
+  const effect: vibrator.VibratePreset = { type: 'preset', effectId: hapticEffectId(type) };
+  const attribute: vibrator.VibrateAttribute = { usage: 'touch' };
+  try {
+    vibrator.startVibration(effect, attribute).then((): void => {
+      wailsBridgeResult(callId, '');
+    }).catch((error: BusinessError): void => {
+      failed(callId, 'haptic', error.message);
+    });
+  } catch (error) {
+    failed(callId, 'haptic', JSON.stringify(error));
+  }
+}
+
+interface AuthReply {
+  success: boolean;
+  error?: string;
+}
+
+/** Biometric/PIN authentication via the user authentication kit. */
+function authenticate(callId: number, args: BridgeArgs, payload: string): void {
+  let reason: string = args.reason ?? '';
+  if (reason === '' && payload !== '' && !payload.startsWith('{')) {
+    reason = payload.replace(/^"|"$/g, '');
+  }
+  if (reason === '') {
+    reason = 'Authenticate';
+  }
+  const finish = (reply: AuthReply): void => {
+    native.emitEvent('common:auth', JSON.stringify(reply));
+    if (callId > 0) {
+      native.result(callId, JSON.stringify(reply));
+    }
+  };
+  try {
+    const param: userAuth.AuthParam = {
+      challenge: byteArray(reason.slice(0, 32)),
+      authType: [userAuth.UserAuthType.FACE, userAuth.UserAuthType.FINGERPRINT, userAuth.UserAuthType.PIN],
+      authTrustLevel: userAuth.AuthTrustLevel.ATL3
+    };
+    const widget: userAuth.WidgetParam = { title: reason };
+    const instance: userAuth.UserAuthInstance = userAuth.getUserAuthInstance(param, widget);
+    const callback: userAuth.IAuthCallback = {
+      onResult: (result: userAuth.UserAuthResult): void => {
+        if (result.result === userAuth.UserAuthResultCode.SUCCESS) {
+          finish({ success: true });
+        } else {
+          finish({ success: false, error: `authentication failed (${result.result})` });
+        }
+      }
+    };
+    instance.on('result', callback);
+    instance.start();
+  } catch (error) {
+    finish({ success: false, error: JSON.stringify(error) });
+  }
+}
+
+let motionCallback: ((data: sensor.AccelerometerResponse) => void) | null = null;
+
+/** Stream accelerometer readings to the "common:motion" event. */
+function setMotionWatch(callId: number, args: BridgeArgs): void {
+  const enabled: boolean = flag(args.enabled ?? args.value ?? args.id);
+  try {
+    if (enabled) {
+      if (motionCallback === null) {
+        const callback: (data: sensor.AccelerometerResponse) => void =
+          (data: sensor.AccelerometerResponse): void => {
+            native.emitEvent('common:motion', JSON.stringify({ x: data.x, y: data.y, z: data.z }));
+          };
+        sensor.on(sensor.SensorId.ACCELEROMETER, callback);
+        motionCallback = callback;
+      }
+    } else if (motionCallback !== null) {
+      sensor.off(sensor.SensorId.ACCELEROMETER, motionCallback);
+      motionCallback = null;
+    }
+    wailsBridgeResult(callId, '');
+  } catch (error) {
+    failed(callId, 'setMotion', JSON.stringify(error));
+  }
+}
+
+let proximityCallback: ((data: sensor.ProximityResponse) => void) | null = null;
+
+/** Stream proximity readings to the "common:proximity" event. */
+function setProximityWatch(callId: number, args: BridgeArgs): void {
+  const enabled: boolean = flag(args.enabled ?? args.value ?? args.id);
+  try {
+    if (enabled) {
+      if (proximityCallback === null) {
+        const callback: (data: sensor.ProximityResponse) => void =
+          (data: sensor.ProximityResponse): void => {
+            native.emitEvent('common:proximity', JSON.stringify({
+              near: data.distance === 0,
+              distance: data.distance
+            }));
+          };
+        sensor.on(sensor.SensorId.PROXIMITY, callback);
+        proximityCallback = callback;
+      }
+    } else if (proximityCallback !== null) {
+      sensor.off(sensor.SensorId.PROXIMITY, proximityCallback);
+      proximityCallback = null;
+    }
+    wailsBridgeResult(callId, '');
+  } catch (error) {
+    failed(callId, 'setProximity', JSON.stringify(error));
+  }
+}
+
+let imeCallback: ((property: inputMethod.InputMethodProperty, subtype: InputMethodSubtype) => void) | null = null;
+
+/** Watch input-method changes and forward them to "common:keyboard". */
+function setKeyboardWatch(callId: number, args: BridgeArgs): void {
+  const enabled: boolean = flag(args.enabled ?? args.value ?? args.id);
+  try {
+    const setting: inputMethod.InputMethodSetting = inputMethod.getSetting();
+    if (enabled) {
+      if (imeCallback === null) {
+        const callback: (property: inputMethod.InputMethodProperty, subtype: InputMethodSubtype) => void =
+          (property: inputMethod.InputMethodProperty, subtype: InputMethodSubtype): void => {
+            native.emitEvent('common:keyboard', JSON.stringify({
+              name: property.name,
+              id: property.id,
+              label: property.label ?? '',
+              subtype: subtype.name
+            }));
+          };
+        setting.on('imeChange', callback);
+        imeCallback = callback;
+      }
+    } else if (imeCallback !== null) {
+      setting.off('imeChange', imeCallback);
+      imeCallback = null;
+    }
+    wailsBridgeResult(callId, '');
+  } catch (error) {
+    failed(callId, 'setKeyboardWatch', JSON.stringify(error));
+  }
+}
+
+/** Toggle the first camera's torch through the camera manager. */
+function setTorch(callId: number, args: BridgeArgs): void {
+  const on: boolean = flag(args.value ?? args.id);
+  try {
+    const manager: camera.CameraManager = camera.getCameraManager(getContext());
+    const cameras: Array<camera.CameraDevice> = manager.getSupportedCameras();
+    if (cameras.length === 0) {
+      failed(callId, 'setTorch', 'no camera is available');
+      return;
+    }
+    if (!manager.isTorchSupported()) {
+      failed(callId, 'setTorch', 'the camera does not support a torch');
+      return;
+    }
+    const input: camera.CameraInput = manager.createCameraInput(cameras[0]);
+    input.open().then((): void => {
+      try {
+        manager.setTorchMode(on ? camera.TorchMode.ON : camera.TorchMode.OFF);
+        wailsBridgeResult(callId, '');
+      } catch (error) {
+        failed(callId, 'setTorch', JSON.stringify(error));
+      }
+    }).catch((error: BusinessError): void => {
+      failed(callId, 'setTorch', error.message);
+    });
+  } catch (error) {
+    failed(callId, 'setTorch', JSON.stringify(error));
+  }
+}
+
+/** Print a short text document by handing a sandbox file to the print UI. */
+function printDocument(callId: number): void {
+  let answered: boolean = false;
+  const finish = (message: string): void => {
+    if (!answered) {
+      answered = true;
+      wailsBridgeResult(callId, message);
+    }
+  };
+  try {
+    const path: string = `${getContext().cacheDir}/wails_print.txt`;
+    const file = fileIo.openSync(path, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY);
+    fileIo.writeSync(file.fd, 'Wails print job\n');
+    fileIo.closeSync(file.fd);
+    const uri: string = fileUri.getUriFromPath(path);
+    print.print([uri], getContext()).then((task: print.PrintTask): void => {
+      task.on('succeed', (): void => finish(''));
+      task.on('fail', (): void => finish('error: print: the print task failed'));
+      task.on('cancel', (): void => {
+        unsupported(callId, 'print', 'the print task was cancelled');
+        answered = true;
+      });
+    }).catch((error: BusinessError): void => {
+      failed(callId, 'print', error.message);
+      answered = true;
+    });
+  } catch (error) {
+    failed(callId, 'print', JSON.stringify(error));
+  }
+}
+
 
 function getLocation(callId: number): void {
   hasPermission('ohos.permission.APPROXIMATELY_LOCATION').then((granted: boolean): void => {

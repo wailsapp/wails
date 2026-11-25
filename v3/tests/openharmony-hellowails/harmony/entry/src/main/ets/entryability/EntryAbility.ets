@@ -39,7 +39,7 @@ export default class EntryAbility extends UIAbility {
     const mode: string | undefined = want.parameters?.['wailsLifecycle'] as string | undefined;
     const phase: string | undefined = want.parameters?.['wailsPhase'] as string | undefined;
     AppStorage.setOrCreate('wailsLifecycle',
-      mode === 'api' || mode === 'refresh' || mode === 'rebuild' || mode === 'stage' ? mode : '');
+      mode === 'all' || mode === 'api' || mode === 'refresh' || mode === 'rebuild' || mode === 'stage' ? mode : '');
     AppStorage.setOrCreate('wailsPhase', phase === 'new' ? 'new' : 'old');
   }
 

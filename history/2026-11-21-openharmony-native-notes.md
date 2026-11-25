@@ -306,6 +306,18 @@ hdc -t 127.0.0.1:5555 shell hilog -x -T WailsM3
 # 期望：M3 PASS 与 M3 API PASS zoom=1->1.1 accent=#0a59f7 secure=m3-native-value
 ```
 
+## 15. OpenHarmony 平台接口全覆盖与显式失败（2026-11-25）
+
+把「平台不支持」从静默 ACK 改成可验证结果：SDK 有对应能力的接口接到真实 ArkTS Kit API，确实没有的能力返回显式错误，不再伪装成功。
+
+**实现**（只改 OpenHarmony 路径）：`webview_window_openharmony.go` 把 20 个窗口 no-op 接到桥命令（`setMinSize`/`setMaxSize`/`setFrameless`/`setPhysicalBounds`/`setRelativePosition`/`setEnabled`/`setIgnoreMouseEvents`/`setButtonStates`/`snapAssist`/`attachModal` 等），`print`/`startDrag`/`startResize` 改为 result-bearing，ArkTS 回 `unsupported:` 前缀时 Go 返回真实 error。模板 `WailsBridge.ets` 把 12 个统一 unsupported 中的 `setStatusBar`/`postNotification`/`haptic`/`authenticate`/`setMotion`/`setProximity`/`setKeyboardWatch`/`setTorch` 接成真实实现（`@ohos.window`、`@ohos.notificationManager`、`@ohos.vibrator`、`@ohos.userIAM.userAuth`、`@ohos.sensor`、`@ohos.inputMethod`、camera torch），`print` 走 `@ohos.print`；`share`/`speak`/`stopSpeak`/`setScreenProtect` 因只在 HMS 侧存在仍显式 unsupported。`unsupported()` 现在除 hilog 外还发出 `ohos:unsupported` 事件，void 调用方也能观察到失败。manifest 增补 VIBRATE/ACCELEROMETER/PRINT 权限。
+
+**设备证据**：x86_64 模拟器 API 26，`probe=all` 跑 `NativeProbe.FullAPI()`（45 次调用，含所有可派发的窗口与移动 API、3 个 result-bearing error 路径）输出 `M3 FULLAPI PASS calls=45 unsupported=11`；同次运行 `M3 PASS` 正常。位置 CLI 注入单独验回 `lat/lng/accuracy`。产品化模板 `wails3 build -targets openharmony/amd64 -formats hap` 5/5 成功，HAP 12.1 MiB；Go `c-shared --no-undefined` 严格链接通过。
+
+**边界**：显式的 11 条 unsupported 包括 HMS-only 的 share/speak/tray 类、原生 drag/resize/move、devtools、合成按键、内容保护、菜单/菜单条、非客户区命中、theme/opacity；`hide` 仍是最小化、`zoomReset` 设 1.0 后回报不支持。权限要求较高的相机/认证/通知只验证了桥派发与无崩溃，未在真机验证硬件/用户授权结果。多窗口、arm64 真机、商用 HarmonyOS 仍不在验收范围。
+
+复现：把上面第 14 节命令的 `--ps wailsLifecycle api` 改为 `--ps wailsLifecycle all`，期望 `M3 FULLAPI PASS`。
+
 ## 参考资料
 
 - 鸿蒙 [UIAbility 生命周期](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/uiability-lifecycle)、[Node-API 线程安全开发](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/use-napi-thread-safety)、[Node-API 参考](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/napi)；[Node.js TSFN 语义参考](https://nodejs.org/api/n-api.html#asynchronous-thread-safe-function-calls)（不是鸿蒙支持矩阵）。
