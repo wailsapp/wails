@@ -198,6 +198,10 @@ func handleMessageForOpenharmony(app *App, message string) {
 
 func getMimeTypeForPath(path string) string {
 	switch {
+	// Server-sent event endpoints carry no file extension; EventSource rejects
+	// the response unless the MIME type is text/event-stream.
+	case endsWith(path, "/stream"), endsWith(path, "/events"):
+		return "text/event-stream"
 	case endsWith(path, ".html"), endsWith(path, ".htm"):
 		return "text/html"
 	case endsWith(path, ".js"), endsWith(path, ".mjs"):
