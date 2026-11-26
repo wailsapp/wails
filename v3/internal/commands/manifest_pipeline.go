@@ -2745,11 +2745,13 @@ func (h *manifestHandler) packageOpenHarmony(ctx context.Context, s pipeline.Pac
 	if len(binaries) == 0 {
 		binaries = []pipeline.ComponentBinary{{Arch: s.TargetArch, Path: s.Binary}}
 	}
+	abis := make([]string, 0, len(binaries))
 	for _, binary := range binaries {
 		abi, err := openHarmonyABI(binary.Arch)
 		if err != nil {
 			return pipeline.RunResult{}, err
 		}
+		abis = append(abis, abi)
 		lib := filepath.Join(staged, "app", "src", "main", "cpp", "libs", abi, "libwails_go.so")
 		if err := copyManifestPath(filepath.Join(h.root, binary.Path), lib); err != nil {
 			return pipeline.RunResult{}, err
@@ -2758,6 +2760,9 @@ func (h *manifestHandler) packageOpenHarmony(ctx context.Context, s pipeline.Pac
 		if err := copyManifestPath(header, filepath.Join(staged, "app", "src", "main", "cpp", "include", "libwails_go.h")); err != nil {
 			return pipeline.RunResult{}, err
 		}
+	}
+	if err := patchOpenHarmonyABIFilters(staged, abis); err != nil {
+		return pipeline.RunResult{}, fmt.Errorf("patch abiFilters: %w", err)
 	}
 	output, err := runManifestCommand(ctx, staged, []string{"OHOS_BASE_SDK_HOME=" + filepath.Join(sdk, "default")}, hvigorw, "assembleHap", "--no-daemon")
 	if err != nil {
@@ -2772,6 +2777,25 @@ func (h *manifestHandler) packageOpenHarmony(ctx context.Context, s pipeline.Pac
 	}
 	return pipeline.RunResult{Detail: output}, nil
 }
+// patchOpenHarmonyABIFilters rewrites the generated shell's hardcoded
+// abiFilters to the ABIs actually staged for this build. The embedded
+// openharmony template pins ["x86_64"]; without this, an arm64 build packages
+// no native library and hvigor fails on a missing x86_64/libentry.so.
+func patchOpenHarmonyABIFilters(staged string, abis []string) error {
+	path := filepath.Join(staged, "app", "build-profile.json5")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	quoted := make([]string, 0, len(abis))
+	for _, abi := range abis {
+		quoted = append(quoted, fmt.Sprintf("%q", abi))
+	}
+	updated := regexp.MustCompile(`"abiFilters"\s*:\s*\[[^\]]*\]`).ReplaceAll(data,
+		[]byte(`"abiFilters": [`+strings.Join(quoted, ", ")+`]`))
+	return os.WriteFile(path, updated, 0o644)
+}
+
 
 func androidABI(arch string) (string, error) {
 	switch arch {
