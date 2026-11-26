@@ -537,6 +537,54 @@
       },
       "type": "object"
     },
+    "harmonyos": {
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative HarmonyOS signing keystore (.p12) file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Name of the environment variable containing the .p12 keystore password; never the password itself.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "HarmonyOS signing key alias in the .p12 keystore.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the HarmonyOS signing key in the .p12.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative HarmonyOS provisioning profile (.p7b).",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
     "hooks": {
       "additionalProperties": {
         "additionalProperties": false,
@@ -746,6 +794,54 @@
             },
             "provisioning_profile": {
               "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            },
+            "thumbprint": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            },
+            "timestamp_server": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "openharmony": {
+      "additionalProperties": false,
+      "properties": {
+        "icon": {
+          "description": "Project-relative user-owned icon file.",
+          "type": "string"
+        },
+        "signing": {
+          "additionalProperties": false,
+          "properties": {
+            "certificate": {
+              "description": "Project-relative OpenHarmony signing keystore (.p12) file.",
+              "type": "string"
+            },
+            "credential": {
+              "description": "Name of the environment variable containing the .p12 keystore password; never the password itself.",
+              "type": "string"
+            },
+            "entitlements": {
+              "description": "Not used by this platform's signing operation.",
+              "type": "string"
+            },
+            "identity": {
+              "description": "OpenHarmony signing key alias in the .p12 keystore.",
+              "type": "string"
+            },
+            "key_alias": {
+              "description": "Alias of the OpenHarmony signing key in the .p12.",
+              "type": "string"
+            },
+            "provisioning_profile": {
+              "description": "Project-relative OpenHarmony provisioning profile (.p7b).",
               "type": "string"
             },
             "thumbprint": {
@@ -1080,9 +1176,13 @@
                 "darwin/amd64",
                 "darwin/arm64",
                 "darwin/universal",
+                "harmonyos/amd64",
+                "harmonyos/arm64",
                 "ios/arm64",
                 "linux/amd64",
                 "linux/arm64",
+                "openharmony/amd64",
+                "openharmony/arm64",
                 "windows/amd64",
                 "windows/arm64"
               ]
@@ -1352,11 +1452,17 @@
           "darwin/amd64",
           "darwin/arm64",
           "darwin/universal",
+          "harmonyos",
+          "harmonyos/amd64",
+          "harmonyos/arm64",
           "ios",
           "ios/arm64",
           "linux",
           "linux/amd64",
           "linux/arm64",
+          "openharmony",
+          "openharmony/amd64",
+          "openharmony/arm64",
           "windows",
           "windows/amd64",
           "windows/arm64"

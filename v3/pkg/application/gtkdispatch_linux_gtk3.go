@@ -1,4 +1,4 @@
-//go:build linux && gtk3 && !android && !server
+//go:build linux && gtk3 && !android && !openharmony && !server
 
 package application
 

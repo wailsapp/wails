@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "HomeCast WebView shell"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "HomeCast music player"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "HomeCast"
+    }
+  ]
+}

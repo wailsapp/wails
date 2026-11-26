@@ -270,7 +270,7 @@ func splitTarget(target string) (string, string, error) {
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf("target must be platform/architecture, got %q", target)
 	}
-	if !slices.Contains([]string{"windows", "darwin", "linux", "ios", "android"}, parts[0]) {
+	if !slices.Contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony", "harmonyos"}, parts[0]) {
 		return "", "", fmt.Errorf("unsupported target platform %q", parts[0])
 	}
 	if !slices.Contains([]string{"amd64", "arm64", "386", "arm", "universal"}, parts[1]) {
@@ -357,8 +357,14 @@ func wrapTask(action string, otherArgs []string) error {
 
 	// Use the platform-specific task for verbs without a root dispatcher.
 	platformTaskName := action
-	if validPlatforms[goos] {
-		platformTaskName = goos + ":" + action
+	// Legacy Taskfiles have no harmonyos task; map the GOOS variable to their
+	// OpenHarmony counterpart without rewriting any Taskfile semantics.
+	taskGOOS := goos
+	if taskGOOS == "harmonyos" {
+		taskGOOS = "openharmony"
+	}
+	if validPlatforms[taskGOOS] {
+		platformTaskName = taskGOOS + ":" + action
 	}
 
 	// Pass GOOS/ARCH through as Taskfile variables. The root build/package/run
@@ -366,8 +372,7 @@ func wrapTask(action string, otherArgs []string) error {
 	// platform-prefixed one) means any customisations in the root Taskfile are
 	// honoured, for both native and cross-compilation builds. Verbs without a
 	// root task (e.g. `sign`) still target the platform task directly. See #5615.
-	remainingArgs = append(remainingArgs, "GOOS="+goos, "ARCH="+goarch)
-
+	remainingArgs = append(remainingArgs, "GOOS="+taskGOOS, "ARCH="+goarch)
 	taskName := platformTaskName
 	if rootDispatchTasks[action] {
 		taskName = action

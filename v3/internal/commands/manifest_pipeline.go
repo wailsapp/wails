@@ -1093,6 +1093,8 @@ func (h *manifestHandler) compile(ctx context.Context, s pipeline.CompileSpec) (
 		return h.compileAndroid(ctx, s)
 	case "ios":
 		return h.compileIOS(ctx, s)
+	case "openharmony", "harmonyos":
+		return h.compileOpenHarmony(ctx, s)
 	}
 	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
 	tool, args := compileGoArgs(s)
@@ -1416,6 +1418,48 @@ func (h *manifestHandler) compileAndroid(ctx context.Context, s pipeline.Compile
 	return pipeline.RunResult{Detail: result}, err
 }
 
+func (h *manifestHandler) compileOpenHarmony(ctx context.Context, s pipeline.CompileSpec) (pipeline.RunResult, error) {
+	sdk := os.Getenv("DEVECO_SDK_HOME")
+	if sdk == "" {
+		return pipeline.RunResult{}, fmt.Errorf("OpenHarmony builds require DEVECO_SDK_HOME (DevEco Studio SDK root)")
+	}
+	native := filepath.Join(sdk, "default", "openharmony", "native")
+	clang := filepath.Join(native, "llvm", "bin", "clang")
+	sysroot := filepath.Join(native, "sysroot")
+	if manifestHostOS == "windows" {
+		clang += ".exe"
+	}
+	if _, err := os.Stat(clang); err != nil {
+		return pipeline.RunResult{}, fmt.Errorf("OpenHarmony clang not found at %s: %w", clang, err)
+	}
+	triple := "aarch64-linux-ohos"
+	if s.TargetArch == "amd64" {
+		triple = "x86_64-linux-ohos"
+	} else if s.TargetArch != "arm64" {
+		return pipeline.RunResult{}, fmt.Errorf("unsupported OpenHarmony architecture %s", s.TargetArch)
+	}
+
+	output := filepath.Join(h.root, filepath.FromSlash(s.Output))
+	cc := fmt.Sprintf("\"%s\" --target=%s \"--sysroot=%s\"", clang, triple, sysroot)
+	tool, args := compileGoArgs(s)
+	args = append(args, "-buildmode=c-shared", "-overlay", filepath.Join(h.root, s.Assets, "openharmony", "overlay.json"))
+	env := []string{"GOOS=openharmony", "GOARCH=" + s.TargetArch, "CGO_ENABLED=1", "CC=" + cc}
+	var result string
+	err := producePathTransactional(output, ".ohos-compile-output-*", func(staged string) error {
+		var runErr error
+		result, runErr = runManifestCommand(ctx, h.root, env, tool, append(args, "-o", staged, executablePackage(s.Package))...)
+		if runErr != nil {
+			return runErr
+		}
+		header, err := os.ReadFile(staged + ".h")
+		if err != nil {
+			return fmt.Errorf("read generated c-shared header: %w", err)
+		}
+		return os.WriteFile(strings.TrimSuffix(output, ".so")+".h", header, 0o644)
+	})
+	return pipeline.RunResult{Detail: result}, err
+}
+
 func (h *manifestHandler) compileIOS(ctx context.Context, s pipeline.CompileSpec) (pipeline.RunResult, error) {
 	if manifestHostOS != "darwin" {
 		return pipeline.RunResult{}, fmt.Errorf("iOS builds require macOS and Xcode")
@@ -1529,11 +1573,17 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		return pipeline.RunResult{}, err
 	}
 	defer os.RemoveAll(staged)
-	source := filepath.Join(tmp, s.TargetOS)
-	if err := copyManifestPath(source, filepath.Join(staged, s.TargetOS)); err != nil {
+	assetsOS := s.TargetOS
+	if s.TargetOS == "harmonyos" {
+		// The commercial HarmonyOS shell reuses the OpenHarmony asset tree;
+		// only the staged build-profile runtimeOS differs at package time.
+		assetsOS = "openharmony"
+	}
+	source := filepath.Join(tmp, assetsOS)
+	if err := copyManifestPath(source, filepath.Join(staged, assetsOS)); err != nil {
 		return pipeline.RunResult{}, err
 	}
-	_ = os.Remove(filepath.Join(staged, s.TargetOS, "Taskfile.yml"))
+	_ = os.Remove(filepath.Join(staged, assetsOS, "Taskfile.yml"))
 	if err := copyManifestPath(filepath.Join(tmp, "appicon.png"), filepath.Join(staged, "appicon.png")); err != nil {
 		return pipeline.RunResult{}, err
 	}
@@ -1568,6 +1618,17 @@ func (h *manifestHandler) assets(s pipeline.AssetsSpec) (pipeline.RunResult, err
 		}
 		overlay := filepath.Join(staged, "android", "overlay.json")
 		if err := AndroidOverlayGen(&AndroidOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
+			return pipeline.RunResult{}, err
+		}
+		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	case "openharmony", "harmonyos":
+		// The OpenHarmony/HarmonyOS shell is a c-shared Go library plus an
+		// ArkTS application. The overlay injects the bridge exports into the
+		// app's main package, mirroring the Android and iOS overlays.
+		overlay := filepath.Join(staged, assetsOS, "overlay.json")
+		if err := OpenHarmonyOverlayGen(&OpenHarmonyOverlayGenOptions{Out: overlay, Config: resolvedConfig}); err != nil {
 			return pipeline.RunResult{}, err
 		}
 		if err := rebaseGeneratedOverlay(overlay, staged, output); err != nil {
@@ -1706,6 +1767,10 @@ func manifestSigningPlatform(signing manifest.Signing, targetOS string) *manifes
 		return &signing.IOS
 	case "android":
 		return &signing.Android
+	case "openharmony":
+		return &signing.OpenHarmony
+	case "harmonyos":
+		return &signing.HarmonyOS
 	default:
 		return nil
 	}
@@ -1774,6 +1839,8 @@ func (h *manifestHandler) applyUserPlatformInputs(assetsRoot, targetOS, binaryNa
 		replacements = []replacement{{"icon", platform.Icon, "ios/icon.png"}, {"assets_car", platform.AssetsCar, "ios/xcode/main/Assets.car"}, {"info_plist", platform.InfoPlist, "ios/xcode/main/Info.plist"}}
 	case "android":
 		replacements = []replacement{{"manifest", platform.Manifest, "android/app/src/main/AndroidManifest.xml"}}
+	case "openharmony", "harmonyos":
+		replacements = []replacement{{"icon", platform.Icon, filepath.Join("openharmony", "AppScope", "resources", "base", "media", "app_icon.png")}}
 	}
 	for _, item := range replacements {
 		if item.source == "" {
@@ -1802,6 +1869,10 @@ func manifestPlatform(targets manifest.Targets, targetOS string) *manifest.Platf
 		return &targets.IOS
 	case "android":
 		return &targets.Android
+	case "openharmony":
+		return &targets.OpenHarmony
+	case "harmonyos":
+		return &targets.HarmonyOS
 	default:
 		return nil
 	}
@@ -2094,6 +2165,8 @@ func (h *manifestHandler) packageArtifact(ctx context.Context, s pipeline.Packag
 		return h.packageIOS(ctx, s, true)
 	case "apk", "aab":
 		return h.packageAndroid(ctx, s)
+	case "hap", "hos_hap":
+		return h.packageOpenHarmony(ctx, s)
 	default:
 		return pipeline.RunResult{}, fmt.Errorf("unsupported package format %q", s.Format)
 	}
@@ -2628,6 +2701,102 @@ func (h *manifestHandler) packageAndroid(ctx context.Context, s pipeline.Package
 	return pipeline.RunResult{Detail: output}, nil
 }
 
+func openHarmonyABI(arch string) (string, error) {
+	switch arch {
+	case "arm64":
+		return "arm64-v8a", nil
+	case "amd64":
+		return "x86_64", nil
+	default:
+		return "", fmt.Errorf("unsupported OpenHarmony architecture %s", arch)
+	}
+}
+
+func (h *manifestHandler) packageOpenHarmony(ctx context.Context, s pipeline.PackageSpec) (pipeline.RunResult, error) {
+	sdk := os.Getenv("DEVECO_SDK_HOME")
+	if sdk == "" {
+		return pipeline.RunResult{}, fmt.Errorf("OpenHarmony packaging requires DEVECO_SDK_HOME (DevEco Studio SDK root)")
+	}
+	studio := filepath.Dir(sdk)
+	hvigorw := filepath.Join(studio, "tools", "hvigor", "bin", "hvigorw")
+	if manifestHostOS == "windows" {
+		hvigorw += ".bat"
+	}
+	if _, err := os.Stat(hvigorw); err != nil {
+		return pipeline.RunResult{}, fmt.Errorf("hvigorw not found at %s: %w", hvigorw, err)
+	}
+	workspace := h.packageWorkspace(s)
+	if err := os.MkdirAll(filepath.Dir(workspace), 0o755); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	staged, err := os.MkdirTemp(filepath.Dir(workspace), ".ohos-package-stage-*")
+	if err != nil {
+		return pipeline.RunResult{}, err
+	}
+	defer os.RemoveAll(staged)
+	source := filepath.Join(h.root, s.Assets, "openharmony")
+	if err := copyManifestPath(source, staged); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	if err := applyHarmonyOSFormatProfile(staged, s.Format); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	binaries := s.Binaries
+	if len(binaries) == 0 {
+		binaries = []pipeline.ComponentBinary{{Arch: s.TargetArch, Path: s.Binary}}
+	}
+	abis := make([]string, 0, len(binaries))
+	for _, binary := range binaries {
+		abi, err := openHarmonyABI(binary.Arch)
+		if err != nil {
+			return pipeline.RunResult{}, err
+		}
+		abis = append(abis, abi)
+		lib := filepath.Join(staged, "app", "src", "main", "cpp", "libs", abi, "libwails_go.so")
+		if err := copyManifestPath(filepath.Join(h.root, binary.Path), lib); err != nil {
+			return pipeline.RunResult{}, err
+		}
+		header := strings.TrimSuffix(filepath.Join(h.root, binary.Path), ".so") + ".h"
+		if err := copyManifestPath(header, filepath.Join(staged, "app", "src", "main", "cpp", "include", "libwails_go.h")); err != nil {
+			return pipeline.RunResult{}, err
+		}
+	}
+	if err := patchOpenHarmonyABIFilters(staged, abis); err != nil {
+		return pipeline.RunResult{}, fmt.Errorf("patch abiFilters: %w", err)
+	}
+	output, err := runManifestCommand(ctx, staged, []string{"OHOS_BASE_SDK_HOME=" + filepath.Join(sdk, "default")}, hvigorw, "assembleHap", "--no-daemon")
+	if err != nil {
+		return pipeline.RunResult{Detail: output}, err
+	}
+	if err := replacePathTransactional(staged, workspace); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	produced := filepath.Join(workspace, "app", "build", "default", "outputs", "default", "entry-default-unsigned.hap")
+	if err := copyPathTransactional(produced, filepath.Join(h.root, s.Output), ".ohos-output-*"); err != nil {
+		return pipeline.RunResult{}, err
+	}
+	return pipeline.RunResult{Detail: output}, nil
+}
+// patchOpenHarmonyABIFilters rewrites the generated shell's hardcoded
+// abiFilters to the ABIs actually staged for this build. The embedded
+// openharmony template pins ["x86_64"]; without this, an arm64 build packages
+// no native library and hvigor fails on a missing x86_64/libentry.so.
+func patchOpenHarmonyABIFilters(staged string, abis []string) error {
+	path := filepath.Join(staged, "app", "build-profile.json5")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	quoted := make([]string, 0, len(abis))
+	for _, abi := range abis {
+		quoted = append(quoted, fmt.Sprintf("%q", abi))
+	}
+	updated := regexp.MustCompile(`"abiFilters"\s*:\s*\[[^\]]*\]`).ReplaceAll(data,
+		[]byte(`"abiFilters": [`+strings.Join(quoted, ", ")+`]`))
+	return os.WriteFile(path, updated, 0o644)
+}
+
+
 func androidABI(arch string) (string, error) {
 	switch arch {
 	case "arm64":
@@ -2829,6 +2998,10 @@ func (h *manifestHandler) packageIPA(ctx context.Context, s pipeline.PackageSpec
 func (h *manifestHandler) sign(ctx context.Context, s pipeline.SignSpec) (pipeline.RunResult, error) {
 	if !s.Config.Enabled {
 		return pipeline.RunResult{}, fmt.Errorf("signing is not enabled for %s", s.TargetOS)
+	}
+	if s.TargetOS == "openharmony" || s.TargetOS == "harmonyos" {
+		detail, err := h.signOpenHarmony(ctx, s)
+		return pipeline.RunResult{Detail: detail}, err
 	}
 	if s.TargetOS == "windows" {
 		return h.signWindowsPackage(ctx, s)

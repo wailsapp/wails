@@ -1,0 +1,146 @@
+version: '3'
+
+includes:
+  common: ../Taskfile.yml
+
+vars:
+  # The DevEco emulator runs the host architecture; physical devices are arm64.
+  HOST_ARCH:
+    sh: '[ "$(uname -m)" = "x86_64" ] && echo "amd64" || echo "arm64"'
+
+tasks:
+  install:deps:
+    summary: Check and report OpenHarmony development dependencies
+    cmds:
+      - go run build/openharmony/scripts/deps/install_deps.go
+    env:
+      TASK_FORCE_YES: '{{if .YES}}true{{else}}false{{end}}'
+    prompt: This will check OpenHarmony development dependencies. Continue?
+
+  build:
+    summary: Creates a debug build of the application for OpenHarmony
+    deps:
+      - task: common:go:mod:tidy
+      - task: generate:openharmony:overlay
+      - task: common:build:frontend
+        vars:
+          BUILD_FLAGS:
+            ref: .BUILD_FLAGS
+          PRODUCTION:
+            ref: .PRODUCTION
+    cmds:
+      - echo "Building OpenHarmony app {{.APP_NAME}}..."
+      - task: compile:go:shared
+        vars:
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,openharmony -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags openharmony,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+    env:
+      PRODUCTION: '{{.PRODUCTION | default "false"}}'
+
+  generate:openharmony:overlay:
+    internal: true
+    summary: Generate the Go build overlay that registers the OpenHarmony main
+    sources:
+      - build/config.yml
+    generates:
+      - build/openharmony/overlay.json
+      - build/openharmony/gen/main_openharmony.gen.go
+    cmds:
+      - wails3 openharmony overlay:gen -out build/openharmony/overlay.json -config build/config.yml
+
+  compile:go:shared:
+    internal: true
+    summary: Compile Go code to an OpenHarmony c-shared library (.so)
+    preconditions:
+      - sh: '[ -n "$DEVECO_SDK_HOME" ]'
+        msg: "DEVECO_SDK_HOME is not set. Install DevEco Studio and set DEVECO_SDK_HOME to its sdk directory"
+    vars:
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,openharmony -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags openharmony,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      TRIPLE: '{{if eq .ARCH "arm64"}}aarch64-linux-ohos{{else if eq .ARCH "amd64"}}x86_64-linux-ohos{{else}}unsupported{{end}}'
+      OHOS_ABI: '{{if eq .ARCH "arm64"}}arm64-v8a{{else}}x86_64{{end}}'
+    cmds:
+      - |
+        set -eu
+        case "{{.ARCH}}" in
+          arm64|amd64) ;;
+          *) echo "Unsupported architecture: {{.ARCH}} (use amd64 or arm64)"; exit 1 ;;
+        esac
+
+        SDK="${DEVECO_SDK_HOME:-}"
+        SDK="${SDK//\\//}"
+        NATIVE="$SDK/default/openharmony/native"
+        CLANG="$NATIVE/llvm/bin/clang{{if eq OS "windows"}}.exe{{end}}"
+        SYSROOT="$NATIVE/sysroot"
+        if [ ! -f "$CLANG" ]; then
+          echo "OpenHarmony clang not found at $CLANG"
+          exit 1
+        fi
+        if [ ! -d "$SYSROOT" ]; then
+          echo "OpenHarmony sysroot not found at $SYSROOT"
+          exit 1
+        fi
+
+        LIB_DIR="build/openharmony/app/src/main/cpp/libs/{{.OHOS_ABI}}"
+        INC_DIR="build/openharmony/app/src/main/cpp/include"
+        mkdir -p "$LIB_DIR" "$INC_DIR"
+
+        # The generated module profile pins abiFilters to x86_64. Keep it in
+        # sync with the selected ABI so hvigor packages the matching library.
+        PROFILE="build/openharmony/app/build-profile.json5"
+        if [ -f "$PROFILE" ] && ! grep -q '"{{.OHOS_ABI}}"' "$PROFILE"; then
+          sed -i'' 's/"x86_64"/"{{.OHOS_ABI}}"/' "$PROFILE"
+        fi
+
+        export GOOS=openharmony
+        export GOARCH="{{.ARCH}}"
+        export CGO_ENABLED=1
+        export CC="\"$CLANG\" --target={{.TRIPLE}} \"--sysroot=$SYSROOT\""
+
+        go build -buildmode=c-shared -overlay build/openharmony/overlay.json {{.BUILD_FLAGS}} -o "$LIB_DIR/libwails_go.so"
+        cp "$LIB_DIR/libwails_go.h" "$INC_DIR/libwails_go.h"
+        echo "Go shared library: $LIB_DIR/libwails_go.so"
+
+
+  package:
+    summary: Packages a production build of the application into an unsigned HAP
+    deps:
+      - task: build
+        vars:
+          PRODUCTION: "true"
+          ARCH: '{{.ARCH | default .HOST_ARCH}}'
+    cmds:
+      - task: assemble:hap
+
+  assemble:hap:
+    summary: Assembles an unsigned HAP with DevEco Studio's hvigor
+    preconditions:
+      - sh: '[ -n "$DEVECO_SDK_HOME" ]'
+        msg: "DEVECO_SDK_HOME is not set. Install DevEco Studio and set DEVECO_SDK_HOME to its sdk directory"
+    cmds:
+      - |
+        set -eu
+        SDK="${DEVECO_SDK_HOME:-}"
+        SDK="${SDK//\\//}"
+        # hvigorw lives alongside the SDK, under the DevEco Studio tools dir.
+        STUDIO=$(dirname "$SDK")
+        HVIGORW="$STUDIO/tools/hvigor/bin/hvigorw{{if eq OS "windows"}}.bat{{end}}"
+        if [ ! -f "$HVIGORW" ]; then
+          echo "hvigorw not found at $HVIGORW"
+          exit 1
+        fi
+
+        mkdir -p "{{.BIN_DIR}}"
+        cd build/openharmony
+        OHOS_BASE_SDK_HOME="$SDK/default" "$HVIGORW" assembleHap --no-daemon
+        cp "app/build/default/outputs/default/entry-default-unsigned.hap" "../../{{.BIN_DIR}}/{{.APP_NAME}}.hap"
+        echo "HAP created: {{.BIN_DIR}}/{{.APP_NAME}}.hap"
+
+  clean:
+    summary: Clean OpenHarmony build artifacts
+    cmds:
+      - rm -rf build/openharmony/app/build
+      - rm -rf build/openharmony/app/src/main/cpp/libs
+      - rm -rf build/openharmony/app/src/main/cpp/include/libwails_go.h
+      - rm -f build/openharmony/overlay.json
+      - rm -rf build/openharmony/gen

@@ -17,6 +17,7 @@ includes:
   linux: ./build/linux/Taskfile.yml
   ios: ./build/ios/Taskfile.yml
   android: ./build/android/Taskfile.yml
+  openharmony: ./build/openharmony/Taskfile.yml
 
 tasks:
   build:

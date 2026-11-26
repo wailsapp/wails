@@ -1,0 +1,8 @@
+/node_modules
+/oh_modules
+/.preview
+/build
+/.cxx
+/.test
+/src/main/cpp/include/libhomecast_go.h
+/src/main/cpp/libs/

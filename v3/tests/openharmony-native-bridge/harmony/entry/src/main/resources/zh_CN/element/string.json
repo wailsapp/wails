@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "HomeCast 鸿蒙壳"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "HomeCast 音乐播放器"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "HomeCast"
+    }
+  ]
+}

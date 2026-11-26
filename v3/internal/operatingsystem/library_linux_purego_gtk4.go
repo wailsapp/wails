@@ -1,4 +1,4 @@
-//go:build linux && purego && !gtk3 && !android
+//go:build linux && purego && !gtk3 && !android && !openharmony
 
 package operatingsystem
 

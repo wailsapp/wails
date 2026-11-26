@@ -14,7 +14,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `android.comments` | `string` | no |  | `"value"` | `ios,android` | Additional package metadata comments. |
 | `android.company` | `string` | no |  | `"value"` | `ios,android` | Company or organisation name. |
 | `android.display_name` | `string` | no |  | `"Example App"` | `ios,android` | Name displayed by the mobile platform. |
-| `android.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Project-relative user-owned icon file. |
+| `android.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
 | `android.manifest` | `string` | no |  | `"assets/manifest.xml"` | `windows,android` | Project-relative user-owned platform or package manifest. |
 | `android.minimum_sdk` | `integer` | no |  | `24` | `android` | Minimum supported Android SDK level. |
 | `android.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
@@ -54,7 +54,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `darwin.build_number` | `integer` | no |  | `1` | `windows,darwin,linux,ios` | Platform build number. |
 | `darwin.capabilities` | `list(string)` | no |  | `["internetClient"]` | `windows,darwin,linux,ios` | Native platform capabilities requested by the application. |
 | `darwin.cf_bundle_icon_name` | `string` | no |  | `"AppIcon"` | `darwin,ios` | Apple asset-catalogue icon set name. |
-| `darwin.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Project-relative user-owned icon file. |
+| `darwin.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
 | `darwin.identifier` | `string` | no |  | `"com.example.app"` | `windows,darwin,linux` | Reverse-domain application identifier. |
 | `darwin.info_plist` | `string` | no |  | `"assets/Info.plist"` | `darwin,ios` | User-owned Apple Info.plist file. |
 | `darwin.microphone_usage_description` | `string` | no |  | `"value"` | `darwin` | macOS microphone permission text; generates the audio-input entitlement unless a user-owned entitlement file is configured. |
@@ -106,6 +106,17 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `frontend.environment` | `map(string)` | no | `{}` | `{RELEASE: "true"}` |  | Environment variables added to this operation. |
 | `frontend.install` | `list(string)` | no | `["npm","install"]` | `["npm","install"]` |  | Frontend dependency installation command and arguments. |
 | `frontend.output` | `string` | no | `dist` | `"dist"` |  | Project-relative output directory. |
+| `harmonyos` | `object` | no |  | `{}` |  | HarmonyOS platform settings. |
+| `harmonyos.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
+| `harmonyos.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
+| `harmonyos.signing.certificate` | `string` | no |  | `"signing/harmonyos.p12"` |  | Project-relative HarmonyOS signing keystore (.p12) file. |
+| `harmonyos.signing.credential` | `string` | no |  | `"OHOS_SIGNING_PASSWORD"` |  | Name of the environment variable containing the .p12 keystore password; never the password itself. |
+| `harmonyos.signing.entitlements` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `harmonyos.signing.identity` | `string` | no |  | `"wails"` |  | HarmonyOS signing key alias in the .p12 keystore. |
+| `harmonyos.signing.key_alias` | `string` | no |  | `"wails"` |  | Alias of the HarmonyOS signing key in the .p12. |
+| `harmonyos.signing.provisioning_profile` | `string` | no |  | `"signing/harmonyos.p7b"` |  | Project-relative HarmonyOS provisioning profile (.p7b). |
+| `harmonyos.signing.thumbprint` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `harmonyos.signing.timestamp_server` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `hooks` | `map(object)` | no |  | `{}` |  | Named build lifecycle hooks. |
 | `hooks["phase"].cache` | `boolean` | no | `false` | `false` |  | Allow this hook to use the artifact cache; complete inputs and outputs are required. |
 | `hooks["phase"].directory` | `string` | no |  | `"value"` |  | Project-relative working directory used to invoke the hook. |
@@ -122,7 +133,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `ios.comments` | `string` | no |  | `"value"` | `ios,android` | Additional package metadata comments. |
 | `ios.company` | `string` | no |  | `"value"` | `ios,android` | Company or organisation name. |
 | `ios.display_name` | `string` | no |  | `"Example App"` | `ios,android` | Name displayed by the mobile platform. |
-| `ios.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Project-relative user-owned icon file. |
+| `ios.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
 | `ios.info_plist` | `string` | no |  | `"assets/Info.plist"` | `darwin,ios` | User-owned Apple Info.plist file. |
 | `ios.minimum_version` | `string` | no |  | `"12.0"` | `windows,darwin,linux,ios` | Minimum supported operating-system version. |
 | `ios.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
@@ -138,7 +149,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `linux.build_number` | `integer` | no |  | `1` | `windows,darwin,linux,ios` | Platform build number. |
 | `linux.capabilities` | `list(string)` | no |  | `["internetClient"]` | `windows,darwin,linux,ios` | Native platform capabilities requested by the application. |
 | `linux.desktop_entry` | `string` | no |  | `"assets/app.desktop"` | `linux` | User-owned Linux desktop-entry file. |
-| `linux.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Project-relative user-owned icon file. |
+| `linux.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
 | `linux.identifier` | `string` | no |  | `"com.example.app"` | `windows,darwin,linux` | Reverse-domain application identifier. |
 | `linux.minimum_version` | `string` | no |  | `"12.0"` | `windows,darwin,linux,ios` | Minimum supported operating-system version. |
 | `linux.product_name` | `string` | no |  | `"value"` | `windows,darwin,linux` | Human-readable product name. |
@@ -151,6 +162,17 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `linux.signing.provisioning_profile` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `linux.signing.thumbprint` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `linux.signing.timestamp_server` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `openharmony` | `object` | no |  | `{}` |  | OpenHarmony platform settings. |
+| `openharmony.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
+| `openharmony.signing` | `object` | no |  | `{}` |  | Platform signing settings. |
+| `openharmony.signing.certificate` | `string` | no |  | `"signing/openharmony.p12"` |  | Project-relative OpenHarmony signing keystore (.p12) file. |
+| `openharmony.signing.credential` | `string` | no |  | `"OHOS_SIGNING_PASSWORD"` |  | Name of the environment variable containing the .p12 keystore password; never the password itself. |
+| `openharmony.signing.entitlements` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `openharmony.signing.identity` | `string` | no |  | `"wails"` |  | OpenHarmony signing key alias in the .p12 keystore. |
+| `openharmony.signing.key_alias` | `string` | no |  | `"wails"` |  | Alias of the OpenHarmony signing key in the .p12. |
+| `openharmony.signing.provisioning_profile` | `string` | no |  | `"signing/openharmony.p7b"` |  | Project-relative OpenHarmony provisioning profile (.p7b). |
+| `openharmony.signing.thumbprint` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
+| `openharmony.signing.timestamp_server` | `string` | no |  | `""` |  | Not used by this platform's signing operation. |
 | `packages` | `map(object)` | no |  | `{}` |  | Named package format settings. |
 | `packages["format"].background` | `string` | no |  | `"assets/dmg-background.png"` | `dmg` | User-owned DMG background image. |
 | `packages["format"].categories` | `list(string)` | no |  | `["Development"]` | `appimage` | Desktop menu categories. |
@@ -230,7 +252,7 @@ Fields are listed using schema paths. Named maps use placeholders such as `targe
 | `windows` | `object` | no |  | `{}` |  | Windows platform settings. |
 | `windows.build_number` | `integer` | no |  | `1` | `windows,darwin,linux,ios` | Platform build number. |
 | `windows.capabilities` | `list(string)` | no |  | `["internetClient"]` | `windows,darwin,linux,ios` | Native platform capabilities requested by the application. |
-| `windows.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android` | Project-relative user-owned icon file. |
+| `windows.icon` | `string` | no |  | `"assets/appicon.png"` | `windows,darwin,linux,ios,android,openharmony,harmonyos` | Project-relative user-owned icon file. |
 | `windows.identifier` | `string` | no |  | `"com.example.app"` | `windows,darwin,linux` | Reverse-domain application identifier. |
 | `windows.manifest` | `string` | no |  | `"assets/manifest.xml"` | `windows,android` | Project-relative user-owned platform or package manifest. |
 | `windows.minimum_version` | `string` | no |  | `"12.0"` | `windows,darwin,linux,ios` | Minimum supported operating-system version. |

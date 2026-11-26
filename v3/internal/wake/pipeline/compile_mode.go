@@ -67,7 +67,7 @@ func compileMode(spec CompileSpec, inherited string) (string, error) {
 	if mode != "0" && mode != "1" {
 		return "", fmt.Errorf("CGO_ENABLED must be 0 or 1, got %q", mode)
 	}
-	if mode == "0" && (spec.TargetOS == "android" || spec.TargetOS == "ios") {
+	if mode == "0" && (spec.TargetOS == "android" || spec.TargetOS == "ios" || spec.TargetOS == "openharmony" || spec.TargetOS == "harmonyos") {
 		return "", fmt.Errorf("mobile targets require CGO_ENABLED=1")
 	}
 	return mode, nil

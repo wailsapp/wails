@@ -5,7 +5,7 @@ slug: "guides/mobile"
 sourcePath: "guides/mobile/index.md"
 ---
 
-Wails v3 runs on **iOS and Android** using the same `main.go` and frontend you already write for desktop. There is no separate mobile project, no code-sharing bridge, and no rewrite: the Go binary is compiled for the mobile target and a native WebView renders your existing frontend.
+Wails v3 runs on **iOS, Android and OpenHarmony** using the same `main.go` and frontend you already write for desktop. There is no separate mobile project, no code-sharing bridge, and no rewrite: the Go binary is compiled for the mobile target and a native WebView renders your existing frontend. OpenHarmony support is experimental — see the [OpenHarmony Guide](/guides/mobile/openharmony/) for its verified status and boundaries.
 
 @cards{cols="2"}
 iOS
@@ -18,6 +18,12 @@ Android
 Android WebView + `WebViewAssetLoader`. Go compiled as `libwails.so` via the NDK. Works on macOS, Linux, and Windows.
 
 [Android Guide →](/guides/mobile/android/)
+
+---
+OpenHarmony
+ArkWeb + a Stage-model `UIAbility` host. Assets served from a local `https://wails.localhost/` origin through the Go asset server — no open ports. Built as a HAP via the experimental [Wake pipeline](/experimental/wake/).
+
+[OpenHarmony Guide →](/guides/mobile/openharmony/)
 
 @end
 

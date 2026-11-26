@@ -10,18 +10,24 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 		"windows": {"Project-relative exported RSA PFX identity for portable PE/MSIX signing on any desktop host. AES/PBKDF2 and 3DES supported; native Windows SignTool handles RC2 exports. Alternatively configure thumbprint.", `"signing/windows.pfx"`},
 		"linux":   {"Exported armored or binary OpenPGP private-key file for native DEB, RPM or Arch signing. Bare GnuPG key identifiers retain the external DEB/RPM signer.", `"signing/private-key.asc"`},
 		"android": {"Project-relative Android signing keystore file.", `"signing/upload.jks"`},
+		"openharmony": {"Project-relative OpenHarmony signing keystore (.p12) file.", `"signing/openharmony.p12"`},
+		"harmonyos": {"Project-relative HarmonyOS signing keystore (.p12) file.", `"signing/harmonyos.p12"`},
 	},
 	"identity": {
 		"darwin":  {"macOS code-signing identity from the keychain; use - for portable ad-hoc signing, or configure an exported certificate.", `"Developer ID Application: Example"`},
 		"ios":     {"Apple code-signing identity from the macOS keychain.", `"Apple Development: Example"`},
 		"linux":   {"DEB signing role; defaults to builder. Not used by the Arch detached signer.", `"builder"`},
 		"android": {"Android signing key alias when key_alias is omitted.", `"upload"`},
+		"openharmony": {"OpenHarmony signing key alias in the .p12 keystore.", `"wails"`},
+		"harmonyos": {"HarmonyOS signing key alias in the .p12 keystore.", `"wails"`},
 	},
 	"credential": {
 		"darwin":  {"Name of the environment variable containing the exported PKCS#12 identity password; never the password itself.", `"APPLE_SIGNING_PASSWORD"`},
 		"windows": {"Name of the environment variable containing the PFX certificate password; never the password itself.", `"WINDOWS_SIGNING_PASSWORD"`},
 		"linux":   {"Optional environment variable containing the exported private-key passphrase; omit for an unencrypted key.", `"LINUX_SIGNING_PASSPHRASE"`},
 		"android": {"Name of the environment variable containing the keystore password; never the password itself.", `"ANDROID_SIGNING_PASSWORD"`},
+		"openharmony": {"Name of the environment variable containing the .p12 keystore password; never the password itself.", `"OHOS_SIGNING_PASSWORD"`},
+		"harmonyos": {"Name of the environment variable containing the .p12 keystore password; never the password itself.", `"OHOS_SIGNING_PASSWORD"`},
 	},
 	"entitlements": {
 		"darwin": {"Project-relative Apple entitlements file.", `"signing/entitlements.plist"`},
@@ -29,6 +35,8 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	},
 	"provisioning_profile": {
 		"ios": {"Project-relative Apple provisioning profile.", `"signing/app.mobileprovision"`},
+		"openharmony": {"Project-relative OpenHarmony provisioning profile (.p7b).", `"signing/openharmony.p7b"`},
+		"harmonyos": {"Project-relative HarmonyOS provisioning profile (.p7b).", `"signing/harmonyos.p7b"`},
 	},
 	"thumbprint": {
 		"windows": {"Thumbprint of a certificate in the Windows certificate store; requires Windows with SignTool.", `"0123456789ABCDEF"`},
@@ -39,6 +47,8 @@ var signingFieldDescriptions = map[string]map[string]signingFieldMetadata{
 	},
 	"key_alias": {
 		"android": {"Alias of the Android signing key.", `"upload"`},
+		"openharmony": {"Alias of the OpenHarmony signing key in the .p12.", `"wails"`},
+		"harmonyos": {"Alias of the HarmonyOS signing key in the .p12.", `"wails"`},
 	},
 }
 

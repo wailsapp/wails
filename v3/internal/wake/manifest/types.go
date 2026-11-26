@@ -219,11 +219,13 @@ type Dev struct {
 }
 
 type Targets struct {
-	Windows Platform `json:"windows"`
-	Darwin  Platform `json:"darwin"`
-	Linux   Platform `json:"linux"`
-	IOS     Platform `json:"ios"`
-	Android Platform `json:"android"`
+	Windows     Platform `json:"windows"`
+	Darwin      Platform `json:"darwin"`
+	Linux       Platform `json:"linux"`
+	IOS         Platform `json:"ios"`
+	Android     Platform `json:"android"`
+	OpenHarmony Platform `json:"openharmony"`
+	HarmonyOS   Platform `json:"harmonyos"`
 }
 
 type Platform struct {
@@ -272,11 +274,13 @@ type Target struct {
 }
 
 type Packages struct {
-	Windows PackagePlatform `json:"windows"`
-	Darwin  PackagePlatform `json:"darwin"`
-	Linux   PackagePlatform `json:"linux"`
-	IOS     PackagePlatform `json:"ios"`
-	Android PackagePlatform `json:"android"`
+	Windows     PackagePlatform `json:"windows"`
+	Darwin      PackagePlatform `json:"darwin"`
+	Linux       PackagePlatform `json:"linux"`
+	IOS         PackagePlatform `json:"ios"`
+	Android     PackagePlatform `json:"android"`
+	OpenHarmony PackagePlatform `json:"openharmony"`
+	HarmonyOS   PackagePlatform `json:"harmonyos"`
 }
 
 type PackagePlatform struct {
@@ -293,6 +297,8 @@ type PackagePlatform struct {
 	IPA       RunnablePackage `json:"ipa,omitempty"`
 	APK       RunnablePackage `json:"apk,omitempty"`
 	AAB       RunnablePackage `json:"aab,omitempty"`
+	HAP       RunnablePackage `json:"hap,omitempty"`
+	HOSHAP    RunnablePackage `json:"hos_hap,omitempty"`
 }
 
 type RunnablePackage struct{}
@@ -371,11 +377,13 @@ type PackageFormat struct {
 }
 
 type Signing struct {
-	Windows SigningPlatform `json:"windows"`
-	Darwin  SigningPlatform `json:"darwin"`
-	Linux   SigningPlatform `json:"linux"`
-	IOS     SigningPlatform `json:"ios"`
-	Android SigningPlatform `json:"android"`
+	Windows     SigningPlatform `json:"windows"`
+	Darwin      SigningPlatform `json:"darwin"`
+	Linux       SigningPlatform `json:"linux"`
+	IOS         SigningPlatform `json:"ios"`
+	Android     SigningPlatform `json:"android"`
+	OpenHarmony SigningPlatform `json:"openharmony"`
+	HarmonyOS   SigningPlatform `json:"harmonyos"`
 }
 
 // GlobalSigningPaths records exact paths resolved from user-level defaults.

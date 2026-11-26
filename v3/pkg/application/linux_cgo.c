@@ -1,4 +1,4 @@
-//go:build linux && !android && !gtk3 && !purego && !server
+//go:build linux && !android && !openharmony && !gtk3 && !purego && !server
 
 #include "linux_cgo.h"
 

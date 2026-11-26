@@ -85,7 +85,7 @@ func updateInitialState(start string, project Project, initial *InitialState) er
 // UpdateSigningPlatform replaces the project signing intent for one platform
 // without disturbing any other manifest content.
 func UpdateSigningPlatform(start, platform string, signing SigningPlatform) error {
-	if !contains([]string{"windows", "darwin", "linux", "ios", "android"}, platform) {
+	if !contains([]string{"windows", "darwin", "linux", "ios", "android", "openharmony", "harmonyos"}, platform) {
 		return fmt.Errorf("unsupported signing platform %q", platform)
 	}
 	return updateManifest(start, func(root *yaml.Node) error {

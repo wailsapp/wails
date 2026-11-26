@@ -1,4 +1,4 @@
-//go:build ios || android || server
+//go:build ios || android || openharmony || server
 
 package application
 

@@ -104,6 +104,8 @@ var schemaBlockDescriptions = map[string]string{
 	"linux":            "Linux platform settings.",
 	"ios":              "iOS platform settings.",
 	"android":          "Android platform settings.",
+	"openharmony":      "OpenHarmony platform settings.",
+	"harmonyos":        "HarmonyOS platform settings.",
 	"target":           "Named target overrides.",
 	"package":          "Named package format settings.",
 	"profile":          "Named production build profiles.",

@@ -294,6 +294,36 @@ jobs:
         working-directory: v3
         run: task generator:test:check
 
+  test_openharmony_registration:
+    # Registration/planning coverage only: CI has no DevEco SDK, so hvigor
+    # packaging and real HAP builds are intentionally not exercised here.
+    name: OpenHarmony Registration Tests
+    needs: [changes]
+    if: needs.changes.outputs.v3 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          cache: true
+          cache-dependency-path: |
+            v3/go.sum
+
+      - name: Test OpenHarmony registry, planner and manifest adapters
+        working-directory: v3
+        run: |
+          go test ./internal/wake/buildinfo/ ./internal/wake/pipeline/ ./internal/commands/ -run 'OH|OpenHarmony|openharmony|HarmonyOS|harmonyos|hos_hap' -count=1
+
   cleanup:
     name: Cleanup build artifacts
     if: always()
@@ -408,7 +438,7 @@ jobs:
     runs-on: ubuntu-latest
     name: v3 Build Results
     permissions: {}
-    needs: [changes, test_go, test_js, test_templates, test_mac_private_apis, cross-compile, gtk3-menus, msix]
+    needs: [changes, test_go, test_js, test_openharmony_registration, test_templates, test_mac_private_apis, cross-compile, gtk3-menus, msix]
     steps:
       - run: |
           # A failed change check would skip every test job, so it must pass.
@@ -420,7 +450,7 @@ jobs:
             echo "No v3 changes"
             exit 0
           fi
-          for result in "${{ needs.test_go.result }}" "${{ needs.test_js.result }}"; do
+          for result in "${{ needs.test_go.result }}" "${{ needs.test_js.result }}" "${{ needs.test_openharmony_registration.result }}"; do
             [[ "$result" == success ]] || exit 1
           done
           for result in "${{ needs.test_templates.result }}" "${{ needs.test_mac_private_apis.result }}" "${{ needs.cross-compile.result }}" "${{ needs.gtk3-menus.result }}" "${{ needs.msix.result }}"; do

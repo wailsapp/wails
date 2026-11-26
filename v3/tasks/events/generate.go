@@ -72,6 +72,17 @@ func newAndroidEvents() androidEvents {
 $$ANDROIDEVENTSVALUES	}
 }
 
+var Openharmony = newOpenharmonyEvents()
+
+type openharmonyEvents struct {
+$$OPENHARMONYEVENTSDECL}
+
+func newOpenharmonyEvents() openharmonyEvents {
+	return openharmonyEvents{
+$$OPENHARMONYEVENTSVALUES	}
+}
+
+
 func JSEvent(event uint) string {
 	return eventToJS[event]
 }
@@ -141,6 +152,8 @@ $$LINUXJSEVENTS	}),
 $$IOSJSEVENTS	}),
 	Android: Object.freeze({
 $$ANDROIDJSEVENTS	}),
+	Openharmony: Object.freeze({
+$$OPENHARMONYJSEVENTS	}),
 	Common: Object.freeze({
 $$COMMONJSEVENTS	}),
 });
@@ -186,6 +199,9 @@ func main() {
 	androidEventsDecl := bytes.NewBufferString("")
 	androidEventsValues := bytes.NewBufferString("")
 
+
+	openharmonyEventsDecl := bytes.NewBufferString("")
+	openharmonyEventsValues := bytes.NewBufferString("")
 	commonEventsDecl := bytes.NewBufferString("")
 	commonEventsValues := bytes.NewBufferString("")
 
@@ -195,6 +211,7 @@ func main() {
 	iosTSEvents := bytes.NewBufferString("")
 	androidTSEvents := bytes.NewBufferString("")
 	commonTSEvents := bytes.NewBufferString("")
+	openharmonyTSEvents := bytes.NewBufferString("")
 
 	eventToJS := bytes.NewBufferString("")
 
@@ -223,6 +240,15 @@ func main() {
 		if strings.HasSuffix(event, "!") {
 			event = strings.TrimSuffix(event, "!")
 			ignoreEvent = true
+		}
+
+		// An explicit third field pins the event ID. OpenHarmony events were
+		// appended after the common tail, so relying on the line number would
+		// shift the common IDs and collide with the existing OHOS IDs.
+		if len(split) > 2 {
+			if pinned, err := strconv.Atoi(strings.TrimSpace(string(split[2]))); err == nil {
+				id = pinned
+			}
 		}
 		// Strip last byte of line if it's a "!" character
 		if line[len(line)-1] == '!' {
@@ -312,6 +338,18 @@ func main() {
 			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"android:" + event + "\",\n")
 			// Android events are emitted from Go (JNI exports), so no C
 			// header defines or native delegate code are generated.
+		case "openharmony":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			openharmonyEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			openharmonyEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			openharmonyTSEvents.WriteString("\t\t" + event + ": \"openharmony:" + event + "\",\n")
+			eventToJS.WriteString("\t" + strconv.Itoa(id) + ": \"openharmony:" + event + "\",\n")
 		case "common":
 			eventType := "ApplicationEventType"
 			if strings.HasPrefix(event, "Window") {
@@ -429,6 +467,9 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$ANDROIDEVENTSVALUES", androidEventsValues.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSDECL", commonEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONEVENTSVALUES", commonEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$OPENHARMONYEVENTSDECL", openharmonyEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$OPENHARMONYEVENTSVALUES", openharmonyEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$OPENHARMONYJSEVENTS", openharmonyTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$EVENTTOJS", eventToJS.String())
 	err = os.WriteFile("../../pkg/events/events.go", []byte(templateToWrite), 0644)
 	if err != nil {
@@ -442,6 +483,7 @@ func main() {
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$IOSJSEVENTS", iosTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$ANDROIDJSEVENTS", androidTSEvents.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$COMMONJSEVENTS", commonTSEvents.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$OPENHARMONYJSEVENTS", openharmonyTSEvents.String())
 	err = os.WriteFile("../../internal/runtime/desktop/@wailsio/runtime/src/event_types.ts", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)

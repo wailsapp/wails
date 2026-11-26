@@ -26,6 +26,16 @@ func configureRunTarget(options *RunOptions, goos, arch string, settings manifes
 			return fmt.Errorf("Android run does not support application arguments or runtime environment overrides; move shared defaults into desktop target run blocks")
 		}
 		build.Formats = []string{"apk"}
+	case "openharmony":
+		if options.Emulator != "" || options.Destination != "" {
+			return fmt.Errorf("--emulator and --destination are not valid for OpenHarmony; use --device for the hdc target")
+		}
+		build.Formats = []string{"hap"}
+	case "harmonyos":
+		if options.Emulator != "" || options.Destination != "" {
+			return fmt.Errorf("--emulator and --destination are not valid for HarmonyOS; use --device for the hdc target")
+		}
+		build.Formats = []string{"hos_hap"}
 	case "ios":
 		if !options.Plan && runtime.GOOS != "darwin" {
 			return fmt.Errorf("iOS run requires macOS and Xcode")
@@ -79,9 +89,30 @@ func runMobileApplication(ctx context.Context, options *RunOptions, settings man
 					return artifact, spec.Project.Identifier, nil
 				}
 			}
+
 			return "", "", fmt.Errorf("Android plan has no APK application identity")
 		}
 		return androidRunWithOperations(ctx, AndroidRunOptions{Device: options.Device, Emulator: options.Emulator, Logs: true}, "", operations)
+	}
+	if goos == "openharmony" || goos == "harmonyos" {
+		device, err := resolveOpenHarmonyDevice(ctx, options.Device)
+		if err != nil {
+			return err
+		}
+		if _, err := runManifestPipelineResult(build); err != nil {
+			return err
+		}
+		bundle, err := openHarmonyBundleName(artifact)
+		if err != nil {
+			return err
+		}
+		if _, err := runManifestTool(ctx, root, "hdc", "-t", device, "install", artifact); err != nil {
+			return fmt.Errorf("install OpenHarmony application: %w", err)
+		}
+		if _, err := runManifestTool(ctx, root, "hdc", "-t", device, "shell", "aa", "start", "-b", bundle, "-a", "EntryAbility"); err != nil {
+			return fmt.Errorf("launch OpenHarmony application: %w", err)
+		}
+		return streamOpenHarmonyLogs(device, "Wails")
 	}
 	device := options.Device
 	var err error

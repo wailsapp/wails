@@ -117,7 +117,7 @@ func jsonSchemaNamedMap(name string, child *schemaNode, parent string) map[strin
 		result["additionalProperties"] = jsonSchemaNode(child, schemaPath(parent, `targets["target"]`))
 		names := buildinfo.SupportedTargetNames()
 		if parent == "" {
-			names = append(names, "windows", "darwin", "linux", "ios", "android")
+			names = append(names, "windows", "darwin", "linux", "ios", "android", "openharmony", "harmonyos")
 		}
 		sort.Strings(names)
 		result["propertyNames"] = map[string]any{"enum": names}
