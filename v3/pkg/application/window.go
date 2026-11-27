@@ -7,6 +7,7 @@ import (
 )
 
 type Window interface {
+
 	Center()
 	Close()
 	DisableSizeConstraints()
