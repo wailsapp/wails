@@ -409,7 +409,7 @@ func TestStartFrontendDevRunsResolvedNPMThroughNode(t *testing.T) {
 			require.NoError(t, os.MkdirAll(tools, 0o755))
 			require.NoError(t, os.WriteFile(filepath.Join(frontend, "package.json"), []byte(`{"scripts":{"dev":"vite"}}`), 0o644))
 			invocation := filepath.Join(root, "npm-invocation")
-			npm := "#!/bin/sh\nprintf '%s\\n%s\\n%s\\n' \"$*\" \"$FRONTEND_DEVSERVER_URL\" \"$WAILS_VITE_PORT\" > \"$WAILS_TEST_NPM_INVOCATION\"\ntrap 'exit 0' INT TERM\nwhile :; do sleep 1; done\n"
+			npm := "#!/bin/sh\nprintf '%s\\n%s\\n%s\\n' \"$*\" \"$FRONTEND_DEVSERVER_URL\" \"$WAILS_VITE_PORT\" > \"$WAILS_TEST_NPM_INVOCATION.tmp\"\nmv \"$WAILS_TEST_NPM_INVOCATION.tmp\" \"$WAILS_TEST_NPM_INVOCATION\"\ntrap 'exit 0' INT TERM\nwhile :; do sleep 1; done\n"
 			node := "#!/bin/sh\nexec \"$@\"\n"
 			require.NoError(t, os.WriteFile(filepath.Join(tools, "npm"), []byte(npm), 0o755))
 			require.NoError(t, os.WriteFile(filepath.Join(tools, "node"), []byte(node), 0o755))
