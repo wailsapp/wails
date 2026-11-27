@@ -84,3 +84,90 @@ func TestCancelledWindowClosingAllowsLaterClose(t *testing.T) {
 		t.Fatalf("native close called %d times, want 1", got)
 	}
 }
+
+// newCleanupTestApp is newCloseTestWindow's app, with the fields cleanup reads.
+func newCleanupTestApp(t *testing.T, windows int) (*App, []*closeTestWindowImpl, []*WebviewWindow) {
+	t.Helper()
+	first, firstImpl := newCloseTestWindow(t)
+	app := globalApplication
+	app.cancel = func() {}
+	impls := []*closeTestWindowImpl{firstImpl}
+	wins := []*WebviewWindow{first}
+	for i := 1; i < windows; i++ {
+		w := NewWindow(WebviewWindowOptions{})
+		impl := &closeTestWindowImpl{}
+		w.impl = impl
+		app.Window.Add(w)
+		impls = append(impls, impl)
+		wins = append(wins, w)
+	}
+	return app, impls, wins
+}
+
+// App.cleanup runs on quit. It must destroy every window itself, on the spot:
+// a Close() only queues a WindowClosing event, and cleanup empties the window
+// map straight after, so the queued event finds no window and nothing is
+// destroyed (no WebView2 shutdown on Windows).
+func TestCleanupDestroysEveryWindowSynchronously(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 2)
+
+	app.cleanup()
+
+	for i, impl := range impls {
+		if got := impl.closes.Load(); got != 1 {
+			t.Errorf("window %d: native close called %d times, want 1", i, got)
+		}
+		if !wins[i].isDestroyed() {
+			t.Errorf("window %d was not marked destroyed", i)
+		}
+	}
+}
+
+// A hook that hides to tray and cancels (the usual close-to-tray hook) must not
+// keep a window alive through app teardown: the app is quitting, not the user
+// closing one window.
+func TestCleanupBypassesWindowClosingHooks(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 1)
+	wins[0].RegisterHook(events.Common.WindowClosing, func(event *WindowEvent) {
+		event.Cancel()
+	})
+
+	app.cleanup()
+
+	if got := impls[0].closes.Load(); got != 1 {
+		t.Fatalf("native close called %d times, want 1 - a cancelling hook kept the window alive", got)
+	}
+}
+
+// A user close can already be under way when the app quits: it has claimed the
+// window (closeStarted) but its main-thread steps are still queued behind
+// cleanup, and are dropped once cleanup destroys the main-thread window.
+// cleanup must finish that close itself rather than skip the window.
+func TestCleanupFinishesACloseAlreadyInProgress(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 1)
+	wins[0].closeStarted.Store(true)
+
+	app.cleanup()
+
+	if got := impls[0].closes.Load(); got != 1 {
+		t.Fatalf("native close called %d times, want 1 - a close already in progress left the window open", got)
+	}
+	if !wins[0].isDestroyed() {
+		t.Fatal("window was not marked destroyed")
+	}
+}
+
+// The reverse: the in-progress close already shut the native window down, so
+// cleanup must not send a second WM_CLOSE (that would run the webview shutdown
+// twice).
+func TestCleanupDoesNotCloseTheNativeWindowTwice(t *testing.T) {
+	app, impls, wins := newCleanupTestApp(t, 1)
+	wins[0].closeStarted.Store(true)
+	wins[0].closeNative()
+
+	app.cleanup()
+
+	if got := impls[0].closes.Load(); got != 1 {
+		t.Fatalf("native close called %d times, want exactly 1", got)
+	}
+}

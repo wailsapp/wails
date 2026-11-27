@@ -211,6 +211,7 @@ type WebviewWindow struct {
 	destroyed     bool
 	destroyedLock sync.RWMutex
 	closeStarted  atomic.Bool
+	nativeClosed  atomic.Bool
 
 	runtimeLoaded  bool
 	pendingJS      []string
@@ -291,6 +292,44 @@ func (w *WebviewWindow) onApplicationEvent(
 ) {
 	cancelFn := globalApplication.Event.OnApplicationEvent(eventType, callback)
 	w.addCancellationFunction(cancelFn)
+}
+
+// closeNow destroys the window on the spot: marks it destroyed, shuts down its
+// native window (and webview) and removes it from the window manager. It is the
+// default WindowClosing listener's work. Safe to call more than once; only the
+// first call does anything.
+func (w *WebviewWindow) closeNow() {
+	if !w.closeStarted.CompareAndSwap(false, true) {
+		return
+	}
+	atomic.StoreUint32(&w.unconditionallyClose, 1)
+	InvokeSync(w.markAsDestroyed)
+	InvokeSync(w.closeNative)
+	globalApplication.Window.Remove(w.id)
+}
+
+// finishCloseOnMainThread is closeNow for App.cleanup, which already holds the
+// main thread. A user close may be under way at the same moment: it has claimed
+// the window, but its InvokeSync steps are queued behind cleanup and are dropped
+// when the main-thread window is destroyed. So instead of skipping a window
+// whose close has started, run every step here. Each one is safe to repeat, and
+// closeNative sends the native close only once.
+func (w *WebviewWindow) finishCloseOnMainThread() {
+	w.closeStarted.Store(true)
+	atomic.StoreUint32(&w.unconditionallyClose, 1)
+	w.markAsDestroyed()
+	w.closeNative()
+	globalApplication.Window.Remove(w.id)
+}
+
+// closeNative shuts the native window (and its webview) down, once. Both close
+// paths go through it so that a close in progress and cleanup never send the
+// native window two closes.
+func (w *WebviewWindow) closeNative() {
+	if w.impl == nil || !w.nativeClosed.CompareAndSwap(false, true) {
+		return
+	}
+	w.impl.close()
 }
 
 func (w *WebviewWindow) markAsDestroyed() {
@@ -377,13 +416,7 @@ func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 
 	// Listen for window closing events and de
 	result.OnWindowEvent(events.Common.WindowClosing, func(event *WindowEvent) {
-		if !result.closeStarted.CompareAndSwap(false, true) {
-			return
-		}
-		atomic.StoreUint32(&result.unconditionallyClose, 1)
-		InvokeSync(result.markAsDestroyed)
-		InvokeSync(result.impl.close)
-		globalApplication.Window.Remove(result.id)
+		result.closeNow()
 	})
 
 	// Process keybindings

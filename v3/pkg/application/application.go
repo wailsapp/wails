@@ -973,12 +973,7 @@ func (a *App) cleanup() {
 	}
 	InvokeSync(func() {
 		a.shutdownServices()
-		a.windowsLock.Lock()
-		for _, window := range a.windows {
-			window.Close()
-		}
-		a.windows = nil
-		a.windowsLock.Unlock()
+		a.closeAllWindows()
 		a.systemTraysLock.Lock()
 		for _, systray := range a.systemTrays {
 			systray.destroy()
@@ -997,6 +992,34 @@ func (a *App) cleanup() {
 			a.options.PostShutdown()
 		}
 	})
+}
+
+// closeAllWindows destroys every window synchronously, then empties the window
+// map. It must not queue the closes: Window.Close only emits a WindowClosing
+// event, which is handled later by looking the window up in a.windows, and the
+// map is emptied here, so a queued close finds no window and nothing is ever
+// destroyed (on Windows the WebView2 browser process then exits with its
+// windows still open). WindowClosing hooks are bypassed: the app is quitting,
+// so "hide to tray and cancel" no longer applies.
+func (a *App) closeAllWindows() {
+	// finishCloseOnMainThread removes the window from the map, which takes windowsLock, so
+	// iterate over a copy and do not hold the lock while closing.
+	a.windowsLock.RLock()
+	windows := make([]Window, 0, len(a.windows))
+	for _, window := range a.windows {
+		windows = append(windows, window)
+	}
+	a.windowsLock.RUnlock()
+
+	for _, window := range windows {
+		if closer, ok := window.(interface{ finishCloseOnMainThread() }); ok {
+			closer.finishCloseOnMainThread()
+		}
+	}
+
+	a.windowsLock.Lock()
+	a.windows = nil
+	a.windowsLock.Unlock()
 }
 
 func (a *App) Quit() {
