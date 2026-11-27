@@ -103,6 +103,11 @@ type Options struct {
 	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
 	WebviewBrowserPath string
 
+	// LocalShellPrivacy requires local crash reporting and disables browser form storage and reputation checks.
+	LocalShellPrivacy bool
+	// DiagnosticNetLogPath opts into private NetLog collection; callers must restrict diagnostic launches.
+	DiagnosticNetLogPath string
+
 	// Dark/Light or System Default Theme
 	Theme Theme
 
@@ -124,6 +129,9 @@ type Options struct {
 
 	// OnResume is called when Windows resumes from low power mode
 	OnResume func()
+
+	// PermissionRequested handles WebView2 permission requests.
+	PermissionRequested PermissionRequestedCallback
 
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
 	WebviewGpuIsDisabled bool
