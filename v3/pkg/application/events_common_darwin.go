@@ -6,6 +6,10 @@ import "github.com/wailsapp/wails/v3/pkg/events"
 
 var commonApplicationEventMap = map[events.ApplicationEventType]events.ApplicationEventType{
 	events.Mac.ApplicationDidFinishLaunching: events.Common.ApplicationStarted,
+	events.Mac.ApplicationDidBecomeActive:    events.Common.ApplicationResumed,
+	events.Mac.ApplicationDidResignActive:    events.Common.ApplicationPaused,
+	events.Mac.ApplicationDidHide:            events.Common.ApplicationBackgrounded,
+	events.Mac.ApplicationWillUnhide:         events.Common.ApplicationForegrounded,
 	events.Mac.ApplicationDidChangeTheme:     events.Common.ThemeChanged,
 	events.Mac.ApplicationWillSleep:          events.Common.SystemWillSleep,
 	events.Mac.ApplicationDidWake:            events.Common.SystemDidWake,
