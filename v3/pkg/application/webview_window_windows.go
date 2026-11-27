@@ -54,7 +54,10 @@ type windowsWebviewWindow struct {
 	previousWindowPlacement w32.WINDOWPLACEMENT
 
 	// Webview
-	chromium                   *edge.Chromium
+	chromium *edge.Chromium
+	// navigationGuard is set through SetNavigationGuard and consulted before every
+	// navigation; see NavigationGuard.
+	navigationGuard            NavigationGuard
 	webviewNavigationCompleted bool
 	// monitorScaleDetectionOn records that ShouldDetectMonitorScaleChanges
 	// was successfully re-enabled on the controller, making WebView2 the
@@ -2633,6 +2636,7 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 	chromium.WebResourceRequestedCallback = w.processRequest
 	chromium.ContainsFullScreenElementChangedCallback = w.fullscreenChanged
 	chromium.NavigationStartingCallback = w.navigationStarting
+	wireNavigationGuard(chromium, &w.navigationGuard)
 	chromium.NavigationCompletedCallback = w.navigationCompleted
 	chromium.AcceleratorKeyCallback = w.processKeyBinding
 	chromium.MoveFocusRequestedCallback = w.moveFocusRequested
