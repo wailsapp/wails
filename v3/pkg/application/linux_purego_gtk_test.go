@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 	"unsafe"
@@ -167,7 +168,7 @@ func newTestLinuxApp(t *testing.T) *linuxApp {
 	t.Cleanup(runtime.UnlockOSThread)
 
 	prevMain := mainThreadId
-	mainThreadId = g_thread_self()
+	mainThreadId = syscall.Gettid()
 	t.Cleanup(func() { mainThreadId = prevMain })
 
 	appID := fmt.Sprintf("org.wails.test.coverage%d", testAppSeq.Add(1))

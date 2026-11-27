@@ -53,6 +53,10 @@ func New(appOptions Options) *App {
 		return globalApplication
 	}
 
+	// Load what the platform needs for a GUI now, not at package init: a
+	// program can link this package and never build an App.
+	platformInit()
+
 	mergeApplicationDefaults(&appOptions)
 
 	result := newApplication(appOptions)

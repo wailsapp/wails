@@ -12,6 +12,7 @@ package application
 import (
 	"fmt"
 	"sync"
+	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/internal/assetserver/webview"
@@ -23,25 +24,48 @@ var (
 	gtkSignalToMenuItem     = map[uint]*MenuItem{}
 	gtkSignalToMenuItemLock sync.RWMutex
 
-	mainThreadId uintptr
+	// mainThreadId is the OS thread the package was initialised on, which
+	// init_desktop.go keeps the main goroutine on: the thread GTK runs on.
+	mainThreadId int
 )
+
+// The main thread is recorded here rather than when the GUI libraries load,
+// so an App built from another goroutine cannot make that goroutine's thread
+// the main one. Gettid is a system call; no library is needed.
+func init() {
+	mainThreadId = syscall.Gettid()
+}
 
 var (
 	registerURIScheme sync.Once
 	fixSignalHandlers sync.Once
 )
 
-func init() {
-	linuxLibsErr = loadLinuxLibraries()
-	if linuxLibsErr == nil {
-		// Package init runs on the process's main thread, the same thread
-		// that will run the GTK main loop (matching the cgo init()).
-		mainThreadId = g_thread_self()
+// The GUI libraries load on first use, not in init: a program that links this
+// package but never opens a window (a CLI, a daemon) must not map GTK and
+// WebKitGTK, which costs ~30 MB and ~20 ms per process when they are installed.
+var loadLibs sync.Once
+
+// ensureLinuxLibraries loads GTK and WebKitGTK once and returns the error from
+// that load, if any, on every call.
+func ensureLinuxLibraries() error {
+	loadLibs.Do(func() {
+		linuxLibsErr = loadLinuxLibraries()
+	})
+	return linuxLibsErr
+}
+
+// platformInit loads the GUI libraries when an App is built.
+func platformInit() {
+	if err := ensureLinuxLibraries(); err != nil {
+		Fatal("%v", err)
 	}
 }
 
+// isOnMainThread reports whether the caller is on the thread the package was
+// initialised on, the one GTK runs on.
 func isOnMainThread() bool {
-	return g_thread_self() == mainThreadId
+	return syscall.Gettid() == mainThreadId
 }
 
 // implementation below
@@ -51,8 +75,10 @@ func appName() string {
 	return goString(g_get_application_name())
 }
 
+// appNew creates the GtkApplication, loading the GUI libraries first if New
+// has not.
 func appNew(appID string) pointer {
-	if linuxLibsErr != nil {
+	if ensureLinuxLibraries() != nil {
 		// The GUI libraries are dlopen'ed at runtime; fail with the full
 		// actionable report (which libraries/symbols, what to install)
 		// instead of a nil-pointer crash on the first GTK call.

@@ -153,9 +153,9 @@ func haveSymbol(lib uintptr, name string) bool {
 }
 
 // loadLinuxLibraries dlopens everything and registers every function variable.
-// Called from init() so that mainThreadId can be captured on the startup
-// thread; a failure is recorded in linuxLibsErr and reported from appNew with
-// an actionable message instead of panicking at import time.
+// Called once, on first use (ensureLinuxLibraries, from New); a failure is
+// recorded in linuxLibsErr and reported with an actionable message instead of
+// panicking.
 func loadLinuxLibraries() error {
 	var missingLibs []string
 	for _, lib := range linuxLibCandidates {
