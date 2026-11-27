@@ -35,6 +35,23 @@ func ValidateAndSanitizeURL(rawURL string) (string, error) {
 	}
 
 	shellDangerous := `[;|` + "`" + `$\\<> \t\n\r]`
+	if scheme == "http" || scheme == "https" {
+		if strings.ContainsRune(parsedURL.Scheme, ';') ||
+			strings.ContainsRune(parsedURL.Host, ';') ||
+			strings.ContainsRune(parsedURL.Opaque, ';') {
+			return "", errors.New("shell metacharacters not allowed")
+		}
+		if user := parsedURL.User; user != nil {
+			if strings.ContainsRune(user.Username(), ';') {
+				return "", errors.New("shell metacharacters not allowed")
+			}
+			if pw, ok := user.Password(); ok && strings.ContainsRune(pw, ';') {
+				return "", errors.New("shell metacharacters not allowed")
+			}
+		}
+		// RFC 3986 allows ';' in the path, query, and fragment.
+		shellDangerous = `[|` + "`" + `$\\<> \t\n\r]`
+	}
 	if matched, _ := regexp.MatchString(shellDangerous, rawURL); matched {
 		return "", errors.New("shell metacharacters not allowed")
 	}
