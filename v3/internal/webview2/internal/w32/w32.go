@@ -53,6 +53,13 @@ var (
 	User32PeekMessageW                = user32.NewProc("PeekMessageW")
 )
 
+func init() {
+	if unsafe.Sizeof(uintptr(0)) == 4 {
+		User32GetWindowLongPtrW = user32.NewProc("GetWindowLongW")
+		User32SetWindowLongPtrW = user32.NewProc("SetWindowLongW")
+	}
+}
+
 const (
 	SystemMetricsCxIcon = 11
 	SystemMetricsCyIcon = 12
