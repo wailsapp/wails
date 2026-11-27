@@ -49,6 +49,7 @@ Check out the [How to add my project in showcase](#how-to-add-my-project-in-show
 <a class="mpress-showcase-card" href="/community/showcase/condui/"><img src="/assets/showcase-images/condui.png" alt="Condui screenshot" loading="lazy"><span>Condui</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/mqstudio/"><img src="/assets/showcase-images/mqstudio.webp" alt="MQ Studio screenshot" loading="lazy"><span>MQ Studio</span></a>
 <a class="mpress-showcase-card" href="/community/showcase/larvyn/"><img src="/assets/showcase-images/larvyn-agents.webp" alt="Larvyn screenshot" loading="lazy"><span>Larvyn</span></a>
+<a class="mpress-showcase-card" href="/community/showcase/bmeditor/"><img src="/assets/showcase-images/bmeditor-editor.webp" alt="BMEditor screenshot" loading="lazy"><span>BMEditor</span></a>
 </div>
 
 ## How to add my project in showcase
