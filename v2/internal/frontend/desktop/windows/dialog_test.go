@@ -75,3 +75,64 @@ func Test_calculateMessageDialogFlags(t *testing.T) {
 		})
 	}
 }
+
+func Test_messageDialogUserIconFlags(t *testing.T) {
+	tests := []struct {
+		name    string
+		options frontend.MessageDialogOptions
+		want    uint32
+	}{
+		{
+			name: "Test Info Dialog",
+			options: frontend.MessageDialogOptions{
+				Type: frontend.InfoDialog,
+			},
+			want: windows.MB_OK | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+		{
+			name: "Test Error Dialog",
+			options: frontend.MessageDialogOptions{
+				Type: frontend.ErrorDialog,
+			},
+			want: windows.MB_OK | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+		{
+			name: "Test Question Dialog",
+			options: frontend.MessageDialogOptions{
+				Type: frontend.QuestionDialog,
+			},
+			want: windows.MB_YESNO | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+		{
+			name: "Test Question Dialog with default cancel",
+			options: frontend.MessageDialogOptions{
+				Type:          frontend.QuestionDialog,
+				DefaultButton: "No",
+			},
+			want: windows.MB_YESNO | windows.MB_DEFBUTTON2 | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+		{
+			name: "Test Question Dialog with default cancel (lowercase)",
+			options: frontend.MessageDialogOptions{
+				Type:          frontend.QuestionDialog,
+				DefaultButton: "no",
+			},
+			want: windows.MB_YESNO | windows.MB_DEFBUTTON2 | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+		{
+			name: "Test Warning Dialog",
+			options: frontend.MessageDialogOptions{
+				Type: frontend.WarningDialog,
+			},
+			want: windows.MB_OK | windows.MB_USERICON | windows.MB_SYSTEMMODAL,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			flags := calculateMessageDialogFlags(tt.options)
+			if got := messageDialogUserIconFlags(flags); got != tt.want {
+				t.Errorf("messageDialogUserIconFlags() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
