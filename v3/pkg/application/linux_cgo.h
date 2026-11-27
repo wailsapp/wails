@@ -63,6 +63,7 @@ extern gboolean handleFocusEnter(GtkEventController*, uintptr_t);
 extern gboolean handleFocusLeave(GtkEventController*, uintptr_t);
 extern void handleLoadChanged(WebKitWebView*, WebKitLoadEvent, uintptr_t);
 extern gboolean handlePermissionRequest(WebKitWebView*, WebKitPermissionRequest*, uintptr_t);
+extern gboolean handleDecidePolicy(WebKitWebView*, WebKitPolicyDecision*, WebKitPolicyDecisionType, uintptr_t);
 extern void handleButtonPressed(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern void handleButtonReleased(GtkGestureClick*, gint, gdouble, gdouble, uintptr_t);
 extern gboolean handleKeyPressed(GtkEventControllerKey*, guint, guint, GdkModifierType, uintptr_t);
@@ -84,6 +85,9 @@ int is_user_media_permission_request(WebKitPermissionRequest *request);
 // Whether a user-media request needs the microphone / camera respectively.
 int is_user_media_for_audio(WebKitPermissionRequest *request);
 int is_user_media_for_video(WebKitPermissionRequest *request);
+
+// The URL a navigation or new-window policy decision is asking to load.
+const char* navigation_policy_decision_uri(WebKitPolicyDecision *decision);
 
 // ============================================================================
 // Main thread dispatch
