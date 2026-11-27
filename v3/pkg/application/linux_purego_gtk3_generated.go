@@ -1161,11 +1161,10 @@ func (w *linuxWebviewWindow) setOpacity(opacity float64) {
 }
 
 func (w *linuxWebviewWindow) setTitle(title string) {
-	if !w.parent.options.Frameless {
-		cTitle := _Cfunc_CString(title)
-		_Cfunc_gtk_window_set_title(w.gtkWindow(), cTitle)
-		_Cfunc_free(unsafe.Pointer(cTitle))
-	}
+
+	cTitle := _Cfunc_CString(title)
+	_Cfunc_gtk_window_set_title(w.gtkWindow(), cTitle)
+	_Cfunc_free(unsafe.Pointer(cTitle))
 }
 
 func (w *linuxWebviewWindow) setIcon(icon pointer) {

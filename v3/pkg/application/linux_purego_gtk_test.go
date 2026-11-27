@@ -273,11 +273,12 @@ func TestGTKWindowTitle(t *testing.T) {
 		t.Fatalf("title = %q", got)
 	}
 
-	// Frameless windows keep their title unset: setTitle is a no-op there.
+	// Frameless windows are titled too: the title names the window to
+	// taskbars and window switchers, and draws no titlebar.
 	w.parent.options.Frameless = true
-	w.setTitle("hidden")
-	if got := tGtkWindowGetTitle(uintptr(w.window)); got != "Wails coverage" {
-		t.Fatalf("frameless window title changed to %q", got)
+	w.setTitle("frameless")
+	if got := tGtkWindowGetTitle(uintptr(w.window)); got != "frameless" {
+		t.Fatalf("frameless window title = %q", got)
 	}
 }
 
