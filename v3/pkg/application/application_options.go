@@ -308,6 +308,10 @@ type WindowsOptions struct {
 	DisabledFeatures      []string
 	AdditionalBrowserArgs []string
 
+	// AllowSingleSignOnUsingOSPrimaryAccount lets pages sign in to Microsoft Entra ID and Microsoft
+	// accounts with the Windows account, without a prompt. Applies to all windows.
+	AllowSingleSignOnUsingOSPrimaryAccount bool
+
 	// UseVisualHosting forces WebView2 to use IDCompositionVisual hosting
 	// instead of the default windowed (HWND-child) hosting. Set this to
 	// true if your app is used over RDP — particularly the Microsoft

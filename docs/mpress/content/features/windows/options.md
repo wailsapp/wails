@@ -1195,6 +1195,29 @@ func main() {
 }
 ```
 
+### Single Sign-On
+
+**AllowSingleSignOnUsingOSPrimaryAccount** (`bool`)
+
+- Lets pages sign in to Microsoft Entra ID and Microsoft accounts with the Windows account, without a prompt
+- Works on Entra-joined and hybrid-joined devices; has no effect elsewhere
+- Default: `false`
+- See [AllowSingleSignOnUsingOSPrimaryAccount](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/icorewebview2environmentoptions#get_allowsinglesignonusingosprimaryaccount)
+
+```go
+app := application.New(application.Options{
+    Name: "My App",
+    Windows: application.WindowsOptions{
+        AllowSingleSignOnUsingOSPrimaryAccount: true,
+    },
+})
+```
+
+@note{type="caution" title="Security"}
+Any page loaded in the app can sign in as the Windows user. Only enable this for trusted content. It is an application option, so it covers every window.
+
+@end
+
 ## Complete Example
 
 Here's a production-ready window configuration:

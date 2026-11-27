@@ -2612,6 +2612,7 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 
 	chromium.DataPath = globalApplication.options.Windows.WebviewUserDataPath
 	chromium.BrowserPath = globalApplication.options.Windows.WebviewBrowserPath
+	chromium.AllowSingleSignOnUsingOSPrimaryAccount = appOpts.AllowSingleSignOnUsingOSPrimaryAccount
 
 	// Apply the cross-platform Permissions map first; the WebView2-specific
 	// Windows.Permissions map below can override individual kinds.
