@@ -69,6 +69,14 @@ type windowsWebviewWindow struct {
 	// so the last host-requested navigation is the only reliable record.
 	// Main-thread only, like the rest of the webview state.
 	lastNavigatedURL string
+	// initialNavigationPending is set while a controller's first navigation
+	// waits for request cancellation to be set up (setupChromium until
+	// navigateInitialPage). That setup waits on DevTools calls the renderer
+	// answers, so a renderer that fails meanwhile could hold the first
+	// navigation back for good: renderer recovery gives the setup up and
+	// makes the navigation itself.
+	// Main-thread only, like the rest of the webview state.
+	initialNavigationPending bool
 	// webviewRecoveryAttempts counts consecutive process-failure recoveries
 	// that have not yet produced a completed navigation. navigationCompleted
 	// resets it, so a recovery that works costs nothing; a controller that
@@ -2824,11 +2832,13 @@ func (w *windowsWebviewWindow) setupChromium(recovering bool) (ready bool) {
 		return w.setupChromiumConfigError(recovering, err)
 	}
 
+	w.initialNavigationPending = true
 	w.startRequestCancellation(w.navigateInitialPage)
 	return true
 }
 
 func (w *windowsWebviewWindow) navigateInitialPage() {
+	w.initialNavigationPending = false
 	chromium := w.chromium
 
 	// Restore the last URL directly after a rebuild. Reset navigation state in
@@ -3377,21 +3387,12 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 	case webviewRecoveryRebuild:
 		restore = w.rebuildWebView
 	case webviewRecoveryRenavigate:
-		if w.lastNavigatedURL == "" && w.parent.options.HTML == "" {
+		if !w.hasPageToRestore() {
 			globalApplication.error("webview2: no navigation available for renderer recovery")
 			return
 		}
-		restore = func() {
-			if w.parent.isDestroyed() || w.hwnd == 0 {
-				return
-			}
-			if w.lastNavigatedURL != "" {
-				w.setURL(w.lastNavigatedURL)
-			} else {
-				w.webviewNavigationCompleted = false
-				w.chromium.NavigateToString(w.parent.options.HTML)
-			}
-		}
+		beforeFirstNavigation := w.initialNavigationPending
+		restore = func() { w.renavigate(beforeFirstNavigation) }
 	}
 
 	if !w.beginWebviewRecovery() {
@@ -3411,6 +3412,40 @@ func (w *windowsWebviewWindow) processFailed(_ *edge.ICoreWebView2, args *edge.I
 		defer func() { w.webviewRecoveryPending = false }()
 		restore()
 	})
+}
+
+// hasPageToRestore reports whether a renderer failure leaves a page to load:
+// the first navigation, or the last URL or HTML loaded.
+func (w *windowsWebviewWindow) hasPageToRestore() bool {
+	return w.initialNavigationPending || w.lastNavigatedURL != "" || w.parent.options.HTML != ""
+}
+
+// renavigate loads the window's page again after its renderer failed;
+// beforeFirstNavigation says the failure came before the first navigation
+// (see initialNavigationPending).
+func (w *windowsWebviewWindow) renavigate(beforeFirstNavigation bool) {
+	if w.parent.isDestroyed() || w.hwnd == 0 {
+		return
+	}
+	switch {
+	case beforeFirstNavigation:
+		if !w.initialNavigationPending {
+			// The setup made the navigation since the failure: that page
+			// loads in a working renderer.
+			return
+		}
+		// Give the setup up first, as a setup that fails is: it may never
+		// finish now, and failing later it would close its tracker under the
+		// page's requests.
+		globalApplication.warning("webview2: renderer failed before the first navigation; window %d runs without request cancellation", w.parent.id)
+		w.requestCancellation.close()
+		w.navigateInitialPage()
+	case w.lastNavigatedURL != "":
+		w.setURL(w.lastNavigatedURL)
+	default:
+		w.webviewNavigationCompleted = false
+		w.chromium.NavigateToString(w.parent.options.HTML)
+	}
 }
 
 // rebuildWebView replaces a dead WebView2 controller with a fresh one.
