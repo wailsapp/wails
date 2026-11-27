@@ -3,6 +3,7 @@ package com.wails.app;
 import android.util.Log;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.wails.app.BuildConfig;
@@ -53,16 +54,20 @@ public class WailsJSBridge {
     public void invokeAsync(final String callbackId, final String payload) {
         if (DEBUG) Log.d(TAG, "InvokeAsync called: " + payload);
 
-        // Handle off the JS thread so we don't block the WebView.
+        // Submit the worker before preparing so every prepared request has an owner.
+        // Prepare on the bridge thread in JS submission order. Only the worker
+        // executes the bound method and sends the response.
+        FutureTask<Long> prepare = new FutureTask<>(() -> bridge.prepareRuntimeCall(payload));
         executor.execute(() -> {
             try {
-                String response = bridge.handleRuntimeCall(payload);
+                String response = bridge.runRuntimeCall(prepare.get());
                 sendCallback(callbackId, response, null);
             } catch (Exception e) {
                 Log.e(TAG, "Error in async invoke", e);
                 sendCallback(callbackId, null, e.getMessage());
             }
         });
+        prepare.run();
     }
 
     /**
