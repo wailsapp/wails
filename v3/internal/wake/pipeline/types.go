@@ -110,12 +110,15 @@ type Node struct {
 	Spec                  NodeSpec
 	Inputs                []InputSpec
 	Output                string
-	Marker                string
-	Cache                 CachePolicy
-	Claims                ResourceClaims
-	EstimateMS            int64
-	Artifact              ArtifactIdentity
-	Origins               []OriginReference
+	// RequiredFiles are project-relative files the node writes outside Output.
+	// They are not cached or restored: if any is missing, the node must run.
+	RequiredFiles []string
+	Marker        string
+	Cache         CachePolicy
+	Claims        ResourceClaims
+	EstimateMS    int64
+	Artifact      ArtifactIdentity
+	Origins       []OriginReference
 }
 
 type OriginReference struct {
