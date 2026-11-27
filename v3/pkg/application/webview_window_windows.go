@@ -1245,6 +1245,26 @@ func (w *windowsWebviewWindow) focus() {
 	w.focusingChromium = false
 }
 
+// wmDeferredWebviewFocus is posted to the host window so webview focus is
+// restored after the window activation sequence has finished, instead of
+// synchronously inside WM_ACTIVATE/WM_SETFOCUS handling. Calling
+// MoveFocus(PROGRAMMATIC) while Windows is still activating the window leaves
+// the webview runtime's IME/TSF input state broken: the IME composition and
+// candidate windows lose caret anchoring and appear at the screen origin.
+const wmDeferredWebviewFocus = w32.WM_APP + 0x101
+
+// deferRestoreWebviewFocus posts wmDeferredWebviewFocus. When restoreHostFocus
+// is true the deferred handler runs the full window focus path
+// (SetForegroundWindow + MoveFocus), otherwise it only moves focus into the
+// WebView.
+func (w *windowsWebviewWindow) deferRestoreWebviewFocus(restoreHostFocus bool) {
+	wparam := uintptr(0)
+	if restoreHostFocus {
+		wparam = 1
+	}
+	w32.PostMessage(w.hwnd, wmDeferredWebviewFocus, wparam, 0)
+}
+
 // restoreWebviewFocus moves focus back into the WebView when the window is
 // activated (Alt+Tab, taskbar, title bar click). Windows restores focus to the
 // WebView's child HWND on activation without the host receiving WM_SETFOCUS,
@@ -1781,12 +1801,12 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 		if int(wparam&0xffff) == w32.WA_ACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
-			w.restoreWebviewFocus()
+			w.deferRestoreWebviewFocus(false)
 			w.parent.emit(events.Windows.WindowActive)
 		}
 		if int(wparam&0xffff) == w32.WA_CLICKACTIVE {
 			getNativeApplication().currentWindowID = w.parent.id
-			w.restoreWebviewFocus()
+			w.deferRestoreWebviewFocus(false)
 			w.parent.emit(events.Windows.WindowClickActive)
 		}
 		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
@@ -1853,9 +1873,25 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 		}
 	case w32.WM_SETFOCUS:
 		if w.focusHandoff.shouldRestoreWebview() {
-			w.focus()
+			w.deferRestoreWebviewFocus(true)
 		}
 		w.parent.emit(events.Windows.WindowSetFocus)
+	case wmDeferredWebviewFocus:
+		// Posted from WM_ACTIVATE/WM_SETFOCUS so MoveFocus happens after the
+		// activation sequence has completed. Only restore focus if this window
+		// (or one of its child windows, e.g. the webview's own HWND) still owns
+		// keyboard focus. GetFocus returns 0 when the focus window belongs to
+		// another thread's message queue; a nonzero result from another window
+		// of ours means focus moved on before this message was processed. Also
+		// recheck the Tab hand-off, which may have changed while the message
+		// was queued.
+		if focusWnd := w32.GetFocus(); focusWnd != 0 && w32.GetAncestor(focusWnd, w32.GA_ROOT) == w.hwnd && w.focusHandoff.shouldRestoreWebview() {
+			if wparam == 1 {
+				w.focus()
+			} else {
+				w.restoreWebviewFocus()
+			}
+		}
 	case w32.WM_MOVE, w32.WM_MOVING:
 		_ = w.chromium.NotifyParentWindowPositionChanged()
 		w.moveDebouncer(func() {
