@@ -14,6 +14,7 @@ func TestHTTPTransportRuntimeRejectsOutOfRangeWindowID(t *testing.T) {
 	for _, id := range []string{"-1", "4294967296", "18446744073709551616", "abc"} {
 		t.Run(id, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/wails/runtime", strings.NewReader(`{"object":0,"method":0}`))
+			req.Header.Set("x-wails-client-id", "test")
 			req.Header.Set(webViewRequestHeaderWindowId, id)
 			rec := httptest.NewRecorder()
 			NewHTTPTransport().handleRuntimeRequest(rec, req)
