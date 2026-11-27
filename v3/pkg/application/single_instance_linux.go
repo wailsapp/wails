@@ -89,10 +89,8 @@ func (l *linuxLock) acquire(uniqueID string) error {
 	l.dbusPath = objectPath
 
 	conn, err := dbus.ConnectSessionBus()
-	// if we will reach any error during establishing connection or sending message we will just continue.
-	// It should not be the case that such thing will happen actually, but just in case.
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %w", errSessionBusUnavailable, err)
 	}
 
 	setup.Do(func() {
