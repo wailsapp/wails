@@ -981,6 +981,22 @@ func (w *linuxWebviewWindow) setFrameless(frameless bool) {
 	w.execJS(fmt.Sprintf("if(window._wails&&window._wails.flags)window._wails.flags.frameless=%v;", frameless))
 }
 
+func (w *linuxWebviewWindow) setTransparent() {
+	display := gdk_display_get_default()
+	if display == 0 {
+		return
+	}
+	transparentWindowCSS.Do(func() {
+		provider := gtk_css_provider_new()
+		gtk_css_provider_load_from_data(provider, "window.wails-transparent { background: transparent; }", -1)
+		gtk_style_context_add_provider_for_display(display, provider, 600)
+		g_object_unref(provider)
+	})
+	gtk_widget_add_css_class(uintptr(w.window), "wails-transparent")
+}
+
+var transparentWindowCSS sync.Once
+
 func (w *linuxWebviewWindow) setBackgroundColour(colour RGBA) {
 	rgba := gdkRGBA{
 		red:   float32(colour.Red) / 255.0,
