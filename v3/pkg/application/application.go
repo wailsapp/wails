@@ -104,8 +104,8 @@ func New(appOptions Options) *App {
 	// Auto-wire events if transport supports event delivery
 	if eventTransport, ok := transport.(WailsEventListener); ok {
 		result.wailsEventListeners = append(result.wailsEventListeners, eventTransport)
-	} else {
-		// otherwise fallback to IPC
+	} else if !isServerBuild {
+		// Server mode registers its WebSocket broadcaster in serverApp.run.
 		result.wailsEventListeners = append(result.wailsEventListeners, &EventIPCTransport{
 			app: result,
 		})
