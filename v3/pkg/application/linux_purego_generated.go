@@ -120,6 +120,7 @@ var (
 	_native_gtk_button_new_with_mnemonic                                func(string) uintptr
 	_native_gtk_css_provider_load_from_data                             func(uintptr, string, int64)
 	_native_gtk_css_provider_new                                        func() uintptr
+	_native_gtk_drop_controller_motion_get_drop                         func(uintptr) uintptr
 	_native_gtk_drop_controller_motion_new                              func() uintptr
 	_native_gtk_drop_target_new                                         func(uint64, int32) uintptr
 	_native_gtk_event_controller_focus_new                              func() uintptr
@@ -381,6 +382,7 @@ func registerGeneratedNativeFunctions() {
 	register(&_native_gtk_button_new_with_mnemonic, libGtk, "gtk_button_new_with_mnemonic")
 	register(&_native_gtk_css_provider_load_from_data, libGtk, "gtk_css_provider_load_from_data")
 	register(&_native_gtk_css_provider_new, libGtk, "gtk_css_provider_new")
+	register(&_native_gtk_drop_controller_motion_get_drop, libGtk, "gtk_drop_controller_motion_get_drop")
 	register(&_native_gtk_drop_controller_motion_new, libGtk, "gtk_drop_controller_motion_new")
 	register(&_native_gtk_drop_target_new, libGtk, "gtk_drop_target_new")
 	register(&_native_gtk_event_controller_focus_new, libGtk, "gtk_event_controller_focus_new")
@@ -1103,6 +1105,11 @@ func gtk_css_provider_load_from_data(p0 uintptr, p1 string, p2 int64) {
 //go:uintptrescapes
 func gtk_css_provider_new() uintptr {
 	return _native_gtk_css_provider_new()
+}
+
+//go:uintptrescapes
+func gtk_drop_controller_motion_get_drop(p0 uintptr) uintptr {
+	return _native_gtk_drop_controller_motion_get_drop(p0)
 }
 
 //go:uintptrescapes

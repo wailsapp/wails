@@ -559,6 +559,10 @@
       "library": "libGtk"
     },
     {
+      "name": "gtk_drop_controller_motion_get_drop",
+      "library": "libGtk"
+    },
+    {
       "name": "gtk_drop_controller_motion_new",
       "library": "libGtk"
     },
