@@ -96,6 +96,11 @@ type Chromium struct {
 	MessageWithAdditionalObjectsCallback     func(message string, sender *ICoreWebView2, args *ICoreWebView2WebMessageReceivedEventArgs)
 	WebResourceRequestedCallback             func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
 	NavigationStartingCallback               func(sender *ICoreWebView2)
+	// NavigationStartingWithArgsCallback receives the navigation arguments, which
+	// carry the target URI and the IsUserInitiated flag. Use it to inspect or
+	// cancel a navigation; NavigationStartingCallback is kept for compatibility
+	// because it cannot see either of those.
+	NavigationStartingWithArgsCallback func(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs)
 	NavigationCompletedCallback              func(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs)
 	ProcessFailedCallback                    func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	ContainsFullScreenElementChangedCallback func(sender *ICoreWebView2, args *ICoreWebView2ContainsFullScreenElementChangedEventArgs)
@@ -984,9 +989,14 @@ func boolToInt(input bool) int {
 	return 0
 }
 
-func (e *Chromium) NavigationStarting(sender *ICoreWebView2, _ *IUnknown) uintptr {
-	if !e.shuttingDown && e.NavigationStartingCallback != nil {
-		e.NavigationStartingCallback(sender)
+func (e *Chromium) NavigationStarting(sender *ICoreWebView2, args *ICoreWebView2NavigationStartingEventArgs) uintptr {
+	if !e.shuttingDown {
+		if e.NavigationStartingCallback != nil {
+			e.NavigationStartingCallback(sender)
+		}
+		if e.NavigationStartingWithArgsCallback != nil {
+			e.NavigationStartingWithArgsCallback(sender, args)
+		}
 	}
 	return 0
 }
