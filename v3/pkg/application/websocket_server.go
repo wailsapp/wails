@@ -147,12 +147,17 @@ func (b *WebSocketBroadcaster) removeClient(conn *websocket.Conn, runtimeClientI
 }
 
 // DispatchWailsEvent implements WailsEventListener interface.
-// It broadcasts the event to all connected WebSocket clients.
+// It broadcasts the event to all connected WebSocket clients, or only to the
+// client of the event's target window when one is set.
 func (b *WebSocketBroadcaster) DispatchWailsEvent(event *CustomEvent) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
+	target := event.Target()
 	for _, client := range b.clients {
+		if target != nil && Window(client.window) != target {
+			continue
+		}
 		client.events.Send(event)
 	}
 }
