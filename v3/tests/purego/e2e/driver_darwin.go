@@ -181,8 +181,17 @@ func chordStroke(c chord) (keyStroke, error) {
 		s.chars = string(base - 'a' + 1)
 	case c.shift && unicode.IsLetter(base):
 		s.chars = string(unicode.ToUpper(base))
+		s.ignoring = s.chars
 	case c.shift && shiftedOf[base] != 0:
 		s.chars = string(shiftedOf[base])
+		s.ignoring = s.chars
+	}
+	// A real keyboard reports Shift's effect in both: AppKit's
+	// charactersIgnoringModifiers ignores every modifier except Shift, and
+	// menu key equivalents ("+" for Zoom In) match on it. (Control's effect
+	// is ignored: ctrl+l is "\x0c" ignoring to "l".)
+	if c.ctrl && c.shift && unicode.IsLetter(base) {
+		s.ignoring = string(unicode.ToUpper(base))
 	}
 	return s, nil
 }
@@ -202,7 +211,8 @@ func typeStroke(r rune) keyStroke {
 		base = baseOfShifted[r]
 		flags = flagShift
 	}
-	return keyStroke{code: keyCodes[base], flags: flags, chars: string(r), ignoring: string(base)}
+	// Shift's effect shows in charactersIgnoringModifiers too (see chordStroke).
+	return keyStroke{code: keyCodes[base], flags: flags, chars: string(r), ignoring: string(r)}
 }
 
 // contentToWindow converts a point in web content coordinates (points, origin
@@ -380,7 +390,16 @@ func keyTarget(app objc.ID) (objc.ID, error) {
 			return w, nil
 		}
 	}
-	return 0, errors.New("no key, modal or main window to send keys to")
+	// A process that has not been activated (seen on a VM's first launch,
+	// just after a context menu closes) can have no key or main window: use
+	// the frontmost visible one, which postKeys then sends to directly.
+	windows := send(app, "orderedWindows")
+	for i := uint(0); i < call[uint](windows, "count"); i++ {
+		if w := windows.Send(sel("objectAtIndex:"), i); call[bool](w, "isVisible") {
+			return w, nil
+		}
+	}
+	return 0, errors.New("no key, modal, main or visible window to send keys to")
 }
 
 // keyEvent builds a key event with +[NSEvent keyEventWithType:...], which sets

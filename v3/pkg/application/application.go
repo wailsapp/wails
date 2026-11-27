@@ -395,7 +395,10 @@ func (r *webViewAssetRequest) Header() (http.Header, error) {
 
 	hh := h.Clone()
 	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
-	if r.windowName != "" {
+	// The ID is always the requesting window's. A name the page sent is kept:
+	// it names the window a runtime call targets (Window.Get(name) in the
+	// frontend), and overwriting it made every such call act on the caller.
+	if r.windowName != "" && hh.Get(webViewRequestHeaderWindowName) == "" {
 		hh.Set(webViewRequestHeaderWindowName, r.windowName)
 	}
 	return hh, nil

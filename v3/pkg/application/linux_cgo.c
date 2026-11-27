@@ -14,12 +14,16 @@ typedef int (*WailsXFlushFunc)(Display*);
 typedef Bool (*WailsXTranslateCoordinatesFunc)(Display*, Window, Window, int, int, int*, int*, Window*);
 typedef Status (*WailsXSendEventFunc)(Display*, Window, Bool, long, XEvent*);
 typedef Atom (*WailsXInternAtomFunc)(Display*, const char*, Bool);
+typedef Status (*WailsXQueryTreeFunc)(Display*, Window, Window*, Window*, Window**, unsigned int*);
+typedef int (*WailsXFreeFunc)(void*);
 
 static WailsXMoveWindowFunc wails_XMoveWindow = NULL;
 static WailsXFlushFunc wails_XFlush = NULL;
 static WailsXTranslateCoordinatesFunc wails_XTranslateCoordinates = NULL;
 static WailsXSendEventFunc wails_XSendEvent = NULL;
 static WailsXInternAtomFunc wails_XInternAtom = NULL;
+static WailsXQueryTreeFunc wails_XQueryTree = NULL;
+static WailsXFreeFunc wails_XFree = NULL;
 static gboolean x11_funcs_resolved = FALSE;
 
 static void resolve_x11_funcs(void) {
@@ -30,6 +34,8 @@ static void resolve_x11_funcs(void) {
     wails_XTranslateCoordinates = (WailsXTranslateCoordinatesFunc)dlsym(RTLD_DEFAULT, "XTranslateCoordinates");
     wails_XSendEvent = (WailsXSendEventFunc)dlsym(RTLD_DEFAULT, "XSendEvent");
     wails_XInternAtom = (WailsXInternAtomFunc)dlsym(RTLD_DEFAULT, "XInternAtom");
+    wails_XQueryTree = (WailsXQueryTreeFunc)dlsym(RTLD_DEFAULT, "XQueryTree");
+    wails_XFree = (WailsXFreeFunc)dlsym(RTLD_DEFAULT, "XFree");
 }
 #endif
 
@@ -1039,6 +1045,24 @@ void window_move_x11(GtkWindow *window, int x, int y) {
 #endif
 }
 
+// x11_frame_window returns the window manager's frame around w: its ancestor
+// that is a child of the root. XMoveWindow on a window a window manager has
+// reparented places the frame at the point (NorthWest gravity), so the
+// position read back must be the frame's too, as gtk_window_get_position
+// reports it on GTK3. With no window manager the window is its own frame.
+static Window x11_frame_window(Display *xdisplay, Window w) {
+    if (wails_XQueryTree == NULL) return w;
+    for (int depth = 0; depth < 16; depth++) {
+        Window root = 0, parent = 0, *children = NULL;
+        unsigned int count = 0;
+        if (!wails_XQueryTree(xdisplay, w, &root, &parent, &children, &count)) return w;
+        if (children != NULL && wails_XFree != NULL) wails_XFree(children);
+        if (parent == 0 || parent == root) return w;
+        w = parent;
+    }
+    return w;
+}
+
 void window_get_position_x11(GtkWindow *window, int *x, int *y) {
     *x = 0;
     *y = 0;
@@ -1061,7 +1085,7 @@ void window_get_position_x11(GtkWindow *window, int *x, int *y) {
     Window child;
     Window root = DefaultRootWindow(xdisplay);
     int abs_x, abs_y;
-    if (wails_XTranslateCoordinates(xdisplay, xwindow, root, 0, 0, &abs_x, &abs_y, &child)) {
+    if (wails_XTranslateCoordinates(xdisplay, x11_frame_window(xdisplay, xwindow), root, 0, 0, &abs_x, &abs_y, &child)) {
         *x = abs_x;
         *y = abs_y;
     }

@@ -296,6 +296,33 @@ func TestGenerateAndLookupActionName(t *testing.T) {
 	}
 }
 
+// A radio item has no action of its own: its accelerator activates the
+// group's stateful action with the item's target. Without that the
+// accelerator was silently never registered.
+func TestAcceleratorActionNamesRadioTargets(t *testing.T) {
+	const plain, radio, none = uint(910011), uint(910012), uint(910013)
+	t.Cleanup(func() {
+		menuItemsLock.Lock()
+		delete(menuItemActions, plain)
+		delete(menuItemRadioGroups, radio)
+		menuItemsLock.Unlock()
+	})
+	name := generateActionName(plain)
+	menuItemsLock.Lock()
+	menuItemRadioGroups[radio] = "radio_group_7"
+	menuItemsLock.Unlock()
+
+	if got, ok := acceleratorAction(plain); !ok || got != name {
+		t.Errorf("acceleratorAction(plain) = %q, %v; want %q", got, ok, name)
+	}
+	if got, ok := acceleratorAction(radio); !ok || got != "radio_group_7::910012" {
+		t.Errorf("acceleratorAction(radio) = %q, %v; want radio_group_7::910012", got, ok)
+	}
+	if _, ok := acceleratorAction(none); ok {
+		t.Error("an unknown item has an accelerator action")
+	}
+}
+
 func TestNextDialogRequestIDIsMonotonic(t *testing.T) {
 	first := nextDialogRequestID()
 	second := nextDialogRequestID()

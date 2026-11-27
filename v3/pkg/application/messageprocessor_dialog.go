@@ -1,8 +1,6 @@
 package application
 
 import (
-	"runtime"
-
 	"github.com/wailsapp/wails/v3/pkg/errs"
 )
 
@@ -35,10 +33,10 @@ func (m *MessageProcessor) processDialogMethod(req *RuntimeRequest, window Windo
 			return nil, errs.WrapInvalidDialogCallErrorf(err, "error parsing dialog options")
 		}
 		if len(options.Buttons) == 0 {
-			switch runtime.GOOS {
-			case "darwin":
-				options.Buttons = []*Button{{Label: "OK", IsDefault: true}}
-			}
+			// The promise settles from a button's callback, so a dialog with
+			// none gets an OK button here. (The platforms' own fallback
+			// button has no callback: the call would never return.)
+			options.Buttons = []*Button{{Label: "OK", IsDefault: true}}
 		}
 		var dialog *MessageDialog
 		switch req.Method {
