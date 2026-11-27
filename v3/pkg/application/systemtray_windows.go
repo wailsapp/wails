@@ -514,6 +514,7 @@ func (s *windowsSystemTray) updateMenu(menu *Menu) {
 		s.menu.Destroy()
 	}
 	s.menu = NewPopupMenu(s.hwnd, menu)
+	s.menu.showAboveCursor = true
 	s.menu.onMenuOpen = s.parent.onMenuOpen
 	s.menu.onMenuClose = s.parent.onMenuClose
 }
