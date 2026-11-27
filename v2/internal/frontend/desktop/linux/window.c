@@ -551,7 +551,7 @@ static gboolean onDragDrop(GtkWidget* self, GdkDragContext* context, gint x, gin
     }
 
     processMessage(res);
-    return FALSE;
+    return TRUE;
 }
 
 // WebView
@@ -566,15 +566,22 @@ GtkWidget *SetupWebview(void *contentManager, GtkWindow *window, int hideWindowO
     webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
     g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 
-    if(disableWebViewDragAndDrop)
-    {
-        gtk_drag_dest_unset(webview);
-    }
-
     if(enableDragAndDrop)
     {
+        if(disableWebViewDragAndDrop)
+        {
+            gtk_drag_dest_unset(webview);
+        }
+        GtkTargetEntry targets[] = {
+            {"text/uri-list", 0, 2}
+        };
+        gtk_drag_dest_set(webview, GTK_DEST_DEFAULT_ALL, targets, G_N_ELEMENTS(targets), GDK_ACTION_COPY);
         g_signal_connect(G_OBJECT(webview), "drag-data-received", G_CALLBACK(onDragDataReceived), NULL);
         g_signal_connect(G_OBJECT(webview), "drag-drop", G_CALLBACK(onDragDrop), NULL);
+    }
+    else if(disableWebViewDragAndDrop)
+    {
+        gtk_drag_dest_unset(webview);
     }
 
     if (hideWindowOnClose)
