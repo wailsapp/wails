@@ -238,7 +238,7 @@ func CenterWindow(hwnd HWND) {
 	winHeight := winRect.Bottom - winRect.Top
 	windowX := screenMiddleW - (winWidth / 2)
 	windowY := screenMiddleH - (winHeight / 2)
-	SetWindowPos(hwnd, HWND_TOP, int(windowX), int(windowY), int(winWidth), int(winHeight), SWP_NOSIZE)
+	SetWindowPos(hwnd, HWND_TOP, int(windowX), int(windowY), int(winWidth), int(winHeight), SWP_NOSIZE|SWP_NOACTIVATE)
 }
 
 func getWindowInfo(hwnd HWND) *WINDOWINFO {
