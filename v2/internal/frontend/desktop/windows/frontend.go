@@ -204,16 +204,17 @@ func (f *Frontend) Run(ctx context.Context) error {
 		// Clear minimizing flag for all non-minimize size events
 		// 对于所有非最小化的尺寸变化事件,清除最小化标志
 		// Reference: https://github.com/wailsapp/wails/issues/3951
+		restoredFromMinimize := f.mainWindow.isMinimizing
 		f.mainWindow.isMinimizing = false
 
 		if f.resizeDebouncer != nil {
 			f.resizeDebouncer(func() {
 				f.mainWindow.Invoke(func() {
-					f.chromium.Resize()
+					f.resizeChromium(restoredFromMinimize)
 				})
 			})
 		} else {
-			f.chromium.Resize()
+			f.resizeChromium(restoredFromMinimize)
 		}
 	})
 
@@ -351,6 +352,26 @@ func (f *Frontend) WindowUnmaximise() {
 		return
 	}
 	f.mainWindow.Restore()
+}
+
+// resizeChromium fits the WebView2 to the window's client area.
+//
+// restoredFromMinimize marks the first size event after a frameless window was minimized. The WebView2 bounds
+// are deliberately left untouched while minimized (see OnSize), but the minimized window is parked at
+// (-32000,-32000) and Chromium re-evaluates the page's device scale factor against the monitor nearest to that
+// position. With monitors of different scale (e.g. a 150% screen left of a 100% primary) the page can lay out
+// at the other monitor's scale while hidden. After the restore the scale switches back, but the bounds are the
+// same as before minimizing, so put_Bounds is a no-op and the page keeps the stale layout: the UI stays
+// scaled up/down until the next real resize. Changing the bounds once forces WebView2 to resync the viewport.
+func (f *Frontend) resizeChromium(restoredFromMinimize bool) {
+	if restoredFromMinimize {
+		if rect := w32.GetClientRect(f.mainWindow.Handle()); rect != nil {
+			// One pixel short of the final bounds; ResizeWithBounds applies the same padding as Resize.
+			bounds := edge.Rect{Left: rect.Left, Top: rect.Top, Right: rect.Right, Bottom: rect.Bottom - 1}
+			f.chromium.ResizeWithBounds(&bounds)
+		}
+	}
+	f.chromium.Resize()
 }
 
 func (f *Frontend) WindowMinimise() {
