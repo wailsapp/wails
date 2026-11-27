@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Linux and Windows: `WindowGetPosition` now returns the position relative to the monitor the window is on, matching `WindowSetPosition` and macOS. Previously it returned absolute desktop coordinates, so `WindowSetPosition(WindowGetPosition())` moved a window on a non-primary monitor by the monitor's offset. Fixes #4003
+
 ## v2.17.1 - 2026-11-01
 
 ### Security
