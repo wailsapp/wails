@@ -19,10 +19,49 @@ extern void registerListener(unsigned int event);
 
 static AppDelegate *appDelegate = nil;
 
+// kVK_Function from Carbon's Events.h, spelled out so that header is not
+// needed for one number.
+static const unsigned short kWailsFunctionKeyCode = 63;
+
+
 static void init(void) {
     [NSApplication sharedApplication];
     appDelegate = [[AppDelegate alloc] init];
     [NSApp setDelegate:appDelegate];
+
+	// The Fn/Globe key arrives as a modifier change rather than a key press,
+	// and WebKit drops keyCode 63 in WebViewImpl::flagsChanged() before it
+	// reaches interpretKeyEvent(), so the current input method never sees it.
+	// Input methods that bind a shortcut to holding Fn - push-to-talk voice
+	// input is the common one - therefore do nothing at all inside a Wails
+	// window, while working in native and Chromium applications.
+	//
+	// Offer the event to the first responder's input context here instead. The
+	// event is returned unchanged either way, so AppKit's own handling is
+	// untouched and no DOM keyboard event is synthesised: the page still does
+	// not see Fn, which is the existing behaviour and the correct one.
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskFlagsChanged handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		if ([event keyCode] != kWailsFunctionKeyCode) {
+			return event;
+		}
+		NSWindow* eventWindow = [event window];
+		if (eventWindow == nil) {
+			return event;
+		}
+		if (![[eventWindow delegate] isKindOfClass:[WebviewWindowDelegate class]]) {
+			return event;
+		}
+		// inputContext is declared on NSView, not on NSResponder, and the
+		// first responder is not necessarily a view.
+		NSResponder* responder = [eventWindow firstResponder];
+		if ([responder isKindOfClass:[NSView class]]) {
+			NSTextInputContext* inputContext = [(NSView*)responder inputContext];
+			if (inputContext != nil) {
+				[inputContext handleEvent:event];
+			}
+		}
+		return event;
+	}];
 
 	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
 		NSWindow* eventWindow = [event window];
