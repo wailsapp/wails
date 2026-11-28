@@ -178,6 +178,7 @@ func (e *Chromium) ShuttingDown() {
 	e.MessageWithAdditionalObjectsCallback = nil
 	e.WebResourceRequestedCallback = nil
 	e.NavigationStartingCallback = nil
+	e.NavigationStartingWithArgsCallback = nil
 	e.NavigationCompletedCallback = nil
 	e.ProcessFailedCallback = nil
 	e.ContainsFullScreenElementChangedCallback = nil

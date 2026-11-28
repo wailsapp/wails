@@ -63,6 +63,32 @@ func (i *ICoreWebView2NavigationStartingEventArgs) GetIsUserInitiated() (bool, e
 	return result != 0, nil
 }
 
+// GetIsRedirected 报告这次导航是否由服务端或客户端重定向产生。
+func (i *ICoreWebView2NavigationStartingEventArgs) GetIsRedirected() (bool, error) {
+	var result int32
+	hr, _, _ := i.vtbl.GetIsRedirected.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&result)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return false, windows.Errno(hr)
+	}
+	return result != 0, nil
+}
+
+// GetCancel 报告宿主是否已经请求取消这次导航。
+func (i *ICoreWebView2NavigationStartingEventArgs) GetCancel() (bool, error) {
+	var result int32
+	hr, _, _ := i.vtbl.GetCancel.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&result)),
+	)
+	if windows.Handle(hr) != windows.S_OK {
+		return false, windows.Errno(hr)
+	}
+	return result != 0, nil
+}
+
 // PutCancel 设为 true 即取消这次导航。
 func (i *ICoreWebView2NavigationStartingEventArgs) PutCancel(value bool) error {
 	var flag int32
